@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/23/24.
 //
 
-enum Literal: CustomStringConvertible, Equatable {
+enum LoxValue: CustomStringConvertible, Equatable {
     case string(String)
     case number(Double)
     case boolean(Bool)

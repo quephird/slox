@@ -8,7 +8,7 @@
 indirect enum Expression: Equatable {
     case binary(Expression, Token, Expression)
     case unary(Token, Expression)
-    case literal(Literal)
+    case literal(LoxValue)
     case grouping(Expression)
     case variable(Token)
     case assignment(Token, Expression)

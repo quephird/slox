@@ -7,14 +7,6 @@
 
 import Foundation
 
-//struct RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
-//    var message: String
-//
-//    var description: String {
-//        return "Error: \(message)"
-//    }
-//}
-
 enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case unaryOperandMustBeNumber
     case unsupportedUnaryOperator
