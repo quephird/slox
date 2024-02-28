@@ -36,7 +36,9 @@ struct Parser {
     //                   | statement ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
     //    statement      → expresssionStatement
-    //                   | printStatement ;
+    //                   | printStatement
+    //                   | block ;
+    //    block          → "{" declaration* "}" ;
     mutating func parseDeclaration() throws -> Statement {
         if matchesAny(types: [.var]) {
             return try parseVariableDeclaration()
@@ -69,6 +71,11 @@ struct Parser {
             return try parsePrintStatement()
         }
 
+        if matchesAny(types: [.leftBrace]) {
+            let statements = try parseBlock()
+            return .block(statements)
+        }
+
         return try parseExpressionStatement()
     }
 
@@ -90,10 +97,27 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
+    mutating func parseBlock() throws -> [Statement] {
+        var statements: [Statement] = []
+
+        while currentToken.type != .rightBrace && currentToken.type != .eof {
+            let statement = try parseDeclaration()
+            statements.append(statement)
+        }
+
+        if matchesAny(types: [.rightBrace]) {
+            return statements
+        }
+
+        throw ParseError.missingClosingBrace(previousToken)
+    }
+
     // The parsing strategy below follows these rules of precedence
     // in _ascending_ order:
     //
-    //    expression     → equality ;
+    //    expression     → assignment ;
+    //    assignment     → IDENTIFIER "=" assignment
+    //                   | equality ;
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     //    term           → factor ( ( "-" | "+" ) factor )* ;
@@ -105,7 +129,24 @@ struct Parser {
     //                   | IDENTIFIER
     //
     mutating private func parseExpression() throws -> Expression {
-        return try parseEquality()
+        return try parseAssignment()
+    }
+
+    mutating private func parseAssignment() throws -> Expression {
+        let expr = try parseEquality()
+
+        if matchesAny(types: [.equal]) {
+            let equalToken = previousToken
+            let valueExpr = try parseAssignment()
+
+            if case .variable(let name) = expr {
+                return .assignment(name, valueExpr)
+            }
+
+            throw ParseError.invalidAssignmentTarget(equalToken)
+        }
+
+        return expr
     }
 
     mutating private func parseEquality() throws -> Expression {

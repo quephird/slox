@@ -19,16 +19,38 @@ struct Interpreter {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
         case .print(let expr):
-            let literal = try evaluate(expr: expr)
-            print(literal)
+            try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
-            var value: Literal = .nil
-            if let expr = expr {
-                value = try evaluate(expr: expr)
-            }
-
-            environment.define(name: name.lexeme, value: value)
+            try handleVariableDeclaration(name: name, expr: expr)
+        case .block(let statements):
+            try handleBlock(statements: statements,
+                            environment: Environment(enclosingEnvironment: environment))
         }
+    }
+
+    private func handlePrintStatement(expr: Expression) throws {
+        let literal = try evaluate(expr: expr)
+        print(literal)
+    }
+
+    private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
+        var value: Literal = .nil
+        if let expr = expr {
+            value = try evaluate(expr: expr)
+        }
+
+        environment.define(name: name.lexeme, value: value)
+    }
+
+    mutating private func handleBlock(statements: [Statement], environment: Environment) throws {
+        let environmentBeforeBlock = self.environment
+
+        self.environment = environment
+        for statement in statements {
+            try execute(statement: statement)
+        }
+
+        self.environment = environmentBeforeBlock
     }
 
     private func evaluate(expr: Expression) throws -> Literal {
@@ -43,6 +65,10 @@ struct Interpreter {
             return try handleBinaryExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .variable(let varToken):
             return try environment.getValue(name: varToken.lexeme)
+        case .assignment(let varToken, let valueExpr):
+            let value = try evaluate(expr: valueExpr)
+            try environment.assign(name: varToken.lexeme, value: value)
+            return value
         }
     }
 

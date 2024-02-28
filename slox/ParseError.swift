@@ -21,6 +21,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case expectedPrimaryExpression(Token)
     case missingSemicolon(Token)
     case missingVariableName(Token)
+    case invalidAssignmentTarget(Token)
+    case missingClosingBrace(Token)
 
     var description: String {
         switch self {
@@ -32,6 +34,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected semicolon after value"
         case .missingVariableName(let token):
             return "[Line \(token.line)] Error: expected variable name"
+        case .invalidAssignmentTarget(let token):
+            return "[Line \(token.line)] Error: invalid assignment target"
+        case .missingClosingBrace(let token):
+            return "[Line \(token.line)] Error: expected closing brace after block"
         }
     }
 }

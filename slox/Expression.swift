@@ -11,4 +11,5 @@ indirect enum Expression: Equatable {
     case literal(Literal)
     case grouping(Expression)
     case variable(Token)
+    case assignment(Token, Expression)
 }

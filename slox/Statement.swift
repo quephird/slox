@@ -9,4 +9,5 @@ enum Statement: Equatable {
     case expression(Expression)
     case print(Expression)
     case variableDeclaration(Token, Expression?)
+    case block([Statement])
 }
