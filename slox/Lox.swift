@@ -9,7 +9,7 @@ import Foundation
 
 @main
 struct Lox {
-    static let interpreter = Interpreter()
+    static var interpreter = Interpreter()
 
     static func main() {
         let args = CommandLine.arguments.dropFirst()
@@ -55,8 +55,7 @@ struct Lox {
         var scanner = Scanner(source: input)
         let tokens = try scanner.scanTokens()
         var parser = Parser(tokens: tokens)
-        let firstExpr = try parser.parse()
-        let value = try interpreter.interpret(expr: firstExpr)
-        print(value)
+        let statements = try parser.parse()
+        try interpreter.interpret(statements: statements)
     }
 }

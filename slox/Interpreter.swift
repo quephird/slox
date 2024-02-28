@@ -6,8 +6,29 @@
 //
 
 struct Interpreter {
-    func interpret(expr: Expression) throws -> Literal {
-        return try evaluate(expr: expr)
+    private var environment: Environment = Environment()
+
+    mutating func interpret(statements: [Statement]) throws {
+        for statement in statements {
+            try execute(statement: statement)
+        }
+    }
+
+    mutating private func execute(statement: Statement) throws {
+        switch statement {
+        case .expression(let expr):
+            let _ = try evaluate(expr: expr)
+        case .print(let expr):
+            let literal = try evaluate(expr: expr)
+            print(literal)
+        case .variableDeclaration(let name, let expr):
+            var value: Literal = .nil
+            if let expr = expr {
+                value = try evaluate(expr: expr)
+            }
+
+            environment.define(name: name.lexeme, value: value)
+        }
     }
 
     private func evaluate(expr: Expression) throws -> Literal {
@@ -20,6 +41,8 @@ struct Interpreter {
             return try handleUnaryExpression(oper: oper, expr: expr)
         case .binary(let leftExpr, let oper, let rightExpr):
             return try handleBinaryExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
+        case .variable(let varToken):
+            return try environment.getValue(name: varToken.lexeme)
         }
     }
 

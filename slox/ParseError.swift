@@ -19,6 +19,8 @@ import Foundation
 enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingClosingParenthesis(Token)
     case expectedPrimaryExpression(Token)
+    case missingSemicolon(Token)
+    case missingVariableName(Token)
 
     var description: String {
         switch self {
@@ -26,6 +28,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected closing parenthesis in expression"
         case .expectedPrimaryExpression(let token):
             return "[Line \(token.line)] Error: expected primary expression"
+        case .missingSemicolon(let token):
+            return "[Line \(token.line)] Error: expected semicolon after value"
+        case .missingVariableName(let token):
+            return "[Line \(token.line)] Error: expected variable name"
         }
     }
 }

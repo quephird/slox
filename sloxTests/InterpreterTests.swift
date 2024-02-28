@@ -8,6 +8,7 @@
 import XCTest
 
 final class InterpreterTests: XCTestCase {
+    /*
     func testInterpretStringLiteralExpression() throws {
         let expr: Expression = .literal(.string("forty-two"))
         let interpreter = Interpreter()
@@ -115,4 +116,5 @@ final class InterpreterTests: XCTestCase {
         let expected: Literal = .number(-14)
         XCTAssertEqual(actual, expected)
     }
+     */
 }

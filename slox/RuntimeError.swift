@@ -21,6 +21,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case binaryOperandsMustBeNumbers
     case binaryOperandsMustBeNumbersOrStrings
     case unsupportedBinaryOperator
+    case undefinedVariable(String)
 
     var description: String {
         switch self {
@@ -34,6 +35,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Operands must be either both numbers or both strings"
         case .unsupportedBinaryOperator:
             return "Unsupported binary operator"
+        case .undefinedVariable(let name):
+            return "Undefined variable: \(name)"
         }
     }
 }

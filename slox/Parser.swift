@@ -19,8 +19,75 @@ struct Parser {
         self.tokens = tokens
     }
 
-    mutating func parse() throws -> Expression {
-        return try parseExpression()
+    mutating func parse() throws -> [Statement] {
+        var statements: [Statement] = []
+        while currentToken.type != .eof {
+            let statement = try parseDeclaration()
+            statements.append(statement)
+        }
+
+        return statements
+    }
+
+    // Statements are parsed in the following order:
+    //
+    //    program        → declaration* EOF ;
+    //    declaration    → varDecl
+    //                   | statement ;
+    //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+    //    statement      → expresssionStatement
+    //                   | printStatement ;
+    mutating func parseDeclaration() throws -> Statement {
+        if matchesAny(types: [.var]) {
+            return try parseVariableDeclaration()
+        }
+
+        return try parseStatement()
+    }
+
+    mutating private func parseVariableDeclaration() throws -> Statement {
+        guard case .identifier = currentToken.type else {
+            throw ParseError.missingVariableName(currentToken)
+        }
+        let name = currentToken
+        advanceCursor()
+
+        var initializer: Expression? = nil
+        if matchesAny(types: [.equal]) {
+            initializer = try parseExpression()
+        }
+
+        if matchesAny(types: [.semicolon]) {
+            return .variableDeclaration(name, initializer);
+        }
+
+        throw ParseError.missingSemicolon(currentToken)
+    }
+
+    mutating func parseStatement() throws -> Statement {
+        if matchesAny(types: [.print]) {
+            return try parsePrintStatement()
+        }
+
+        return try parseExpressionStatement()
+    }
+
+    mutating func parsePrintStatement() throws -> Statement {
+        let expr = try parseExpression()
+        if matchesAny(types: [.semicolon]) {
+            return .print(expr)
+        }
+
+        throw ParseError.missingSemicolon(currentToken)
+    }
+
+    mutating func parseExpressionStatement() throws -> Statement {
+        let expr = try parseExpression()
+        if matchesAny(types: [.semicolon]) {
+            return .expression(expr)
+        }
+
+        throw ParseError.missingSemicolon(currentToken)
     }
 
     // The parsing strategy below follows these rules of precedence
@@ -35,6 +102,7 @@ struct Parser {
     //                   | primary ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
+    //                   | IDENTIFIER
     //
     mutating private func parseExpression() throws -> Expression {
         return try parseEquality()
@@ -128,6 +196,10 @@ struct Parser {
             throw ParseError.missingClosingParenthesis(currentToken)
         }
 
+        if matchesAny(types: [.identifier]) {
+            return .variable(previousToken)
+        }
+
         throw ParseError.expectedPrimaryExpression(currentToken)
     }
 
@@ -148,6 +220,27 @@ struct Parser {
         }
 
         return currentToken.type == type
+    }
+
+    // TODO: Figure out if we actually need this, and if so
+    // figure out how to wire it up.
+    mutating private func synchronize() {
+        advanceCursor()
+
+        while currentToken.type != .eof {
+            if previousToken.type == .semicolon {
+                return
+            }
+
+            switch currentToken.type {
+            case .class, .fun, .var, .for, .if, .while, .print, .return:
+                return
+            default:
+                break
+            }
+
+            advanceCursor()
+        }
     }
 
     // TODO: We need to make sure we don't run out of tokens here
