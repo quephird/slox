@@ -243,6 +243,7 @@ final class ParserTests: XCTestCase {
 
     func testParseComplexExpression() throws {
         // (-2) * (3 + 4);
+
         let tokens: [Token] = [
             Token(type: .leftParen, lexeme: "(", line: 1),
             Token(type: .minus, lexeme: "-", line: 1),
@@ -348,9 +349,9 @@ final class ParserTests: XCTestCase {
     }
 
     func testParseSetOfStatements() throws {
-//        var the = 2;
-//        var answer = 21;
-//        print the * answer;
+        // var the = 2;
+        // var answer = 21;
+        // print the * answer;
 
         let tokens: [Token] = [
             Token(type: .var, lexeme: "var", line: 1),
@@ -390,5 +391,68 @@ final class ParserTests: XCTestCase {
                     .variable(Token(type: .identifier, lexeme: "answer", line: 3)))),
         ]
         XCTAssertEqual(actual, expected)
+    }
+
+    func testParseBlock() throws {
+        // {
+        //     var theAnswer = 42;
+        //     print theAnswer;
+        // }
+
+        let tokens: [Token] = [
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .var, lexeme: "var", line: 2),
+            Token(type: .identifier, lexeme: "theAnswer", line: 2),
+            Token(type: .equal, lexeme: "=", line: 2),
+            Token(type: .number, lexeme: "42", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .identifier, lexeme: "theAnswer", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .block([
+                .variableDeclaration(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 2),
+                    .literal(.number(42))),
+                .print(
+                    .variable(Token(type: .identifier, lexeme: "theAnswer", line: 3))),
+            ]),
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseInvalidBlock() throws {
+        let tokens: [Token] = [
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .var, lexeme: "var", line: 2),
+            Token(type: .identifier, lexeme: "theAnswer", line: 2),
+            Token(type: .equal, lexeme: "=", line: 2),
+            Token(type: .number, lexeme: "42", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .identifier, lexeme: "theAnswer", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let lastToken = Token(type: .semicolon, lexeme: ";", line: 3)
+        let expectedError = ParseError.missingClosingBrace(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
     }
 }

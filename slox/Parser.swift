@@ -35,9 +35,11 @@ struct Parser {
     //    declaration    → varDecl
     //                   | statement ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
-    //    statement      → expresssionStatement
-    //                   | printStatement
+    //    statement      → exprStmt
+    //                   | printStmt
     //                   | block ;
+    //    exprStmt       → expression ";" ;
+    //    printStmt      → "print" expression ";" ;
     //    block          → "{" declaration* "}" ;
     mutating func parseDeclaration() throws -> Statement {
         if matchesAny(types: [.var]) {
@@ -126,7 +128,7 @@ struct Parser {
     //                   | primary ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
-    //                   | IDENTIFIER
+    //                   | IDENTIFIER ;
     //
     mutating private func parseExpression() throws -> Expression {
         return try parseAssignment()
@@ -264,7 +266,7 @@ struct Parser {
     }
 
     // TODO: Figure out if we actually need this, and if so
-    // figure out how to wire it up.
+    // how to wire it up.
     mutating private func synchronize() {
         advanceCursor()
 

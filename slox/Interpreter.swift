@@ -66,9 +66,7 @@ struct Interpreter {
         case .variable(let varToken):
             return try environment.getValue(name: varToken.lexeme)
         case .assignment(let varToken, let valueExpr):
-            let value = try evaluate(expr: valueExpr)
-            try environment.assign(name: varToken.lexeme, value: value)
-            return value
+            return try handleAssignmentExpression(name: varToken, expr: valueExpr)
         }
     }
 
@@ -137,6 +135,12 @@ struct Interpreter {
         default:
             throw RuntimeError.unsupportedBinaryOperator
         }
+    }
+
+    func handleAssignmentExpression(name: Token, expr: Expression) throws -> Literal {
+        let value = try evaluate(expr: expr)
+        try environment.assign(name: name.lexeme, value: value)
+        return value
     }
 
     private func isEqual(leftValue: Literal, rightValue: Literal) -> Bool {
