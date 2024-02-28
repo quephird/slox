@@ -92,7 +92,12 @@ struct Parser {
 
     mutating func parseExpressionStatement() throws -> Statement {
         let expr = try parseExpression()
-        if matchesAny(types: [.semicolon]) {
+
+        // NOTA BENE: If the expression is the last thing to be parsed,
+        // then we want to return that immediately so it can be evaluated
+        // and whose result can be printed in the REPL, and without burdening
+        // the user to add a semicolon at the end.
+        if currentToken.type == .eof || matchesAny(types: [.semicolon]) {
             return .expression(expr)
         }
 

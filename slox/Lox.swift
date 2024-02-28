@@ -42,7 +42,13 @@ struct Lox {
         print("slox>", terminator: " ")
         while let input = readLine() {
             do {
-                try run(input: input)
+                var scanner = Scanner(source: input)
+                let tokens = try scanner.scanTokens()
+                var parser = Parser(tokens: tokens)
+                let statements = try parser.parse()
+                if let result = try interpreter.interpretRepl(statements: statements) {
+                    print(result)
+                }
             } catch {
                 print(error)
             }

@@ -14,6 +14,20 @@ struct Interpreter {
         }
     }
 
+    mutating func interpretRepl(statements: [Statement]) throws -> Literal? {
+        var result: Literal? = nil
+
+        for (i, statement) in statements.enumerated() {
+            if i == statements.endIndex-1, case .expression(let expr) = statement {
+                result = try evaluate(expr: expr)
+            } else {
+                try execute(statement: statement)
+            }
+        }
+
+        return result
+    }
+
     mutating private func execute(statement: Statement) throws {
         switch statement {
         case .expression(let expr):
