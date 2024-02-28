@@ -7,17 +7,17 @@
 
 class Environment {
     private var enclosingEnvironment: Environment?
-    private var values: [String: Literal] = [:]
+    private var values: [String: LoxValue] = [:]
 
     init(enclosingEnvironment: Environment? = nil) {
         self.enclosingEnvironment = enclosingEnvironment
     }
 
-    func define(name: String, value: Literal) {
+    func define(name: String, value: LoxValue) {
         values[name] = value
     }
 
-    func assign(name: String, value: Literal) throws {
+    func assign(name: String, value: LoxValue) throws {
         if values.keys.contains(name) {
             values[name] = value
             return
@@ -31,7 +31,7 @@ class Environment {
         throw RuntimeError.undefinedVariable(name)
     }
 
-    func getValue(name: String) throws -> Literal {
+    func getValue(name: String) throws -> LoxValue {
         if let value = values[name] {
             return value
         }

@@ -28,8 +28,8 @@
 		876A315B2B897BFD0085A350 /* TokenType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876560022B882259002BDE42 /* TokenType.swift */; };
 		876A315C2B897C000085A350 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876560042B8825AC002BDE42 /* Token.swift */; };
 		876A315D2B897C020085A350 /* Scanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876560062B8827F9002BDE42 /* Scanner.swift */; };
-		876A315F2B897EEB0085A350 /* Literal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A315E2B897EEB0085A350 /* Literal.swift */; };
-		876A31602B89827B0085A350 /* Literal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A315E2B897EEB0085A350 /* Literal.swift */; };
+		876A315F2B897EEB0085A350 /* LoxValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A315E2B897EEB0085A350 /* LoxValue.swift */; };
+		876A31602B89827B0085A350 /* LoxValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A315E2B897EEB0085A350 /* LoxValue.swift */; };
 		876A31622B8986630085A350 /* ScanError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A31612B8986630085A350 /* ScanError.swift */; };
 		876A31632B8987740085A350 /* ScanError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A31612B8986630085A350 /* ScanError.swift */; };
 		876A31652B8C04990085A350 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A31642B8C04990085A350 /* Expression.swift */; };
@@ -63,7 +63,7 @@
 		876560062B8827F9002BDE42 /* Scanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scanner.swift; sourceTree = "<group>"; };
 		876A31542B8979BD0085A350 /* sloxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = sloxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		876A31562B8979BD0085A350 /* ScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerTests.swift; sourceTree = "<group>"; };
-		876A315E2B897EEB0085A350 /* Literal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Literal.swift; sourceTree = "<group>"; };
+		876A315E2B897EEB0085A350 /* LoxValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxValue.swift; sourceTree = "<group>"; };
 		876A31612B8986630085A350 /* ScanError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanError.swift; sourceTree = "<group>"; };
 		876A31642B8C04990085A350 /* Expression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Expression.swift; sourceTree = "<group>"; };
 		876A31662B8C11810085A350 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
@@ -112,7 +112,7 @@
 				873CCB322B8ED8B900FC249A /* Environment.swift */,
 				876A31642B8C04990085A350 /* Expression.swift */,
 				873CCB202B8D5FAE00FC249A /* Interpreter.swift */,
-				876A315E2B897EEB0085A350 /* Literal.swift */,
+				876A315E2B897EEB0085A350 /* LoxValue.swift */,
 				873CCB242B8D765D00FC249A /* Lox.swift */,
 				876A31682B8C3AAB0085A350 /* ParseError.swift */,
 				876A31662B8C11810085A350 /* Parser.swift */,
@@ -227,7 +227,7 @@
 			files = (
 				876A31622B8986630085A350 /* ScanError.swift in Sources */,
 				876560052B8825AC002BDE42 /* Token.swift in Sources */,
-				876A315F2B897EEB0085A350 /* Literal.swift in Sources */,
+				876A315F2B897EEB0085A350 /* LoxValue.swift in Sources */,
 				873CCB302B8EAEC100FC249A /* Statement.swift in Sources */,
 				873CCB232B8D617C00FC249A /* RuntimeError.swift in Sources */,
 				873CCB212B8D5FAE00FC249A /* Interpreter.swift in Sources */,
@@ -252,7 +252,7 @@
 				873CCB342B8EE0FF00FC249A /* Environment.swift in Sources */,
 				876A315C2B897C000085A350 /* Token.swift in Sources */,
 				876A31572B8979BD0085A350 /* ScannerTests.swift in Sources */,
-				876A31602B89827B0085A350 /* Literal.swift in Sources */,
+				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
 				873CCB312B8EBB7800FC249A /* Statement.swift in Sources */,
 				873CCB282B8E7B6300FC249A /* Parser.swift in Sources */,
 				873CCB272B8E7AD100FC249A /* ParserTests.swift in Sources */,

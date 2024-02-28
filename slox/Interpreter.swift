@@ -14,8 +14,8 @@ struct Interpreter {
         }
     }
 
-    mutating func interpretRepl(statements: [Statement]) throws -> Literal? {
-        var result: Literal? = nil
+    mutating func interpretRepl(statements: [Statement]) throws -> LoxValue? {
+        var result: LoxValue? = nil
 
         for (i, statement) in statements.enumerated() {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
@@ -48,7 +48,7 @@ struct Interpreter {
     }
 
     private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
-        var value: Literal = .nil
+        var value: LoxValue = .nil
         if let expr = expr {
             value = try evaluate(expr: expr)
         }
@@ -67,7 +67,7 @@ struct Interpreter {
         self.environment = environmentBeforeBlock
     }
 
-    private func evaluate(expr: Expression) throws -> Literal {
+    private func evaluate(expr: Expression) throws -> LoxValue {
         switch expr {
         case .literal(let literal):
             return literal
@@ -84,7 +84,7 @@ struct Interpreter {
         }
     }
 
-    private func handleUnaryExpression(oper: Token, expr: Expression) throws -> Literal {
+    private func handleUnaryExpression(oper: Token, expr: Expression) throws -> LoxValue {
         let value = try evaluate(expr: expr)
 
         switch oper.type {
@@ -103,7 +103,7 @@ struct Interpreter {
 
     private func handleBinaryExpression(leftExpr: Expression,
                                         oper: Token,
-                                        rightExpr: Expression) throws -> Literal {
+                                        rightExpr: Expression) throws -> LoxValue {
         let leftValue = try evaluate(expr: leftExpr)
         let rightValue = try evaluate(expr: rightExpr)
 
@@ -151,13 +151,13 @@ struct Interpreter {
         }
     }
 
-    func handleAssignmentExpression(name: Token, expr: Expression) throws -> Literal {
+    func handleAssignmentExpression(name: Token, expr: Expression) throws -> LoxValue {
         let value = try evaluate(expr: expr)
         try environment.assign(name: name.lexeme, value: value)
         return value
     }
 
-    private func isEqual(leftValue: Literal, rightValue: Literal) -> Bool {
+    private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
         switch (leftValue, rightValue) {
         case (.nil, .nil):
             return true
@@ -173,7 +173,7 @@ struct Interpreter {
     }
 
     // In Lox, `false` and `nil` are false; everything else is true
-    private func isTruthy(value: Literal) -> Bool {
+    private func isTruthy(value: LoxValue) -> Bool {
         switch value {
         case .nil:
             return false

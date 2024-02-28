@@ -7,15 +7,6 @@
 
 import Foundation
 
-//struct ParseError: CustomStringConvertible, LocalizedError {
-//    var token: Token
-//    var message: String
-//
-//    var description: String {
-//        return "[Line \(token.line)] Error: \(message)"
-//    }
-//}
-
 enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingClosingParenthesis(Token)
     case expectedPrimaryExpression(Token)
