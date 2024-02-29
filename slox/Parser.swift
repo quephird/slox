@@ -36,13 +36,17 @@ struct Parser {
     //                   | statement ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
     //    statement      → exprStmt
+    //                   | forStmt
     //                   | ifStmt
     //                   | printStmt
     //                   | whileStmt
     //                   | block ;
     //    exprStmt       → expression ";" ;
+    //    forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+    //                     expression? ";"
+    //                     expression? ")" statement ;
     //    ifStmt         → "if" "(" expression ")" statement
-    //                   ( "else" statement )? ;
+    //                     ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
@@ -74,6 +78,10 @@ struct Parser {
     }
 
     mutating func parseStatement() throws -> Statement {
+        if matchesAny(types: [.for]) {
+            return try parseForStatement()
+        }
+
         if matchesAny(types: [.if]) {
             return try parseIfStatement()
         }
@@ -92,6 +100,57 @@ struct Parser {
         }
 
         return try parseExpressionStatement()
+    }
+
+    mutating func parseForStatement() throws -> Statement {
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForForStatement(currentToken)
+        }
+
+        var initializerStmt: Statement?
+        if matchesAny(types: [.semicolon]) {
+            initializerStmt = nil
+        } else if matchesAny(types: [.var]) {
+            initializerStmt = try parseVariableDeclaration()
+        } else {
+            initializerStmt = try parseExpressionStatement()
+        }
+
+        var conditionExpr: Expression? = nil
+        if !matches(type: .semicolon) {
+            conditionExpr = try parseExpression()
+        }
+        if !matchesAny(types: [.semicolon]) {
+            throw ParseError.missingSemicolonAfterForLoopCondition(currentToken)
+        }
+
+        var incrementExpr: Expression? = nil
+        if !matches(type: .rightParen) {
+            incrementExpr = try parseExpression()
+        }
+        if !matchesAny(types: [.rightParen]) {
+            throw ParseError.missingCloseParenForForStatement(currentToken)
+        }
+
+        var forStmt = try parseStatement()
+
+        // Here is where we do desugaring, rewriting a for statement
+        // in terms of a while statement.
+        if let incrementExpr {
+            forStmt = .block([forStmt, .expression(incrementExpr)])
+        }
+
+        if let conditionExpr {
+            forStmt = .while(conditionExpr, forStmt)
+        } else {
+            forStmt = .while(.literal(.boolean(true)), forStmt)
+        }
+
+        if let initializerStmt {
+            forStmt = .block([initializerStmt, forStmt])
+        }
+
+        return forStmt
     }
 
     mutating func parseIfStatement() throws -> Statement {

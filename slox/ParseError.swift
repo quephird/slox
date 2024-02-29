@@ -18,6 +18,9 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingCloseParenForIfStatement(Token)
     case missingOpenParenForWhileStatement(Token)
     case missingCloseParenForWhileStatement(Token)
+    case missingOpenParenForForStatement(Token)
+    case missingCloseParenForForStatement(Token)
+    case missingSemicolonAfterForLoopCondition(Token)
 
     var description: String {
         switch self {
@@ -41,6 +44,12 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected left parenthesis after `while`"
         case .missingCloseParenForWhileStatement(let token):
             return "[Line \(token.line)] Error: expected right parenthesis after `while` condition"
+        case .missingOpenParenForForStatement(let token):
+            return "[Line \(token.line)] Error: expected left parenthesis after `for`"
+        case .missingCloseParenForForStatement(let token):
+            return "[Line \(token.line)] Error: expected right parenthesis after `for` clauses"
+        case .missingSemicolonAfterForLoopCondition(let token):
+            return "[Line \(token.line)] Error: expected semicolon after `for` loop condition"
         }
     }
 }
