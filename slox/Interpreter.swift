@@ -149,7 +149,7 @@ struct Interpreter {
             case .less:
                 return .boolean(leftNumber < rightNumber)
             case .lessEqual:
-                return .boolean(leftNumber >= rightNumber)
+                return .boolean(leftNumber <= rightNumber)
             default:
                 break
             }

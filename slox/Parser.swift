@@ -94,25 +94,24 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
-    // TODO: See if we can unnest this code
     mutating func parseIfStatement() throws -> Statement {
-        if matchesAny(types: [.leftParen]) {
-            let testExpr = try parseExpression()
-            if matchesAny(types: [.rightParen]) {
-                let consequentStmt = try parseStatement()
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForIfStatement(currentToken)
+        }
 
-                var alternativeStmt: Statement? = nil
-                if matchesAny(types: [.else]) {
-                    alternativeStmt = try parseStatement()
-                }
-
-                return .if(testExpr, consequentStmt, alternativeStmt)
-            }
-
+        let testExpr = try parseExpression()
+        if !matchesAny(types: [.rightParen]) {
             throw ParseError.missingCloseParenForIfStatement(currentToken)
         }
 
-        throw ParseError.missingOpenParenForIfStatement(currentToken)
+        let consequentStmt = try parseStatement()
+
+        var alternativeStmt: Statement? = nil
+        if matchesAny(types: [.else]) {
+            alternativeStmt = try parseStatement()
+        }
+
+        return .if(testExpr, consequentStmt, alternativeStmt)
     }
 
     mutating func parsePrintStatement() throws -> Statement {
@@ -124,20 +123,18 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    // TODO: Unnest this too
     mutating func parseWhileStatement() throws -> Statement {
-        if matchesAny(types: [.leftParen]) {
-            let expr = try parseExpression()
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForWhileStatement(currentToken)
+        }
 
-            if matchesAny(types: [.rightParen]) {
-                let stmt = try parseStatement()
-                return .while(expr, stmt)
-            }
-
+        let expr = try parseExpression()
+        if !matchesAny(types: [.rightParen]) {
             throw ParseError.missingCloseParenForWhileStatement(currentToken)
         }
 
-        throw ParseError.missingOpenParenForWhileStatement(currentToken)
+        let stmt = try parseStatement()
+        return .while(expr, stmt)
     }
 
     mutating func parseBlock() throws -> [Statement] {

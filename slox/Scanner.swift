@@ -81,13 +81,13 @@ struct Scanner {
 
         // Lexemes that can be one or two characters
         case "!":
-            handleOneOrTwoCharacterLexeme(testChar: "=", oneCharLexeme: .bang, twoCharLexeme: .bangEqual)
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .bang, twoCharLexeme: .bangEqual)
         case "=":
-            handleOneOrTwoCharacterLexeme(testChar: "=", oneCharLexeme: .equal, twoCharLexeme: .equalEqual)
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .equal, twoCharLexeme: .equalEqual)
         case "<":
-            handleOneOrTwoCharacterLexeme(testChar: "=", oneCharLexeme: .less, twoCharLexeme: .lessEqual)
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .less, twoCharLexeme: .lessEqual)
         case ">":
-            handleOneOrTwoCharacterLexeme(testChar: "=", oneCharLexeme: .greater, twoCharLexeme: .greaterEqual)
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .greater, twoCharLexeme: .greaterEqual)
 
         // Whitespace
         case " ", "\r", "\t":
@@ -127,8 +127,8 @@ struct Scanner {
         }
     }
 
-    mutating private func handleOneOrTwoCharacterLexeme(testChar: Character, oneCharLexeme: TokenType, twoCharLexeme: TokenType) {
-        if nextIndex < source.endIndex, source[nextIndex] == testChar {
+    mutating private func handleOneOrTwoCharacterLexeme(oneCharLexeme: TokenType, twoCharLexeme: TokenType) {
+        if nextIndex < source.endIndex, source[nextIndex] == "=" {
             advanceCursor()
             addToken(type: twoCharLexeme)
         } else {
