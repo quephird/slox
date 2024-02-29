@@ -11,4 +11,5 @@ indirect enum Statement: Equatable {
     case print(Expression)
     case variableDeclaration(Token, Expression?)
     case block([Statement])
+    case `while`(Expression, Statement)
 }

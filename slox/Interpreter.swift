@@ -43,6 +43,8 @@ struct Interpreter {
         case .block(let statements):
             try handleBlock(statements: statements,
                             environment: Environment(enclosingEnvironment: environment))
+        case .while(let expr, let stmt):
+            try handleWhileStatement(expr: expr, stmt: stmt)
         }
     }
 
@@ -79,6 +81,12 @@ struct Interpreter {
         }
 
         self.environment = environmentBeforeBlock
+    }
+
+    mutating private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
+        while isTruthy(value: try evaluate(expr: expr)) {
+            try execute(statement: stmt)
+        }
     }
 
     private func evaluate(expr: Expression) throws -> LoxValue {

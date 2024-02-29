@@ -16,6 +16,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingClosingBrace(Token)
     case missingOpenParenForIfStatement(Token)
     case missingCloseParenForIfStatement(Token)
+    case missingOpenParenForWhileStatement(Token)
+    case missingCloseParenForWhileStatement(Token)
 
     var description: String {
         switch self {
@@ -35,6 +37,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected left parenthesis after `if`"
         case .missingCloseParenForIfStatement(let token):
             return "[Line \(token.line)] Error: expected right parenthesis after `if` condition"
+        case .missingOpenParenForWhileStatement(let token):
+            return "[Line \(token.line)] Error: expected left parenthesis after `while`"
+        case .missingCloseParenForWhileStatement(let token):
+            return "[Line \(token.line)] Error: expected right parenthesis after `while` condition"
         }
     }
 }

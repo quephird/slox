@@ -38,11 +38,13 @@ struct Parser {
     //    statement      → exprStmt
     //                   | ifStmt
     //                   | printStmt
+    //                   | whileStmt
     //                   | block ;
     //    exprStmt       → expression ";" ;
     //    ifStmt         → "if" "(" expression ")" statement
     //                   ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
+    //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating func parseDeclaration() throws -> Statement {
         if matchesAny(types: [.var]) {
@@ -80,6 +82,10 @@ struct Parser {
             return try parsePrintStatement()
         }
 
+        if matchesAny(types: [.while]) {
+            return try parseWhileStatement()
+        }
+
         if matchesAny(types: [.leftBrace]) {
             let statements = try parseBlock()
             return .block(statements)
@@ -88,6 +94,7 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
+    // TODO: See if we can unnest this code
     mutating func parseIfStatement() throws -> Statement {
         if matchesAny(types: [.leftParen]) {
             let testExpr = try parseExpression()
@@ -117,18 +124,20 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    mutating func parseExpressionStatement() throws -> Statement {
-        let expr = try parseExpression()
+    // TODO: Unnest this too
+    mutating func parseWhileStatement() throws -> Statement {
+        if matchesAny(types: [.leftParen]) {
+            let expr = try parseExpression()
 
-        // NOTA BENE: If the expression is the last thing to be parsed,
-        // then we want to return that immediately so it can be evaluated
-        // and whose result can be printed in the REPL, and without burdening
-        // the user to add a semicolon at the end.
-        if currentToken.type == .eof || matchesAny(types: [.semicolon]) {
-            return .expression(expr)
+            if matchesAny(types: [.rightParen]) {
+                let stmt = try parseStatement()
+                return .while(expr, stmt)
+            }
+
+            throw ParseError.missingCloseParenForWhileStatement(currentToken)
         }
 
-        throw ParseError.missingSemicolon(currentToken)
+        throw ParseError.missingOpenParenForWhileStatement(currentToken)
     }
 
     mutating func parseBlock() throws -> [Statement] {
@@ -144,6 +153,20 @@ struct Parser {
         }
 
         throw ParseError.missingClosingBrace(previousToken)
+    }
+
+    mutating func parseExpressionStatement() throws -> Statement {
+        let expr = try parseExpression()
+
+        // NOTA BENE: If the expression is the last thing to be parsed,
+        // then we want to return that immediately so it can be evaluated
+        // and whose result can be printed in the REPL, and without burdening
+        // the user to add a semicolon at the end.
+        if currentToken.type == .eof || matchesAny(types: [.semicolon]) {
+            return .expression(expr)
+        }
+
+        throw ParseError.missingSemicolon(currentToken)
     }
 
     // The parsing strategy below follows these rules of precedence
