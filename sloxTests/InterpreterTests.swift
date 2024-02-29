@@ -129,4 +129,73 @@ final class InterpreterTests: XCTestCase {
         let expected: LoxValue = .number(-14)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretLogicalExpression() throws {
+        let stmt: Statement =
+            .expression(
+                .logical(
+                    .logical(
+                        .literal(.boolean(true)),
+                        Token(type: .and, lexeme: "and", line: 1),
+                        .literal(.boolean(false))),
+                    Token(type: .or, lexeme: "or", line: 1),
+                    .literal(.boolean(true))))
+        var interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: [stmt])
+        let expected: LoxValue = .boolean(true)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretComparisonExpression() throws {
+        let stmt: Statement =
+            .expression(
+                .binary(
+                    .literal(.number(10)),
+                    Token(type: .less, lexeme: "<", line: 1),
+                    .literal(.number(20))))
+
+        var interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: [stmt])
+        let expected: LoxValue = .boolean(true)
+        XCTAssertEqual(actual, expected)
+    }
+
+    //    printStmt      → "print" expression ";" ;
+    //    forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+    //    ifStmt         → "if" "(" expression ")" statement
+    //    whileStmt      → "while" "(" expression ")" statement ;
+    //    block          → "{" declaration* "}" ;
+    func testInterpretVariableDeclaration() throws {
+        let stmt: Statement =
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "theAnswer", line: 1),
+                .literal(.number(42)))
+
+        var interpreter = Interpreter()
+        let _ = try interpreter.interpretRepl(statements: [stmt])
+        let environment = interpreter.environment
+        let actual = try environment.getValue(name: "theAnswer")
+        let expected: LoxValue = .number(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretCompoundStatementInvolvingAVariable() throws {
+        let statements: [Statement] = [
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "theAnswer", line: 1),
+                .literal(.nil)),
+            .expression(
+                .assignment(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 1),
+                    .literal(.number(42)))),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 1)))
+        ]
+
+        var interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(42)
+        XCTAssertEqual(actual, expected)
+    }
 }

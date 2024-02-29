@@ -6,7 +6,7 @@
 //
 
 struct Interpreter {
-    private var environment: Environment = Environment()
+    var environment: Environment = Environment()
 
     mutating func interpret(statements: [Statement]) throws {
         for statement in statements {
