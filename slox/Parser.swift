@@ -36,10 +36,19 @@ struct Parser {
     //                   | statement ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
     //    statement      → exprStmt
+    //                   | forStmt
+    //                   | ifStmt
     //                   | printStmt
+    //                   | whileStmt
     //                   | block ;
     //    exprStmt       → expression ";" ;
+    //    forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+    //                     expression? ";"
+    //                     expression? ")" statement ;
+    //    ifStmt         → "if" "(" expression ")" statement
+    //                     ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
+    //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating func parseDeclaration() throws -> Statement {
         if matchesAny(types: [.var]) {
@@ -69,8 +78,20 @@ struct Parser {
     }
 
     mutating func parseStatement() throws -> Statement {
+        if matchesAny(types: [.for]) {
+            return try parseForStatement()
+        }
+
+        if matchesAny(types: [.if]) {
+            return try parseIfStatement()
+        }
+
         if matchesAny(types: [.print]) {
             return try parsePrintStatement()
+        }
+
+        if matchesAny(types: [.while]) {
+            return try parseWhileStatement()
         }
 
         if matchesAny(types: [.leftBrace]) {
@@ -79,6 +100,77 @@ struct Parser {
         }
 
         return try parseExpressionStatement()
+    }
+
+    mutating func parseForStatement() throws -> Statement {
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForForStatement(currentToken)
+        }
+
+        var initializerStmt: Statement?
+        if matchesAny(types: [.semicolon]) {
+            initializerStmt = nil
+        } else if matchesAny(types: [.var]) {
+            initializerStmt = try parseVariableDeclaration()
+        } else {
+            initializerStmt = try parseExpressionStatement()
+        }
+
+        var conditionExpr: Expression? = nil
+        if !matches(type: .semicolon) {
+            conditionExpr = try parseExpression()
+        }
+        if !matchesAny(types: [.semicolon]) {
+            throw ParseError.missingSemicolonAfterForLoopCondition(currentToken)
+        }
+
+        var incrementExpr: Expression? = nil
+        if !matches(type: .rightParen) {
+            incrementExpr = try parseExpression()
+        }
+        if !matchesAny(types: [.rightParen]) {
+            throw ParseError.missingCloseParenForForStatement(currentToken)
+        }
+
+        var forStmt = try parseStatement()
+
+        // Here is where we do desugaring, rewriting a for statement
+        // in terms of a while statement.
+        if let incrementExpr {
+            forStmt = .block([forStmt, .expression(incrementExpr)])
+        }
+
+        if let conditionExpr {
+            forStmt = .while(conditionExpr, forStmt)
+        } else {
+            forStmt = .while(.literal(.boolean(true)), forStmt)
+        }
+
+        if let initializerStmt {
+            forStmt = .block([initializerStmt, forStmt])
+        }
+
+        return forStmt
+    }
+
+    mutating func parseIfStatement() throws -> Statement {
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForIfStatement(currentToken)
+        }
+
+        let testExpr = try parseExpression()
+        if !matchesAny(types: [.rightParen]) {
+            throw ParseError.missingCloseParenForIfStatement(currentToken)
+        }
+
+        let consequentStmt = try parseStatement()
+
+        var alternativeStmt: Statement? = nil
+        if matchesAny(types: [.else]) {
+            alternativeStmt = try parseStatement()
+        }
+
+        return .if(testExpr, consequentStmt, alternativeStmt)
     }
 
     mutating func parsePrintStatement() throws -> Statement {
@@ -90,18 +182,18 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    mutating func parseExpressionStatement() throws -> Statement {
-        let expr = try parseExpression()
-
-        // NOTA BENE: If the expression is the last thing to be parsed,
-        // then we want to return that immediately so it can be evaluated
-        // and whose result can be printed in the REPL, and without burdening
-        // the user to add a semicolon at the end.
-        if currentToken.type == .eof || matchesAny(types: [.semicolon]) {
-            return .expression(expr)
+    mutating func parseWhileStatement() throws -> Statement {
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForWhileStatement(currentToken)
         }
 
-        throw ParseError.missingSemicolon(currentToken)
+        let expr = try parseExpression()
+        if !matchesAny(types: [.rightParen]) {
+            throw ParseError.missingCloseParenForWhileStatement(currentToken)
+        }
+
+        let stmt = try parseStatement()
+        return .while(expr, stmt)
     }
 
     mutating func parseBlock() throws -> [Statement] {
@@ -119,12 +211,28 @@ struct Parser {
         throw ParseError.missingClosingBrace(previousToken)
     }
 
+    mutating func parseExpressionStatement() throws -> Statement {
+        let expr = try parseExpression()
+
+        // NOTA BENE: If the expression is the last thing to be parsed,
+        // then we want to return that immediately so it can be evaluated
+        // and whose result can be printed in the REPL, and without burdening
+        // the user to add a semicolon at the end.
+        if currentToken.type == .eof || matchesAny(types: [.semicolon]) {
+            return .expression(expr)
+        }
+
+        throw ParseError.missingSemicolon(currentToken)
+    }
+
     // The parsing strategy below follows these rules of precedence
     // in _ascending_ order:
     //
     //    expression     → assignment ;
     //    assignment     → IDENTIFIER "=" assignment
-    //                   | equality ;
+    //                   | logicOr ;
+    //    logicOr        → logicAnd ( "or" logicAnd )* ;
+    //    logicAnd       → equality ( "and" equality )* ;
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     //    term           → factor ( ( "-" | "+" ) factor )* ;
@@ -140,7 +248,7 @@ struct Parser {
     }
 
     mutating private func parseAssignment() throws -> Expression {
-        let expr = try parseEquality()
+        let expr = try parseLogicOr()
 
         if matchesAny(types: [.equal]) {
             let equalToken = previousToken
@@ -151,6 +259,30 @@ struct Parser {
             }
 
             throw ParseError.invalidAssignmentTarget(equalToken)
+        }
+
+        return expr
+    }
+
+    mutating private func parseLogicOr() throws -> Expression {
+        var expr = try parseLogicAnd()
+
+        while matchesAny(types: [.or]) {
+            let oper = previousToken
+            let right = try parseLogicAnd()
+            expr = .logical(expr, oper, right)
+        }
+
+        return expr
+    }
+
+    mutating private func parseLogicAnd() throws -> Expression {
+        var expr = try parseEquality()
+
+        while matchesAny(types: [.and]) {
+            let oper = previousToken
+            let right = try parseEquality()
+            expr = .logical(expr, oper, right)
         }
 
         return expr
