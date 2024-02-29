@@ -14,6 +14,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingVariableName(Token)
     case invalidAssignmentTarget(Token)
     case missingClosingBrace(Token)
+    case missingOpenParenForIfStatement(Token)
+    case missingCloseParenForIfStatement(Token)
 
     var description: String {
         switch self {
@@ -29,6 +31,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: invalid assignment target"
         case .missingClosingBrace(let token):
             return "[Line \(token.line)] Error: expected closing brace after block"
+        case .missingOpenParenForIfStatement(let token):
+            return "[Line \(token.line)] Error: expected left parenthesis after `if`"
+        case .missingCloseParenForIfStatement(let token):
+            return "[Line \(token.line)] Error: expected right parenthesis after `if` condition"
         }
     }
 }

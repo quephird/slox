@@ -32,6 +32,10 @@ struct Interpreter {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
+        case .if(let testExpr, let consequentStmt, let alternativeStmt):
+            try handleIfStatement(testExpr: testExpr,
+                                  consequentStmt: consequentStmt,
+                                  alternativeStmt: alternativeStmt)
         case .print(let expr):
             try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
@@ -39,6 +43,16 @@ struct Interpreter {
         case .block(let statements):
             try handleBlock(statements: statements,
                             environment: Environment(enclosingEnvironment: environment))
+        }
+    }
+
+    mutating private func handleIfStatement(testExpr: Expression,
+                                   consequentStmt: Statement,
+                                   alternativeStmt: Statement?) throws {
+        if isTruthy(value: try evaluate(expr: testExpr)) {
+            try execute(statement: consequentStmt)
+        } else if let alternativeStmt {
+            try execute(statement: alternativeStmt)
         }
     }
 

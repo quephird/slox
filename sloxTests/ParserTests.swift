@@ -276,6 +276,93 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseIfStatement() throws {
+        // if (true)
+        //     print "Hello!"
+        //
+        let tokens: [Token] = [
+            Token(type: .if, lexeme: "if", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .string, lexeme: "\"Hello!\"", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .eof, lexeme: "", line: 2),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .if(
+                .literal(.boolean(true)),
+                .print(.literal(.string("Hello!"))),
+                nil)
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseIfStatementWithAlternative() throws {
+        // if (true)
+        //     print "Hello!"
+        // else
+        //     print "Goodbye"
+        //
+        let tokens: [Token] = [
+            Token(type: .if, lexeme: "if", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .string, lexeme: "\"Hello!\"", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .else, lexeme: "else", line: 3),
+
+            Token(type: .print, lexeme: "print", line: 4),
+            Token(type: .string, lexeme: "\"Goodbye\"", line: 4),
+            Token(type: .semicolon, lexeme: ";", line: 4),
+
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .if(
+                .literal(.boolean(true)),
+                .print(.literal(.string("Hello!"))),
+                .print(.literal(.string("Goodbye"))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseInvalidIfStatement() throws {
+        // if true
+        //     print "Hello!"
+        //
+        let tokens: [Token] = [
+            Token(type: .if, lexeme: "if", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .string, lexeme: "\"Hello!\"", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .eof, lexeme: "", line: 2),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let lastToken = Token(type: .true, lexeme: "true", line: 1)
+        let expectedError = ParseError.missingOpenParenForIfStatement(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
     func testParsePrintStatement() throws {
         let tokens: [Token] = [
             Token(type: .print, lexeme: "print", line: 1),

@@ -36,9 +36,12 @@ struct Parser {
     //                   | statement ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
     //    statement      → exprStmt
+    //                   | ifStmt
     //                   | printStmt
     //                   | block ;
     //    exprStmt       → expression ";" ;
+    //    ifStmt         → "if" "(" expression ")" statement
+    //                   ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
     //    block          → "{" declaration* "}" ;
     mutating func parseDeclaration() throws -> Statement {
@@ -69,6 +72,10 @@ struct Parser {
     }
 
     mutating func parseStatement() throws -> Statement {
+        if matchesAny(types: [.if]) {
+            return try parseIfStatement()
+        }
+
         if matchesAny(types: [.print]) {
             return try parsePrintStatement()
         }
@@ -79,6 +86,26 @@ struct Parser {
         }
 
         return try parseExpressionStatement()
+    }
+
+    mutating func parseIfStatement() throws -> Statement {
+        if matchesAny(types: [.leftParen]) {
+            let testExpr = try parseExpression()
+            if matchesAny(types: [.rightParen]) {
+                let consequentStmt = try parseStatement()
+
+                var alternativeStmt: Statement? = nil
+                if matchesAny(types: [.else]) {
+                    alternativeStmt = try parseStatement()
+                }
+
+                return .if(testExpr, consequentStmt, alternativeStmt)
+            }
+
+            throw ParseError.missingCloseParenForIfStatement(currentToken)
+        }
+
+        throw ParseError.missingOpenParenForIfStatement(currentToken)
     }
 
     mutating func parsePrintStatement() throws -> Statement {
