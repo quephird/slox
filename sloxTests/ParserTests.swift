@@ -337,6 +337,131 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseTypicalForStatement() throws {
+        // for (var i = 0; i < 5; i = i + 1)
+        //     print i;
+        //
+        let tokens: [Token] = [
+            Token(type: .for, lexeme: "for", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+
+            Token(type: .var, lexeme: "var", line: 1),
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .equal, lexeme: "=", line: 1),
+            Token(type: .number, lexeme: "0", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .less, lexeme: "<", line: 1),
+            Token(type: .number, lexeme: "5", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .equal, lexeme: "=", line: 1),
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .identifier, lexeme: "i", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .eof, lexeme: "", line: 2),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .block([
+                .variableDeclaration(
+                    Token(type: .identifier, lexeme: "i", line: 1),
+                    .literal(.number(0))),
+                .while(
+                    .binary(
+                        .variable(Token(type: .identifier, lexeme: "i", line: 1)),
+                        Token(type: .less, lexeme: "<", line: 1),
+                        .literal(.number(5))),
+                    .block([
+                        .print(
+                            .variable(Token(type: .identifier, lexeme: "i", line: 2))),
+                        .expression(
+                            .assignment(
+                                Token(type: .identifier, lexeme: "i", line: 1),
+                                .binary(
+                                    .variable(Token(type: .identifier, lexeme: "i", line: 1)),
+                                    Token(type: .plus, lexeme: "+", line: 1),
+                                    .literal(.number(1))))),
+                    ]))
+            ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseInfiniteForStatement() throws {
+        // for (;;)
+        //     print i;
+        //
+        let tokens: [Token] = [
+            Token(type: .for, lexeme: "for", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .identifier, lexeme: "i", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+            Token(type: .eof, lexeme: "", line: 2),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .while(
+                .literal(.boolean(true)),
+                .print(
+                    .variable(Token(type: .identifier, lexeme: "i", line: 2))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseInvalidForStatement() throws {
+        let tokens: [Token] = [
+            Token(type: .for, lexeme: "for", line: 1),
+
+            Token(type: .var, lexeme: "var", line: 1),
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .equal, lexeme: "=", line: 1),
+            Token(type: .number, lexeme: "0", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .less, lexeme: "<", line: 1),
+            Token(type: .number, lexeme: "5", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .equal, lexeme: "=", line: 1),
+            Token(type: .identifier, lexeme: "i", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .number, lexeme: "1", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .identifier, lexeme: "i", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .eof, lexeme: "", line: 2),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let lastToken = Token(type: .var, lexeme: "var", line: 1)
+        let expectedError = ParseError.missingOpenParenForForStatement(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
     func testParseIfStatement() throws {
         // if (true)
         //     print "Hello!"
