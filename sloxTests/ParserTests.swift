@@ -221,6 +221,67 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseOrExpression() throws {
+        let tokens: [Token] = [
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .or, lexeme: "or", line: 1),
+            Token(type: .false, lexeme: "false", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .logical(.literal(.boolean(true)),
+                         Token(type: .or, lexeme: "or", line: 1),
+                         .literal(.boolean(false))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseAndExpression() throws {
+        let tokens: [Token] = [
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .and, lexeme: "and", line: 1),
+            Token(type: .false, lexeme: "false", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .logical(.literal(.boolean(true)),
+                         Token(type: .and, lexeme: "and", line: 1),
+                         .literal(.boolean(false))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseMixedLogicalExpression() throws {
+        let tokens: [Token] = [
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .and, lexeme: "and", line: 1),
+            Token(type: .false, lexeme: "false", line: 1),
+            Token(type: .or, lexeme: "or", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .logical(.logical(.literal(.boolean(true)),
+                                  Token(type: .and, lexeme: "and", line: 1),
+                                  .literal(.boolean(false))),
+                         Token(type: .or, lexeme: "or", line: 1),
+                         .literal(.boolean(true))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
     func testParseAssignmentExpression() throws {
         let tokens: [Token] = [
             Token(type: .identifier, lexeme: "theAnswer", line: 1),

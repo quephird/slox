@@ -151,7 +151,9 @@ struct Parser {
     //
     //    expression     → assignment ;
     //    assignment     → IDENTIFIER "=" assignment
-    //                   | equality ;
+    //                   | logicOr ;
+    //    logicOr        → logicAnd ( "or" logicAnd )* ;
+    //    logicAnd       → equality ( "and" equality )* ;
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     //    term           → factor ( ( "-" | "+" ) factor )* ;
@@ -167,7 +169,7 @@ struct Parser {
     }
 
     mutating private func parseAssignment() throws -> Expression {
-        let expr = try parseEquality()
+        let expr = try parseLogicOr()
 
         if matchesAny(types: [.equal]) {
             let equalToken = previousToken
@@ -178,6 +180,30 @@ struct Parser {
             }
 
             throw ParseError.invalidAssignmentTarget(equalToken)
+        }
+
+        return expr
+    }
+
+    mutating private func parseLogicOr() throws -> Expression {
+        var expr = try parseLogicAnd()
+
+        while matchesAny(types: [.or]) {
+            let oper = previousToken
+            let right = try parseLogicAnd()
+            expr = .logical(expr, oper, right)
+        }
+
+        return expr
+    }
+
+    mutating private func parseLogicAnd() throws -> Expression {
+        var expr = try parseEquality()
+
+        while matchesAny(types: [.and]) {
+            let oper = previousToken
+            let right = try parseEquality()
+            expr = .logical(expr, oper, right)
         }
 
         return expr

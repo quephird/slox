@@ -95,6 +95,8 @@ struct Interpreter {
             return try environment.getValue(name: varToken.lexeme)
         case .assignment(let varToken, let valueExpr):
             return try handleAssignmentExpression(name: varToken, expr: valueExpr)
+        case .logical(let leftExpr, let oper, let rightExpr):
+            return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         }
     }
 
@@ -169,6 +171,26 @@ struct Interpreter {
         let value = try evaluate(expr: expr)
         try environment.assign(name: name.lexeme, value: value)
         return value
+    }
+
+    private func handleLogicalExpression(leftExpr: Expression,
+                                         oper: Token,
+                                         rightExpr: Expression) throws -> LoxValue {
+        let leftValue = try evaluate(expr: leftExpr)
+
+        if case .and = oper.type {
+            if !isTruthy(value: leftValue) {
+                return leftValue
+            } else {
+                return try evaluate(expr: rightExpr)
+            }
+        } else {
+            if isTruthy(value: leftValue) {
+                return leftValue
+            } else {
+                return try evaluate(expr: rightExpr)
+            }
+        }
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
