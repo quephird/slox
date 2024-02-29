@@ -603,4 +603,79 @@ final class ParserTests: XCTestCase {
             XCTAssertEqual(actualError as! ParseError, expectedError)
         }
     }
+
+    func testParseWhileStatement() throws {
+        // while (x <= 5) {
+        //     print x;
+        //     x = x + 1;
+        // }
+        //
+        let tokens: [Token] = [
+            Token(type: .while, lexeme: "while", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "x", line: 1),
+            Token(type: .lessEqual, lexeme: "<=", line: 1),
+            Token(type: .number, lexeme: "5", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .identifier, lexeme: "x", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .identifier, lexeme: "x", line: 3),
+            Token(type: .equal, lexeme: "=", line: 3),
+            Token(type: .identifier, lexeme: "x", line: 3),
+            Token(type: .plus, lexeme: "+", line: 3),
+            Token(type: .number, lexeme: "1", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .while(
+                .binary(
+                    .variable(Token(type: .identifier, lexeme: "x", line: 1)),
+                    Token(type: .lessEqual, lexeme: "<=", line: 1),
+                    .literal(.number(5))),
+                .block([
+                    .print(.variable(Token(type: .identifier, lexeme: "x", line: 2))),
+                    .expression(
+                        .assignment(
+                            Token(type: .identifier, lexeme: "x", line: 3),
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "x", line: 3)),
+                                Token(type: .plus, lexeme: "+", line: 3),
+                                .literal(.number(1))))),
+                ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseInvalidWhileStatement() throws {
+        // while true
+        //     print x;
+        //
+        let tokens: [Token] = [
+            Token(type: .while, lexeme: "while", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .identifier, lexeme: "x", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .eof, lexeme: "", line: 2),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let lastToken = Token(type: .true, lexeme: "true", line: 1)
+        let expectedError = ParseError.missingOpenParenForWhileStatement(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
 }
