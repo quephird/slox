@@ -15,6 +15,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case unsupportedBinaryOperator
     case undefinedVariable(String)
     case notAFunction
+    case wrongArity(Int, Int)
 
     var description: String {
         switch self {
@@ -32,6 +33,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Undefined variable: \(name)"
         case .notAFunction:
             return "Can only call functions"
+        case .wrongArity(let expected, let actual):
+            return "Incorrect number of arguments: expected \(expected), got \(actual)"
         }
     }
 }

@@ -218,6 +218,10 @@ class Interpreter {
             throw RuntimeError.notAFunction
         }
 
+        guard args.count == actualFunction.arity() else {
+            throw RuntimeError.wrongArity(actualFunction.arity(), args.count)
+        }
+
         var argValues: [LoxValue] = []
         for arg in args {
             let argValue = try evaluate(expr: arg)
