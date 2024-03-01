@@ -1,5 +1,5 @@
 //
-//  Literal.swift
+//  LoxValue.swift
 //  slox
 //
 //  Created by Danielle Kefford on 2/23/24.

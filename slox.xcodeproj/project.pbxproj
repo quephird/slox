@@ -118,11 +118,11 @@
 		87655FFA2B88210A002BDE42 /* slox */ = {
 			isa = PBXGroup;
 			children = (
-				87BAFC482B9179CB0013E5FE /* LoxCallable.swift */,
 				873CCB322B8ED8B900FC249A /* Environment.swift */,
 				876A31642B8C04990085A350 /* Expression.swift */,
 				873CCB202B8D5FAE00FC249A /* Interpreter.swift */,
 				873CCB242B8D765D00FC249A /* Lox.swift */,
+				87BAFC482B9179CB0013E5FE /* LoxCallable.swift */,
 				87BAFC4A2B918C520013E5FE /* LoxFunction.swift */,
 				876A315E2B897EEB0085A350 /* LoxValue.swift */,
 				876A31682B8C3AAB0085A350 /* ParseError.swift */,

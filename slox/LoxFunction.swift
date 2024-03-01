@@ -10,7 +10,7 @@ struct LoxFunction: LoxCallable, Equatable {
     var params: [Token]
     var body: [Statement]
 
-    func arity() -> Int {
+    var arity: Int {
         return params.count
     }
 
