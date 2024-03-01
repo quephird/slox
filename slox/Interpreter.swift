@@ -5,16 +5,16 @@
 //  Created by Danielle Kefford on 2/26/24.
 //
 
-struct Interpreter {
+class Interpreter {
     var environment: Environment = Environment()
 
-    mutating func interpret(statements: [Statement]) throws {
+    func interpret(statements: [Statement]) throws {
         for statement in statements {
             try execute(statement: statement)
         }
     }
 
-    mutating func interpretRepl(statements: [Statement]) throws -> LoxValue? {
+    func interpretRepl(statements: [Statement]) throws -> LoxValue? {
         var result: LoxValue? = nil
 
         for (i, statement) in statements.enumerated() {
@@ -28,7 +28,7 @@ struct Interpreter {
         return result
     }
 
-    mutating private func execute(statement: Statement) throws {
+    private func execute(statement: Statement) throws {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
@@ -45,10 +45,12 @@ struct Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
+        case .function(let name, let params, let body):
+            try handleFunctionDeclaration(name: name, params: params, body: body)
         }
     }
 
-    mutating private func handleIfStatement(testExpr: Expression,
+    private func handleIfStatement(testExpr: Expression,
                                    consequentStmt: Statement,
                                    alternativeStmt: Statement?) throws {
         if isTruthy(value: try evaluate(expr: testExpr)) {
@@ -63,6 +65,10 @@ struct Interpreter {
         print(literal)
     }
 
+    private func handleFunctionDeclaration(name: Token, params: [Token], body: [Statement]) throws {
+        // TODO
+    }
+
     private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
         var value: LoxValue = .nil
         if let expr = expr {
@@ -72,7 +78,7 @@ struct Interpreter {
         environment.define(name: name.lexeme, value: value)
     }
 
-    mutating private func handleBlock(statements: [Statement], environment: Environment) throws {
+    func handleBlock(statements: [Statement], environment: Environment) throws {
         let environmentBeforeBlock = self.environment
 
         self.environment = environment
@@ -83,7 +89,7 @@ struct Interpreter {
         self.environment = environmentBeforeBlock
     }
 
-    mutating private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
+    private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
         while isTruthy(value: try evaluate(expr: expr)) {
             try execute(statement: stmt)
         }
@@ -105,6 +111,8 @@ struct Interpreter {
             return try handleAssignmentExpression(name: varToken, expr: valueExpr)
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
+        case .call(let callee, let rightParen, let args):
+            return try handleFunctionCallExpression(callee: callee, rightParen: rightParen, args: args)
         }
     }
 
@@ -175,7 +183,7 @@ struct Interpreter {
         }
     }
 
-    func handleAssignmentExpression(name: Token, expr: Expression) throws -> LoxValue {
+    private func handleAssignmentExpression(name: Token, expr: Expression) throws -> LoxValue {
         let value = try evaluate(expr: expr)
         try environment.assign(name: name.lexeme, value: value)
         return value
@@ -199,6 +207,18 @@ struct Interpreter {
                 return try evaluate(expr: rightExpr)
             }
         }
+    }
+
+    private func handleFunctionCallExpression(callee: Expression, rightParen: Token, args: [Expression]) throws -> LoxValue {
+        let function = try evaluate(expr: callee)
+
+        var argValues: [LoxValue] = []
+        for arg in args {
+            let argValue = try evaluate(expr: arg)
+            argValues.append(argValue)
+        }
+
+        return .number(42)
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {

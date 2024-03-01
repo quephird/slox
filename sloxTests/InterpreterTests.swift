@@ -10,7 +10,7 @@ import XCTest
 final class InterpreterTests: XCTestCase {
     func testInterpretStringLiteralExpression() throws {
         let stmt: Statement = .expression(.literal(.string("forty-two")))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
         let expected: LoxValue = .string("forty-two")
         XCTAssertEqual(actual, expected)
@@ -18,7 +18,7 @@ final class InterpreterTests: XCTestCase {
 
     func testInterpretNumericLiteralExpression() throws {
         let stmt: Statement = .expression(.literal(.number(42)))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
@@ -26,7 +26,7 @@ final class InterpreterTests: XCTestCase {
 
     func testInterpretGroupingExpression() throws {
         let stmt: Statement = .expression(.grouping(.literal(.number(42))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
@@ -38,7 +38,7 @@ final class InterpreterTests: XCTestCase {
                 .unary(
                     Token(type: .bang, lexeme: "!", line: 1),
                     .literal(.boolean(true))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])
         let expected: LoxValue = .boolean(false)
         XCTAssertEqual(actual, expected)
@@ -50,7 +50,7 @@ final class InterpreterTests: XCTestCase {
                 .unary(
                     Token(type: .minus, lexeme: "-", line: 1),
                     .literal(.string("forty-two"))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
 
         let expectedError = RuntimeError.unaryOperandMustBeNumber
         XCTAssertThrowsError(try interpreter.interpretRepl(statements: [stmt])!) { actualError in
@@ -65,7 +65,7 @@ final class InterpreterTests: XCTestCase {
                     .literal(.number(21)),
                     Token(type: .star, lexeme: "*", line: 1),
                     .literal(.number(2))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
@@ -78,7 +78,7 @@ final class InterpreterTests: XCTestCase {
                     .literal(.string("forty")),
                     Token(type: .plus, lexeme: "+", line: 1),
                     .literal(.string("-two"))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])
         let expected: LoxValue = .string("forty-two")
         XCTAssertEqual(actual, expected)
@@ -91,7 +91,7 @@ final class InterpreterTests: XCTestCase {
                     .literal(.boolean(true)),
                     Token(type: .bangEqual, lexeme: "!=", line: 1),
                     .literal(.boolean(false))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
         let expected: LoxValue = .boolean(true)
         XCTAssertEqual(actual, expected)
@@ -104,7 +104,7 @@ final class InterpreterTests: XCTestCase {
                     .literal(.string("twenty-one")),
                     Token(type: .star, lexeme: "*", line: 1),
                     .literal(.number(2))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
 
         let expectedError = RuntimeError.binaryOperandsMustBeNumbers
         XCTAssertThrowsError(try interpreter.interpretRepl(statements: [stmt])!) { actualError in
@@ -124,7 +124,7 @@ final class InterpreterTests: XCTestCase {
                         .literal(.number(3)),
                         Token(type: .plus, lexeme: "+", line: 1),
                         .literal(.number(4))))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])
         let expected: LoxValue = .number(-14)
         XCTAssertEqual(actual, expected)
@@ -140,7 +140,7 @@ final class InterpreterTests: XCTestCase {
                         .literal(.boolean(false))),
                     Token(type: .or, lexeme: "or", line: 1),
                     .literal(.boolean(true))))
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])
         let expected: LoxValue = .boolean(true)
         XCTAssertEqual(actual, expected)
@@ -154,7 +154,7 @@ final class InterpreterTests: XCTestCase {
                     Token(type: .less, lexeme: "<", line: 1),
                     .literal(.number(20))))
 
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])
         let expected: LoxValue = .boolean(true)
         XCTAssertEqual(actual, expected)
@@ -166,7 +166,7 @@ final class InterpreterTests: XCTestCase {
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
                 .literal(.number(42)))
 
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let _ = try interpreter.interpretRepl(statements: [stmt])
         let environment = interpreter.environment
         let actual = try environment.getValue(name: "theAnswer")
@@ -189,7 +189,7 @@ final class InterpreterTests: XCTestCase {
                     Token(type: .identifier, lexeme: "theAnswer", line: 1)))
         ]
 
-        var interpreter = Interpreter()
+        let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
@@ -217,7 +217,8 @@ final class InterpreterTests: XCTestCase {
                             Token(type: .plus, lexeme: "+", line: 3),
                             .literal(.number(1)))))),
         ]
-        var interpreter = Interpreter()
+
+        let interpreter = Interpreter()
         let _ = try interpreter.interpretRepl(statements: statements)
         let environment = interpreter.environment
         let actual = try environment.getValue(name: "i")
@@ -246,7 +247,8 @@ final class InterpreterTests: XCTestCase {
                         Token(type: .identifier, lexeme: "theAnswer", line: 3),
                         .literal(.number(0))))),
         ]
-        var interpreter = Interpreter()
+
+        let interpreter = Interpreter()
         let _ = try interpreter.interpretRepl(statements: statements)
         let environment = interpreter.environment
         let actual = try environment.getValue(name: "theAnswer")
@@ -273,7 +275,8 @@ final class InterpreterTests: XCTestCase {
                             .literal(.number(2))))),
             ])
         ]
-        var interpreter = Interpreter()
+
+        let interpreter = Interpreter()
         let _ = try interpreter.interpretRepl(statements: statements)
         let environment = interpreter.environment
         let actual = try environment.getValue(name: "theAnswer")
@@ -296,7 +299,8 @@ final class InterpreterTests: XCTestCase {
                     .literal(.string("forty-two"))),
             ])
         ]
-        var interpreter = Interpreter()
+
+        let interpreter = Interpreter()
         let _ = try interpreter.interpretRepl(statements: statements)
         let environment = interpreter.environment
         let actual = try environment.getValue(name: "theAnswer")
