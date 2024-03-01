@@ -66,7 +66,8 @@ class Interpreter {
     }
 
     private func handleFunctionDeclaration(name: Token, params: [Token], body: [Statement]) throws {
-        // TODO
+        let function = LoxFunction(name: name, params: params, body: body)
+        environment.define(name: name.lexeme, value: .function(function))
     }
 
     private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
@@ -111,8 +112,8 @@ class Interpreter {
             return try handleAssignmentExpression(name: varToken, expr: valueExpr)
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
-        case .call(let callee, let rightParen, let args):
-            return try handleFunctionCallExpression(callee: callee, rightParen: rightParen, args: args)
+        case .call(let calleeExpr, let rightParen, let args):
+            return try handleFunctionCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
         }
     }
 
@@ -209,8 +210,13 @@ class Interpreter {
         }
     }
 
-    private func handleFunctionCallExpression(callee: Expression, rightParen: Token, args: [Expression]) throws -> LoxValue {
-        let function = try evaluate(expr: callee)
+    private func handleFunctionCallExpression(calleeExpr: Expression,
+                                              rightParen: Token,
+                                              args: [Expression]) throws -> LoxValue {
+        let callee = try evaluate(expr: calleeExpr)
+        guard case .function(let actualFunction) = callee else {
+            throw RuntimeError.notAFunction
+        }
 
         var argValues: [LoxValue] = []
         for arg in args {
@@ -218,7 +224,9 @@ class Interpreter {
             argValues.append(argValue)
         }
 
-        return .number(42)
+        try actualFunction.call(interpreter: self, args: argValues)
+
+        return .nil
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
