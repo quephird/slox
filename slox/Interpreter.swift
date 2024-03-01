@@ -21,7 +21,11 @@ class Interpreter {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
                 result = try evaluate(expr: expr)
             } else {
-                try execute(statement: statement)
+                do {
+                    try execute(statement: statement)
+                } catch Return.return(let value) {
+                    result = value
+                }
             }
         }
 
@@ -47,6 +51,8 @@ class Interpreter {
             try handleWhileStatement(expr: expr, stmt: stmt)
         case .function(let name, let params, let body):
             try handleFunctionDeclaration(name: name, params: params, body: body)
+        case .return(let returnToken, let expr):
+            try handleReturnStatement(returnToken: returnToken, expr: expr)
         }
     }
 
@@ -68,6 +74,15 @@ class Interpreter {
     private func handleFunctionDeclaration(name: Token, params: [Token], body: [Statement]) throws {
         let function = LoxFunction(name: name, params: params, body: body)
         environment.define(name: name.lexeme, value: .function(function))
+    }
+
+    private func handleReturnStatement(returnToken: Token, expr: Expression?) throws {
+        var value: LoxValue = .nil
+        if let expr {
+            value = try evaluate(expr: expr)
+        }
+
+        throw Return.return(value)
     }
 
     private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
@@ -228,9 +243,7 @@ class Interpreter {
             argValues.append(argValue)
         }
 
-        try actualFunction.call(interpreter: self, args: argValues)
-
-        return .nil
+        return try actualFunction.call(interpreter: self, args: argValues)
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {

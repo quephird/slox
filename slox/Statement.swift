@@ -13,4 +13,5 @@ indirect enum Statement: Equatable {
     case block([Statement])
     case `while`(Expression, Statement)
     case function(Token, [Token], [Statement])
+    case `return`(Token, Expression?)
 }

@@ -43,6 +43,7 @@ struct Parser {
     //                   | forStmt
     //                   | ifStmt
     //                   | printStmt
+    //                   | returnStmt
     //                   | whileStmt
     //                   | block ;
     //    exprStmt       → expression ";" ;
@@ -52,6 +53,7 @@ struct Parser {
     //    ifStmt         → "if" "(" expression ")" statement
     //                     ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
+    //    returnStmt     → "return" expression? ";" ;
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating func parseDeclaration() throws -> Statement {
@@ -132,6 +134,10 @@ struct Parser {
 
         if matchesAny(types: [.print]) {
             return try parsePrintStatement()
+        }
+
+        if matchesAny(types: [.return]) {
+            return try parseReturnStatement()
         }
 
         if matchesAny(types: [.while]) {
@@ -224,6 +230,21 @@ struct Parser {
         }
 
         throw ParseError.missingSemicolon(currentToken)
+    }
+
+    mutating func parseReturnStatement() throws -> Statement {
+        let returnToken = previousToken
+
+        var expr: Expression? = nil
+        if currentToken.type != .semicolon {
+            expr = try parseExpression()
+        }
+
+        if !matchesAny(types: [.semicolon]) {
+            throw ParseError.missingSemicolon(currentToken)
+        }
+
+        return .return(returnToken, expr)
     }
 
     mutating func parseWhileStatement() throws -> Statement {

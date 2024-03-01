@@ -14,13 +14,19 @@ struct LoxFunction: LoxCallable, Equatable {
         return params.count
     }
 
-    func call(interpreter: Interpreter, args: [LoxValue]) throws {
+    func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         let environment = interpreter.environment
 
         for (i, arg) in args.enumerated() {
             environment.define(name: params[i].lexeme, value: arg)
         }
 
-        try interpreter.handleBlock(statements: body, environment: environment)
+        do {
+            try interpreter.handleBlock(statements: body, environment: environment)
+        } catch Return.return(let value) {
+            return value
+        }
+
+        return .nil
     }
 }

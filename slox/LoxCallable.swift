@@ -7,5 +7,5 @@
 
 protocol LoxCallable {
     func arity() -> Int
-    func call(interpreter: Interpreter, args: [LoxValue]) throws
+    func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue
 }
