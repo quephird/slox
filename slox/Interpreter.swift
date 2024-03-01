@@ -5,8 +5,25 @@
 //  Created by Danielle Kefford on 2/26/24.
 //
 
+import Foundation
+
 class Interpreter {
-    var environment: Environment = Environment()
+    let globals: Environment = Environment()
+    var environment: Environment
+
+    init() {
+        self.environment = globals
+        setUpGlobals()
+    }
+
+    private func setUpGlobals() {
+        let clock = LoxFunction(name: "clock",
+                                arity: 0,
+                                function: { _, _ -> LoxValue in
+            return .number(Date().timeIntervalSince1970)
+        })
+        globals.define(name: "clock", value: .function(clock))
+    }
 
     func interpret(statements: [Statement]) throws {
         for statement in statements {
@@ -72,7 +89,21 @@ class Interpreter {
     }
 
     private func handleFunctionDeclaration(name: Token, params: [Token], body: [Statement]) throws {
-        let function = LoxFunction(name: name, params: params, body: body)
+        let function = LoxFunction(name: name.lexeme, arity: params.count, function: { (interpreter, args) in
+            let environment = interpreter.environment
+
+            for (i, arg) in args.enumerated() {
+                environment.define(name: params[i].lexeme, value: arg)
+            }
+
+            do {
+                try interpreter.handleBlock(statements: body, environment: environment)
+            } catch Return.return(let value) {
+                return value
+            }
+
+            return .nil
+        })
         environment.define(name: name.lexeme, value: .function(function))
     }
 

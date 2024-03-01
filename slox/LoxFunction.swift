@@ -6,27 +6,16 @@
 //
 
 struct LoxFunction: LoxCallable, Equatable {
-    var name: Token
-    var params: [Token]
-    var body: [Statement]
-
-    var arity: Int {
-        return params.count
-    }
+    var name: String
+    var arity: Int
+    var function: (Interpreter, [LoxValue]) throws -> LoxValue
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
-        let environment = interpreter.environment
+        return try function(interpreter, args)
+    }
 
-        for (i, arg) in args.enumerated() {
-            environment.define(name: params[i].lexeme, value: arg)
-        }
-
-        do {
-            try interpreter.handleBlock(statements: body, environment: environment)
-        } catch Return.return(let value) {
-            return value
-        }
-
-        return .nil
+    static func == (lhs: LoxFunction, rhs: LoxFunction) -> Bool {
+        // TODO: need to improve this or look into removing the Equatable conformance
+        return lhs.name == rhs.name && lhs.arity == rhs.arity
     }
 }
