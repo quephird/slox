@@ -429,7 +429,7 @@ final class InterpreterTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
-    func testInterpretLambdaPassedAsParameter() throws {
+    func testInterpretLambdaReturnedAsValue() throws {
         // fun makeAdder(n) {
         //     return fun (a) { return n + a; };
         // }

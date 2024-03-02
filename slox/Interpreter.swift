@@ -163,7 +163,7 @@ class Interpreter {
         case .call(let calleeExpr, let rightParen, let args):
             return try handleFunctionCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
         case .lambda(let params, let statements):
-            return try handleLambda(params: params, statements: statements)
+            return try handleLambdaExpression(params: params, statements: statements)
         }
     }
 
@@ -281,7 +281,7 @@ class Interpreter {
         return try actualFunction.call(interpreter: self, args: argValues)
     }
 
-    private func handleLambda(params: [Token], statements: [Statement]) throws -> LoxValue {
+    private func handleLambdaExpression(params: [Token], statements: [Statement]) throws -> LoxValue {
         let function = LoxFunction(name: "<lambda>", arity: params.count, function: { (interpreter, args) in
             let environment = interpreter.environment
 
