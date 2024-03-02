@@ -64,8 +64,8 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
-        case .function(let name, let params, let body):
-            try handleFunctionDeclaration(name: name, params: params, body: body)
+        case .function(let name, let lambda):
+            try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
             try handleReturnStatement(returnToken: returnToken, expr: expr)
         }
@@ -86,7 +86,11 @@ class Interpreter {
         print(literal)
     }
 
-    private func handleFunctionDeclaration(name: Token, params: [Token], body: [Statement]) throws {
+    private func handleFunctionDeclaration(name: Token, lambda: Expression) throws {
+        guard case .lambda(let params, let body) = lambda else {
+            throw RuntimeError.notALambda
+        }
+
         let function = LoxFunction(name: name.lexeme, arity: params.count, function: { (interpreter, args) in
             let environment = interpreter.environment
 
@@ -158,6 +162,8 @@ class Interpreter {
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
             return try handleFunctionCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
+        case .lambda(let params, let statements):
+            return try handleLambda(params: params, statements: statements)
         }
     }
 
@@ -273,6 +279,26 @@ class Interpreter {
         }
 
         return try actualFunction.call(interpreter: self, args: argValues)
+    }
+
+    private func handleLambda(params: [Token], statements: [Statement]) throws -> LoxValue {
+        let function = LoxFunction(name: "<lambda>", arity: params.count, function: { (interpreter, args) in
+            let environment = interpreter.environment
+
+            for (i, arg) in args.enumerated() {
+                environment.define(name: params[i].lexeme, value: arg)
+            }
+
+            do {
+                try interpreter.handleBlock(statements: statements, environment: environment)
+            } catch Return.return(let value) {
+                return value
+            }
+
+            return .nil
+        })
+
+        return .function(function)
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {

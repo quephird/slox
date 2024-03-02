@@ -16,6 +16,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case undefinedVariable(String)
     case notAFunction
     case wrongArity(Int, Int)
+    case notALambda
 
     var description: String {
         switch self {
@@ -35,6 +36,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Can only call functions"
         case .wrongArity(let expected, let actual):
             return "Incorrect number of arguments: expected \(expected), got \(actual)"
+        case .notALambda:
+            return "Expected lambda as body of function declaration"
         }
     }
 }

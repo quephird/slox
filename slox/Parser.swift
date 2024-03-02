@@ -56,7 +56,9 @@ struct Parser {
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement {
-        if matchesAny(types: [.fun]) {
+        // We check for the next token to accomodate supporting lambdas
+        if currentTokenMatches(type: .fun) && nextTokenMatches(type: .identifier) {
+            advanceCursor()
             return try parseFunctionDeclaration()
         }
 
@@ -87,7 +89,7 @@ struct Parser {
         }
         let functionBody = try parseBlock()
 
-        return .function(functionName, parameters, functionBody)
+        return .function(functionName, .lambda(parameters, functionBody))
     }
 
     mutating private func parseVariableDeclaration() throws -> Statement {
@@ -153,7 +155,7 @@ struct Parser {
         }
 
         var conditionExpr: Expression? = nil
-        if !matches(type: .semicolon) {
+        if !currentTokenMatches(type: .semicolon) {
             conditionExpr = try parseExpression()
         }
         if !matchesAny(types: [.semicolon]) {
@@ -161,7 +163,7 @@ struct Parser {
         }
 
         var incrementExpr: Expression? = nil
-        if !matches(type: .rightParen) {
+        if !currentTokenMatches(type: .rightParen) {
             incrementExpr = try parseExpression()
         }
         if !matchesAny(types: [.rightParen]) {
@@ -293,7 +295,9 @@ struct Parser {
     //    call           → primary ( "(" arguments? ")" )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
-    //                   | IDENTIFIER ;
+    //                   | IDENTIFIER
+    //                   | lambda ;
+    //    lambda         → "fun" "(" parameters? ")" block ;
     //
     mutating private func parseExpression() throws -> Expression {
         return try parseAssignment()
@@ -419,6 +423,10 @@ struct Parser {
     }
 
     mutating private func parsePrimary() throws -> Expression {
+        if matchesAny(types: [.fun]) {
+            return try parseLambda()
+        }
+
         if matchesAny(types: [.false]) {
             return .literal(.boolean(false))
         }
@@ -453,6 +461,23 @@ struct Parser {
         }
 
         throw ParseError.expectedPrimaryExpression(currentToken)
+    }
+
+    mutating private func parseLambda() throws -> Expression {
+        if !matchesAny(types: [.leftParen]) {
+            throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
+        }
+        let parameters = try parseParameters()
+        if !matchesAny(types: [.rightParen]) {
+            throw ParseError.missingCloseParenAfterArguments(currentToken)
+        }
+
+        if !matchesAny(types: [.leftBrace]) {
+            throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
+        }
+        let functionBody = try parseBlock()
+
+        return .lambda(parameters, functionBody)
     }
 
     // Utility grammar rules:
@@ -492,7 +517,7 @@ struct Parser {
     // Other utility methods
     mutating private func matchesAny(types: [TokenType]) -> Bool {
         for type in types {
-            if matches(type: type) {
+            if currentTokenMatches(type: type) {
                 advanceCursor()
                 return true
             }
@@ -501,12 +526,25 @@ struct Parser {
         return false
     }
 
-    private func matches(type: TokenType) -> Bool {
+    private func currentTokenMatches(type: TokenType) -> Bool {
         if currentToken.type == .eof {
             return false
         }
 
         return currentToken.type == type
+    }
+
+    private func nextTokenMatches(type: TokenType) -> Bool {
+        if currentToken.type == .eof {
+            return false
+        }
+
+        let nextToken = tokens[cursor + 1]
+        if nextToken.type == .eof {
+            return false
+        }
+
+        return nextToken.type == type
     }
 
     // TODO: Figure out if we actually need this, and if so

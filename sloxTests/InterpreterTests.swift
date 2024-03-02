@@ -316,18 +316,20 @@ final class InterpreterTests: XCTestCase {
         let statements: [Statement] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
-                [
-                    Token(type: .identifier, lexeme: "a", line: 1),
-                    Token(type: .identifier, lexeme: "b", line: 1),
-                ],
-                [
-                    .return(
-                        Token(type: .return, lexeme: "return", line: 2),
-                        .binary(
-                            .variable(Token(type: .identifier, lexeme: "a", line: 2)),
-                            Token(type: .plus, lexeme: "+", line: 2),
-                            .variable(Token(type: .identifier, lexeme: "b", line: 2))))
-                ]),
+                .lambda(
+                    [
+                        Token(type: .identifier, lexeme: "a", line: 1),
+                        Token(type: .identifier, lexeme: "b", line: 1),
+                    ],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "a", line: 2)),
+                                Token(type: .plus, lexeme: "+", line: 2),
+                                .variable(Token(type: .identifier, lexeme: "b", line: 2))))
+                    ])
+                ),
             .expression(
                 .call(
                     .variable(Token(type: .identifier, lexeme: "add", line: 4)),
@@ -354,34 +356,35 @@ final class InterpreterTests: XCTestCase {
         let statements: [Statement] = [
             .function(
                 Token(type: .identifier, lexeme: "fact", line: 1),
-                [
-                    Token(type: .identifier, lexeme: "n", line: 1),
-                ],
-                [
-                    .if(
-                        .binary(
-                            .variable(Token(type: .identifier, lexeme: "n", line: 2)),
-                            Token(type: .lessEqual, lexeme: "<=", line: 2),
-                            .literal(.number(1))),
+                .lambda(
+                    [
+                        Token(type: .identifier, lexeme: "n", line: 1),
+                    ],
+                    [
+                        .if(
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "n", line: 2)),
+                                Token(type: .lessEqual, lexeme: "<=", line: 2),
+                                .literal(.number(1))),
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 3),
+                                .literal(.number(1))),
+                            nil),
                         .return(
-                            Token(type: .return, lexeme: "return", line: 3),
-                            .literal(.number(1))),
-                        nil),
-                    .return(
-                        Token(type: .return, lexeme: "return", line: 4),
-                        .binary(
-                            .variable(Token(type: .identifier, lexeme: "n", line: 4)),
-                            Token(type: .star, lexeme: "*", line: 4),
-                            .call(
-                                .variable(Token(type: .identifier, lexeme: "fact", line: 4)),
-                                Token(type: .rightParen, lexeme: ")", line: 4),
-                                [
-                                    .binary(
-                                        .variable(Token(type: .identifier, lexeme: "n", line: 4)),
-                                        Token(type: .minus, lexeme: "-", line: 4),
-                                        .literal(.number(1)))
-                                ])))
-                ]),
+                            Token(type: .return, lexeme: "return", line: 4),
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "n", line: 4)),
+                                Token(type: .star, lexeme: "*", line: 4),
+                                .call(
+                                    .variable(Token(type: .identifier, lexeme: "fact", line: 4)),
+                                    Token(type: .rightParen, lexeme: ")", line: 4),
+                                    [
+                                        .binary(
+                                            .variable(Token(type: .identifier, lexeme: "n", line: 4)),
+                                            Token(type: .minus, lexeme: "-", line: 4),
+                                            .literal(.number(1)))
+                                    ])))
+                    ])),
             .expression(
                 .call(
                     .variable(Token(type: .identifier, lexeme: "fact", line: 5)),
@@ -392,6 +395,87 @@ final class InterpreterTests: XCTestCase {
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(120)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretLambdaExpression() throws {
+        // fun (a, b) { return a + b; }(2, 3)
+        let statements: [Statement] = [
+            .expression(
+                .call(
+                    .lambda(
+                        [
+                            Token(type: .identifier, lexeme: "a", line: 1),
+                            Token(type: .identifier, lexeme: "b", line: 1),
+                        ],
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 1),
+                                .binary(
+                                    .variable(Token(type: .identifier, lexeme: "a", line: 1)),
+                                    Token(type: .plus, lexeme: "+", line: 1),
+                                    .variable(Token(type: .identifier, lexeme: "b", line: 1))))
+                        ]),
+                    Token(type: .rightParen, lexeme: ")", line: 1),
+                    [
+                        .literal(.number(2)),
+                        .literal(.number(3))
+                    ]))
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(5)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretLambdaPassedAsParameter() throws {
+        // fun makeAdder(n) {
+        //     return fun (a) { return n + a; };
+        // }
+        // var addTwo = makeAdder(2);
+        // addTwo(5)
+        let statements: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "makeAdder", line: 1),
+                .lambda(
+                    [
+                        Token(type: .identifier, lexeme: "n", line: 1),
+                    ],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .lambda(
+                                [
+                                    Token(type: .identifier, lexeme: "a", line: 2)
+                                ],
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 2),
+                                        .binary(
+                                            .variable(Token(type: .identifier, lexeme: "n", line: 2)),
+                                            Token(type: .plus, lexeme: "+", line: 2),
+                                            .variable(Token(type: .identifier, lexeme: "a", line: 2))))
+                                ]))
+                    ])),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "addTwo", line: 4),
+                .call(
+                    .variable(Token(type: .identifier, lexeme: "makeAdder", line: 4)),
+                    Token(type: .rightParen, lexeme: ")", line: 4),
+                    [
+                        .literal(.number(2))
+                    ])),
+            .expression(
+                .call(
+                    .variable(Token(type: .identifier, lexeme: "addTwo", line: 5)),
+                    Token(type: .rightParen, lexeme: ")", line: 5),
+                    [.literal(.number(5))]))
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(7)
         XCTAssertEqual(actual, expected)
     }
 }
