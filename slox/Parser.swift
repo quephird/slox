@@ -37,7 +37,6 @@ struct Parser {
     //                   | statement ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
-    //    parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
     //    statement      → exprStmt
     //                   | forStmt
@@ -56,7 +55,7 @@ struct Parser {
     //    returnStmt     → "return" expression? ";" ;
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
-    mutating func parseDeclaration() throws -> Statement {
+    mutating private func parseDeclaration() throws -> Statement {
         if matchesAny(types: [.fun]) {
             return try parseFunctionDeclaration()
         }
@@ -78,20 +77,7 @@ struct Parser {
         if !matchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
         }
-
-        var parameterNames: [Token] = []
-        if currentToken.type != .rightParen {
-            repeat {
-                guard case .identifier = currentToken.type else {
-                    throw ParseError.missingParameterName(currentToken)
-                }
-                let newParameterName = currentToken
-                advanceCursor()
-
-                parameterNames.append(newParameterName)
-            } while matchesAny(types: [.comma])
-        }
-
+        let parameters = try parseParameters()
         if !matchesAny(types: [.rightParen]) {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
         }
@@ -101,7 +87,7 @@ struct Parser {
         }
         let functionBody = try parseBlock()
 
-        return .function(functionName, parameterNames, functionBody)
+        return .function(functionName, parameters, functionBody)
     }
 
     mutating private func parseVariableDeclaration() throws -> Statement {
@@ -123,7 +109,7 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    mutating func parseStatement() throws -> Statement {
+    mutating private func parseStatement() throws -> Statement {
         if matchesAny(types: [.for]) {
             return try parseForStatement()
         }
@@ -152,7 +138,7 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
-    mutating func parseForStatement() throws -> Statement {
+    mutating private func parseForStatement() throws -> Statement {
         if !matchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForForStatement(currentToken)
         }
@@ -203,7 +189,7 @@ struct Parser {
         return forStmt
     }
 
-    mutating func parseIfStatement() throws -> Statement {
+    mutating private func parseIfStatement() throws -> Statement {
         if !matchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForIfStatement(currentToken)
         }
@@ -223,7 +209,7 @@ struct Parser {
         return .if(testExpr, consequentStmt, alternativeStmt)
     }
 
-    mutating func parsePrintStatement() throws -> Statement {
+    mutating private func parsePrintStatement() throws -> Statement {
         let expr = try parseExpression()
         if matchesAny(types: [.semicolon]) {
             return .print(expr)
@@ -232,7 +218,7 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    mutating func parseReturnStatement() throws -> Statement {
+    mutating private func parseReturnStatement() throws -> Statement {
         let returnToken = previousToken
 
         var expr: Expression? = nil
@@ -247,7 +233,7 @@ struct Parser {
         return .return(returnToken, expr)
     }
 
-    mutating func parseWhileStatement() throws -> Statement {
+    mutating private func parseWhileStatement() throws -> Statement {
         if !matchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForWhileStatement(currentToken)
         }
@@ -261,7 +247,7 @@ struct Parser {
         return .while(expr, stmt)
     }
 
-    mutating func parseBlock() throws -> [Statement] {
+    mutating private func parseBlock() throws -> [Statement] {
         var statements: [Statement] = []
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
@@ -276,7 +262,7 @@ struct Parser {
         throw ParseError.missingClosingBrace(previousToken)
     }
 
-    mutating func parseExpressionStatement() throws -> Statement {
+    mutating private func parseExpressionStatement() throws -> Statement {
         let expr = try parseExpression()
 
         // NOTA BENE: If the expression is the last thing to be parsed,
@@ -417,13 +403,7 @@ struct Parser {
 
         while true {
             if matchesAny(types: [.leftParen]) {
-                var args: [Expression] = []
-                if currentToken.type != .rightParen {
-                    repeat {
-                        let newArg = try parseExpression()
-                        args.append(newArg)
-                    } while matchesAny(types: [.comma])
-                }
+                let args = try parseArguments()
 
                 if !matchesAny(types: [.rightParen]) {
                     throw ParseError.missingCloseParenAfterArguments(currentToken)
@@ -477,14 +457,39 @@ struct Parser {
 
     // Utility grammar rules:
     //
+    //    parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
     //    arguments      → expression ( "," expression )* ;
-    mutating private func parseArguments() throws -> [Expression] {
-        let exprs: [Expression] = []
+    //
+    mutating private func parseParameters() throws -> [Token] {
+        var parameters: [Token] = []
+        if currentToken.type != .rightParen {
+            repeat {
+                guard case .identifier = currentToken.type else {
+                    throw ParseError.missingParameterName(currentToken)
+                }
+                let newParameter = currentToken
+                advanceCursor()
 
-        return exprs
+                parameters.append(newParameter)
+            } while matchesAny(types: [.comma])
+        }
+
+        return parameters
     }
 
-    // Utility methods
+    mutating private func parseArguments() throws -> [Expression] {
+        var args: [Expression] = []
+        if currentToken.type != .rightParen {
+            repeat {
+                let newArg = try parseExpression()
+                args.append(newArg)
+            } while matchesAny(types: [.comma])
+        }
+
+        return args
+    }
+
+    // Other utility methods
     mutating private func matchesAny(types: [TokenType]) -> Bool {
         for type in types {
             if matches(type: type) {
