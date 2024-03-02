@@ -56,7 +56,10 @@ struct Parser {
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement {
-        // We check for the next token to accomodate supporting lambdas
+        // We look ahead to see if the next token is an identifer,
+        // and if so we assume this is a function declaration. Otherwise,
+        // if the current token is `fun`, then we have a lambda, and we
+        // will eventually parse it when we hit parsePrimary().
         if currentTokenMatches(type: .fun) && nextTokenMatches(type: .identifier) {
             advanceCursor()
             return try parseFunctionDeclaration()
