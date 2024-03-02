@@ -478,4 +478,44 @@ final class InterpreterTests: XCTestCase {
         let expected: LoxValue = .number(7)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretFunctionInvocationDoesNotDisaffectGlobalEnvironment() throws {
+        // fun add(a, b) { return a + b; }
+        // add(2, 3)
+        // a
+        let statements: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "add", line: 1),
+                .lambda(
+                    [
+                        Token(type: .identifier, lexeme: "a", line: 1),
+                        Token(type: .identifier, lexeme: "b", line: 1),
+                    ],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 1),
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "a", line: 1)),
+                                Token(type: .plus, lexeme: "+", line: 1),
+                                .variable(Token(type: .identifier, lexeme: "b", line: 1))))
+                    ])
+                ),
+            .expression(
+                .call(
+                    .variable(Token(type: .identifier, lexeme: "add", line: 2)),
+                    Token(type: .rightParen, lexeme: ")", line: 2),
+                    [
+                        .literal(.number(1)),
+                        .literal(.number(2)),
+                    ])),
+            .expression(
+                .variable(Token(type: .identifier, lexeme: "a", line: 3)))
+        ]
+
+        let interpreter = Interpreter()
+        let expectedError = RuntimeError.undefinedVariable("a")
+        XCTAssertThrowsError(try interpreter.interpretRepl(statements: statements)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
 }
