@@ -8,11 +8,9 @@
 import Foundation
 
 class Interpreter {
-    let globals: Environment = Environment()
-    var environment: Environment
+    var environment: Environment = Environment()
 
     init() {
-        self.environment = globals
         setUpGlobals()
     }
 
@@ -22,7 +20,7 @@ class Interpreter {
                                 function: { _, _ -> LoxValue in
             return .number(Date().timeIntervalSince1970)
         })
-        globals.define(name: "clock", value: .function(clock))
+        environment.define(name: "clock", value: .function(clock))
     }
 
     func interpret(statements: [Statement]) throws {
