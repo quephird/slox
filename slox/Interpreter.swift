@@ -91,15 +91,16 @@ class Interpreter {
             throw RuntimeError.notALambda
         }
 
+        let environmentWhenDeclared = self.environment
         let function = LoxFunction(name: name.lexeme, arity: params.count, function: { (interpreter, args) in
-            let environment = interpreter.environment
+            let newEnvironment = Environment(enclosingEnvironment: environmentWhenDeclared)
 
             for (i, arg) in args.enumerated() {
-                environment.define(name: params[i].lexeme, value: arg)
+                newEnvironment.define(name: params[i].lexeme, value: arg)
             }
 
             do {
-                try interpreter.handleBlock(statements: body, environment: environment)
+                try interpreter.handleBlock(statements: body, environment: newEnvironment)
             } catch Return.return(let value) {
                 return value
             }
@@ -129,13 +130,18 @@ class Interpreter {
 
     func handleBlock(statements: [Statement], environment: Environment) throws {
         let environmentBeforeBlock = self.environment
-
         self.environment = environment
+
+        // This ensures that the previous environment is restored
+        // if the try below throws, which is what will happen if
+        // there is a return statement.
+        defer {
+            self.environment = environmentBeforeBlock
+        }
+
         for statement in statements {
             try execute(statement: statement)
         }
-
-        self.environment = environmentBeforeBlock
     }
 
     private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
@@ -282,15 +288,17 @@ class Interpreter {
     }
 
     private func handleLambdaExpression(params: [Token], statements: [Statement]) throws -> LoxValue {
+        let environmentWhenDeclared = self.environment
+
         let function = LoxFunction(name: "<lambda>", arity: params.count, function: { (interpreter, args) in
-            let environment = interpreter.environment
+            let newEnvironment = Environment(enclosingEnvironment: environmentWhenDeclared)
 
             for (i, arg) in args.enumerated() {
-                environment.define(name: params[i].lexeme, value: arg)
+                newEnvironment.define(name: params[i].lexeme, value: arg)
             }
 
             do {
-                try interpreter.handleBlock(statements: statements, environment: environment)
+                try interpreter.handleBlock(statements: statements, environment: newEnvironment)
             } catch Return.return(let value) {
                 return value
             }
