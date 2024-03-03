@@ -46,7 +46,9 @@ struct Lox {
                 let tokens = try scanner.scanTokens()
                 var parser = Parser(tokens: tokens)
                 let statements = try parser.parse()
-                if let result = try interpreter.interpretRepl(statements: statements) {
+                var resolver = Resolver()
+                let resolvedStatements = try resolver.resolve(statements: statements)
+                if let result = try interpreter.interpretRepl(statements: resolvedStatements) {
                     print(result)
                 }
             } catch {
@@ -62,6 +64,8 @@ struct Lox {
         let tokens = try scanner.scanTokens()
         var parser = Parser(tokens: tokens)
         let statements = try parser.parse()
-        try interpreter.interpret(statements: statements)
+        var resolver = Resolver()
+        let resolvedStatements = try resolver.resolve(statements: statements)
+        try interpreter.interpret(statements: resolvedStatements)
     }
 }

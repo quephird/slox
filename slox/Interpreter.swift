@@ -21,13 +21,13 @@ class Interpreter {
         }
     }
 
-    func interpret(statements: [Statement]) throws {
+    func interpret(statements: [ResolvedStatement]) throws {
         for statement in statements {
             try execute(statement: statement)
         }
     }
 
-    func interpretRepl(statements: [Statement]) throws -> LoxValue? {
+    func interpretRepl(statements: [ResolvedStatement]) throws -> LoxValue? {
         for (i, statement) in statements.enumerated() {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
                 return try evaluate(expr: expr)
@@ -39,7 +39,7 @@ class Interpreter {
         return nil
     }
 
-    private func execute(statement: Statement) throws {
+    private func execute(statement: ResolvedStatement) throws {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
@@ -63,9 +63,9 @@ class Interpreter {
         }
     }
 
-    private func handleIfStatement(testExpr: Expression,
-                                   consequentStmt: Statement,
-                                   alternativeStmt: Statement?) throws {
+    private func handleIfStatement(testExpr: ResolvedExpression,
+                                   consequentStmt: ResolvedStatement,
+                                   alternativeStmt: ResolvedStatement?) throws {
         if isTruthy(value: try evaluate(expr: testExpr)) {
             try execute(statement: consequentStmt)
         } else if let alternativeStmt {
@@ -73,12 +73,12 @@ class Interpreter {
         }
     }
 
-    private func handlePrintStatement(expr: Expression) throws {
+    private func handlePrintStatement(expr: ResolvedExpression) throws {
         let literal = try evaluate(expr: expr)
         print(literal)
     }
 
-    private func handleFunctionDeclaration(name: Token, lambda: Expression) throws {
+    private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
         guard case .lambda(let params, let body) = lambda else {
             throw RuntimeError.notALambda
         }
@@ -91,7 +91,7 @@ class Interpreter {
         environment.define(name: name.lexeme, value: .userDefinedFunction(function))
     }
 
-    private func handleReturnStatement(returnToken: Token, expr: Expression?) throws {
+    private func handleReturnStatement(returnToken: Token, expr: ResolvedExpression?) throws {
         var value: LoxValue = .nil
         if let expr {
             value = try evaluate(expr: expr)
@@ -100,7 +100,7 @@ class Interpreter {
         throw Return.return(value)
     }
 
-    private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
+    private func handleVariableDeclaration(name: Token, expr: ResolvedExpression?) throws {
         var value: LoxValue = .nil
         if let expr = expr {
             value = try evaluate(expr: expr)
@@ -109,7 +109,7 @@ class Interpreter {
         environment.define(name: name.lexeme, value: value)
     }
 
-    func handleBlock(statements: [Statement], environment: Environment) throws {
+    func handleBlock(statements: [ResolvedStatement], environment: Environment) throws {
         let environmentBeforeBlock = self.environment
         self.environment = environment
 
@@ -125,13 +125,13 @@ class Interpreter {
         }
     }
 
-    private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
+    private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
         while isTruthy(value: try evaluate(expr: expr)) {
             try execute(statement: stmt)
         }
     }
 
-    private func evaluate(expr: Expression) throws -> LoxValue {
+    private func evaluate(expr: ResolvedExpression) throws -> LoxValue {
         switch expr {
         case .literal(let literal):
             return literal
@@ -141,9 +141,9 @@ class Interpreter {
             return try handleUnaryExpression(oper: oper, expr: expr)
         case .binary(let leftExpr, let oper, let rightExpr):
             return try handleBinaryExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
-        case .variable(let varToken):
+        case .variable(let varToken, let depth):
             return try environment.getValue(name: varToken.lexeme)
-        case .assignment(let varToken, let valueExpr):
+        case .assignment(let varToken, let valueExpr, let depth):
             return try handleAssignmentExpression(name: varToken, expr: valueExpr)
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
@@ -154,7 +154,7 @@ class Interpreter {
         }
     }
 
-    private func handleUnaryExpression(oper: Token, expr: Expression) throws -> LoxValue {
+    private func handleUnaryExpression(oper: Token, expr: ResolvedExpression) throws -> LoxValue {
         let value = try evaluate(expr: expr)
 
         switch oper.type {
@@ -171,9 +171,9 @@ class Interpreter {
         }
     }
 
-    private func handleBinaryExpression(leftExpr: Expression,
+    private func handleBinaryExpression(leftExpr: ResolvedExpression,
                                         oper: Token,
-                                        rightExpr: Expression) throws -> LoxValue {
+                                        rightExpr: ResolvedExpression) throws -> LoxValue {
         let leftValue = try evaluate(expr: leftExpr)
         let rightValue = try evaluate(expr: rightExpr)
 
@@ -221,15 +221,15 @@ class Interpreter {
         }
     }
 
-    private func handleAssignmentExpression(name: Token, expr: Expression) throws -> LoxValue {
+    private func handleAssignmentExpression(name: Token, expr: ResolvedExpression) throws -> LoxValue {
         let value = try evaluate(expr: expr)
         try environment.assign(name: name.lexeme, value: value)
         return value
     }
 
-    private func handleLogicalExpression(leftExpr: Expression,
+    private func handleLogicalExpression(leftExpr: ResolvedExpression,
                                          oper: Token,
-                                         rightExpr: Expression) throws -> LoxValue {
+                                         rightExpr: ResolvedExpression) throws -> LoxValue {
         let leftValue = try evaluate(expr: leftExpr)
 
         if case .and = oper.type {
@@ -247,9 +247,9 @@ class Interpreter {
         }
     }
 
-    private func handleFunctionCallExpression(calleeExpr: Expression,
+    private func handleFunctionCallExpression(calleeExpr: ResolvedExpression,
                                               rightParen: Token,
-                                              args: [Expression]) throws -> LoxValue {
+                                              args: [ResolvedExpression]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
 
         let actualFunction: LoxCallable = switch callee {
@@ -274,7 +274,7 @@ class Interpreter {
         return try actualFunction.call(interpreter: self, args: argValues)
     }
 
-    private func handleLambdaExpression(params: [Token], statements: [Statement]) throws -> LoxValue {
+    private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
         let function = UserDefinedFunction(name: "<lambda>",
