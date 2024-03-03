@@ -803,4 +803,151 @@ final class ParserTests: XCTestCase {
             XCTAssertEqual(actualError as! ParseError, expectedError)
         }
     }
+
+    func testParseFunctionDeclaration() throws {
+        // fun theAnswer() {
+        //     print 42;
+        // }
+        let tokens: [Token] = [
+            Token(type: .fun, lexeme: "fun", line: 1),
+            Token(type: .identifier, lexeme: "theAnswer", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .number, lexeme: "42", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 3),
+            Token(type: .eof, lexeme: "", line: 3),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "theAnswer", line: 1),
+                .lambda(
+                    [],
+                    [.print(.literal(.number(42)))])
+                ),
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseFunctionDeclarationWithArgumentsAndReturn() throws {
+        // fun add(a, b) {
+        //     return a + b;
+        // }
+        let tokens: [Token] = [
+            Token(type: .fun, lexeme: "fun", line: 1),
+            Token(type: .identifier, lexeme: "add", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "a", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .identifier, lexeme: "b", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .return, lexeme: "return", line: 2),
+            Token(type: .identifier, lexeme: "a", line: 2),
+            Token(type: .plus, lexeme: "+", line: 2),
+            Token(type: .identifier, lexeme: "b", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 3),
+            Token(type: .eof, lexeme: "", line: 3),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "add", line: 1),
+                .lambda(
+                    [
+                        Token(type: .identifier, lexeme: "a", line: 1),
+                        Token(type: .identifier, lexeme: "b", line: 1),
+                    ],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "a", line: 2)),
+                                Token(type: .plus, lexeme: "+", line: 2),
+                                .variable(Token(type: .identifier, lexeme: "b", line: 2))))
+                    ])
+            )
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseFunctionCall() throws {
+        // add(1, 2)
+        let tokens: [Token] = [
+            Token(type: .identifier, lexeme: "add", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .number, lexeme: "2", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .call(
+                    .variable(Token(type: .identifier, lexeme: "add", line: 1)),
+                    Token(type: .rightParen, lexeme: ")", line: 1),
+                    [
+                        .literal(.number(1)),
+                        .literal(.number(2)),
+                    ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseLambdaExpression() throws {
+        // fun (a, b) { return a + b; }
+        let tokens: [Token] = [
+            Token(type: .fun, lexeme: "fun", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "a", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .identifier, lexeme: "b", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+            Token(type: .return, lexeme: "return", line: 1),
+            Token(type: .identifier, lexeme: "a", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .identifier, lexeme: "b", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+            Token(type: .rightBrace, lexeme: "}", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .lambda(
+                    [
+                        Token(type: .identifier, lexeme: "a", line: 1),
+                        Token(type: .identifier, lexeme: "b", line: 1),
+                    ],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 1),
+                            .binary(
+                                .variable(Token(type: .identifier, lexeme: "a", line: 1)),
+                                Token(type: .plus, lexeme: "+", line: 1),
+                                .variable(Token(type: .identifier, lexeme: "b", line: 1)))),
+                    ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
 }

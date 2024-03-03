@@ -1,5 +1,5 @@
 //
-//  Literal.swift
+//  LoxValue.swift
 //  slox
 //
 //  Created by Danielle Kefford on 2/23/24.
@@ -10,6 +10,8 @@ enum LoxValue: CustomStringConvertible, Equatable {
     case number(Double)
     case boolean(Bool)
     case `nil`
+    case userDefinedFunction(UserDefinedFunction)
+    case nativeFunction(NativeFunction)
 
     var description: String {
         switch self {
@@ -21,6 +23,10 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return "\(boolean)"
         case .nil:
             return "nil"
+        case .userDefinedFunction(let function):
+            return "<function: \(function.name)>"
+        case .nativeFunction(let function):
+            return "<function: \(function)>"
         }
     }
 }

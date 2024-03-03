@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/27/24.
 //
 
-class Environment {
+class Environment: Equatable {
     private var enclosingEnvironment: Environment?
     private var values: [String: LoxValue] = [:]
 
@@ -41,5 +41,9 @@ class Environment {
         }
 
         throw RuntimeError.undefinedVariable(name)
+    }
+
+    static func == (lhs: Environment, rhs: Environment) -> Bool {
+        return lhs === rhs
     }
 }

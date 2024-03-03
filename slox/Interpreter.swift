@@ -5,30 +5,41 @@
 //  Created by Danielle Kefford on 2/26/24.
 //
 
-struct Interpreter {
+import Foundation
+
+class Interpreter {
     var environment: Environment = Environment()
 
-    mutating func interpret(statements: [Statement]) throws {
+    init() {
+        setUpGlobals()
+    }
+
+    private func setUpGlobals() {
+        for nativeFunction in NativeFunction.allCases {
+            environment.define(name: String(describing: nativeFunction),
+                               value: .nativeFunction(nativeFunction))
+        }
+    }
+
+    func interpret(statements: [Statement]) throws {
         for statement in statements {
             try execute(statement: statement)
         }
     }
 
-    mutating func interpretRepl(statements: [Statement]) throws -> LoxValue? {
-        var result: LoxValue? = nil
-
+    func interpretRepl(statements: [Statement]) throws -> LoxValue? {
         for (i, statement) in statements.enumerated() {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
-                result = try evaluate(expr: expr)
+                return try evaluate(expr: expr)
             } else {
                 try execute(statement: statement)
             }
         }
 
-        return result
+        return nil
     }
 
-    mutating private func execute(statement: Statement) throws {
+    private func execute(statement: Statement) throws {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
@@ -45,10 +56,14 @@ struct Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
+        case .function(let name, let lambda):
+            try handleFunctionDeclaration(name: name, lambda: lambda)
+        case .return(let returnToken, let expr):
+            try handleReturnStatement(returnToken: returnToken, expr: expr)
         }
     }
 
-    mutating private func handleIfStatement(testExpr: Expression,
+    private func handleIfStatement(testExpr: Expression,
                                    consequentStmt: Statement,
                                    alternativeStmt: Statement?) throws {
         if isTruthy(value: try evaluate(expr: testExpr)) {
@@ -63,6 +78,28 @@ struct Interpreter {
         print(literal)
     }
 
+    private func handleFunctionDeclaration(name: Token, lambda: Expression) throws {
+        guard case .lambda(let params, let body) = lambda else {
+            throw RuntimeError.notALambda
+        }
+
+        let environmentWhenDeclared = self.environment
+        let function = UserDefinedFunction(name: name.lexeme,
+                                   params: params,
+                                   enclosingEnvironment: environmentWhenDeclared,
+                                   body: body)
+        environment.define(name: name.lexeme, value: .userDefinedFunction(function))
+    }
+
+    private func handleReturnStatement(returnToken: Token, expr: Expression?) throws {
+        var value: LoxValue = .nil
+        if let expr {
+            value = try evaluate(expr: expr)
+        }
+
+        throw Return.return(value)
+    }
+
     private func handleVariableDeclaration(name: Token, expr: Expression?) throws {
         var value: LoxValue = .nil
         if let expr = expr {
@@ -72,18 +109,23 @@ struct Interpreter {
         environment.define(name: name.lexeme, value: value)
     }
 
-    mutating private func handleBlock(statements: [Statement], environment: Environment) throws {
+    func handleBlock(statements: [Statement], environment: Environment) throws {
         let environmentBeforeBlock = self.environment
-
         self.environment = environment
+
+        // This ensures that the previous environment is restored
+        // if the try below throws, which is what will happen if
+        // there is a return statement.
+        defer {
+            self.environment = environmentBeforeBlock
+        }
+
         for statement in statements {
             try execute(statement: statement)
         }
-
-        self.environment = environmentBeforeBlock
     }
 
-    mutating private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
+    private func handleWhileStatement(expr: Expression, stmt: Statement) throws {
         while isTruthy(value: try evaluate(expr: expr)) {
             try execute(statement: stmt)
         }
@@ -105,6 +147,10 @@ struct Interpreter {
             return try handleAssignmentExpression(name: varToken, expr: valueExpr)
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
+        case .call(let calleeExpr, let rightParen, let args):
+            return try handleFunctionCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
+        case .lambda(let params, let statements):
+            return try handleLambdaExpression(params: params, statements: statements)
         }
     }
 
@@ -175,7 +221,7 @@ struct Interpreter {
         }
     }
 
-    func handleAssignmentExpression(name: Token, expr: Expression) throws -> LoxValue {
+    private func handleAssignmentExpression(name: Token, expr: Expression) throws -> LoxValue {
         let value = try evaluate(expr: expr)
         try environment.assign(name: name.lexeme, value: value)
         return value
@@ -199,6 +245,44 @@ struct Interpreter {
                 return try evaluate(expr: rightExpr)
             }
         }
+    }
+
+    private func handleFunctionCallExpression(calleeExpr: Expression,
+                                              rightParen: Token,
+                                              args: [Expression]) throws -> LoxValue {
+        let callee = try evaluate(expr: calleeExpr)
+
+        let actualFunction: LoxCallable = switch callee {
+        case .userDefinedFunction(let userDefinedFunction):
+            userDefinedFunction
+        case .nativeFunction(let nativeFunction):
+            nativeFunction
+        default:
+            throw RuntimeError.notAFunction
+        }
+
+        guard args.count == actualFunction.arity else {
+            throw RuntimeError.wrongArity(actualFunction.arity, args.count)
+        }
+
+        var argValues: [LoxValue] = []
+        for arg in args {
+            let argValue = try evaluate(expr: arg)
+            argValues.append(argValue)
+        }
+
+        return try actualFunction.call(interpreter: self, args: argValues)
+    }
+
+    private func handleLambdaExpression(params: [Token], statements: [Statement]) throws -> LoxValue {
+        let environmentWhenDeclared = self.environment
+
+        let function = UserDefinedFunction(name: "<lambda>",
+                                   params: params,
+                                   enclosingEnvironment: environmentWhenDeclared,
+                                   body: statements)
+
+        return .userDefinedFunction(function)
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
