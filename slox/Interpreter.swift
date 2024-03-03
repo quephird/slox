@@ -28,21 +28,15 @@ class Interpreter {
     }
 
     func interpretRepl(statements: [Statement]) throws -> LoxValue? {
-        var result: LoxValue? = nil
-
         for (i, statement) in statements.enumerated() {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
-                result = try evaluate(expr: expr)
+                return try evaluate(expr: expr)
             } else {
-                do {
-                    try execute(statement: statement)
-                } catch Return.return(let value) {
-                    result = value
-                }
+                try execute(statement: statement)
             }
         }
 
-        return result
+        return nil
     }
 
     private func execute(statement: Statement) throws {
