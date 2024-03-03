@@ -15,12 +15,10 @@ class Interpreter {
     }
 
     private func setUpGlobals() {
-        let clock = LoxFunction(name: "clock",
-                                arity: 0,
-                                function: { _, _ -> LoxValue in
-            return .number(Date().timeIntervalSince1970)
-        })
-        environment.define(name: "clock", value: .function(clock))
+        for nativeFunction in NativeFunction.allCases {
+            environment.define(name: String(describing: nativeFunction),
+                               value: .nativeFunction(nativeFunction))
+        }
     }
 
     func interpret(statements: [Statement]) throws {
@@ -92,22 +90,11 @@ class Interpreter {
         }
 
         let environmentWhenDeclared = self.environment
-        let function = LoxFunction(name: name.lexeme, arity: params.count, function: { (interpreter, args) in
-            let newEnvironment = Environment(enclosingEnvironment: environmentWhenDeclared)
-
-            for (i, arg) in args.enumerated() {
-                newEnvironment.define(name: params[i].lexeme, value: arg)
-            }
-
-            do {
-                try interpreter.handleBlock(statements: body, environment: newEnvironment)
-            } catch Return.return(let value) {
-                return value
-            }
-
-            return .nil
-        })
-        environment.define(name: name.lexeme, value: .function(function))
+        let function = UserDefinedFunction(name: name.lexeme,
+                                   params: params,
+                                   enclosingEnvironment: environmentWhenDeclared,
+                                   body: body)
+        environment.define(name: name.lexeme, value: .userDefinedFunction(function))
     }
 
     private func handleReturnStatement(returnToken: Token, expr: Expression?) throws {
@@ -270,7 +257,13 @@ class Interpreter {
                                               rightParen: Token,
                                               args: [Expression]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
-        guard case .function(let actualFunction) = callee else {
+
+        let actualFunction: LoxCallable = switch callee {
+        case .userDefinedFunction(let userDefinedFunction):
+            userDefinedFunction
+        case .nativeFunction(let nativeFunction):
+            nativeFunction
+        default:
             throw RuntimeError.notAFunction
         }
 
@@ -290,23 +283,12 @@ class Interpreter {
     private func handleLambdaExpression(params: [Token], statements: [Statement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
-        let function = LoxFunction(name: "<lambda>", arity: params.count, function: { (interpreter, args) in
-            let newEnvironment = Environment(enclosingEnvironment: environmentWhenDeclared)
+        let function = UserDefinedFunction(name: "<lambda>",
+                                   params: params,
+                                   enclosingEnvironment: environmentWhenDeclared,
+                                   body: statements)
 
-            for (i, arg) in args.enumerated() {
-                newEnvironment.define(name: params[i].lexeme, value: arg)
-            }
-
-            do {
-                try interpreter.handleBlock(statements: statements, environment: newEnvironment)
-            } catch Return.return(let value) {
-                return value
-            }
-
-            return .nil
-        })
-
-        return .function(function)
+        return .userDefinedFunction(function)
     }
 
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {

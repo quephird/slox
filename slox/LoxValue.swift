@@ -10,7 +10,8 @@ enum LoxValue: CustomStringConvertible, Equatable {
     case number(Double)
     case boolean(Bool)
     case `nil`
-    case function(LoxFunction)
+    case userDefinedFunction(UserDefinedFunction)
+    case nativeFunction(NativeFunction)
 
     var description: String {
         switch self {
@@ -22,8 +23,10 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return "\(boolean)"
         case .nil:
             return "nil"
-        case .function(let function):
+        case .userDefinedFunction(let function):
             return "<function: \(function.name)>"
+        case .nativeFunction(let function):
+            return "<function: \(function)>"
         }
     }
 }
