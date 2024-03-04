@@ -8,6 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		870230752B9571490056FE57 /* MutableCollection+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870230742B9571490056FE57 /* MutableCollection+Extension.swift */; };
+		870230772B9575250056FE57 /* ResolverError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283972B9523AD00E49035 /* ResolverError.swift */; };
+		870230782B95752C0056FE57 /* FunctionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283992B956A2F00E49035 /* FunctionType.swift */; };
+		870230792B9575420056FE57 /* MutableCollection+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870230742B9571490056FE57 /* MutableCollection+Extension.swift */; };
+		8702307A2B9575460056FE57 /* Resolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283952B95127100E49035 /* Resolver.swift */; };
+		8702307B2B95755E0056FE57 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
+		8702307C2B9575610056FE57 /* ResolvedStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283932B95122800E49035 /* ResolvedStatement.swift */; };
 		8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283902B93FC0900E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283922B95118A00E49035 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
@@ -65,6 +71,7 @@
 
 /* Begin PBXFileReference section */
 		870230742B9571490056FE57 /* MutableCollection+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MutableCollection+Extension.swift"; sourceTree = "<group>"; };
+		870230762B9574A90056FE57 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		8732838E2B93F89300E49035 /* NativeFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFunction.swift; sourceTree = "<group>"; };
 		873283912B95118A00E49035 /* ResolvedExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedExpression.swift; sourceTree = "<group>"; };
 		873283932B95122800E49035 /* ResolvedStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedStatement.swift; sourceTree = "<group>"; };
@@ -117,6 +124,7 @@
 			children = (
 				87655FFA2B88210A002BDE42 /* slox */,
 				876A31552B8979BD0085A350 /* sloxTests */,
+				870230762B9574A90056FE57 /* TestPlan.xctestplan */,
 				87655FF92B88210A002BDE42 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -289,24 +297,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8702307C2B9575610056FE57 /* ResolvedStatement.swift in Sources */,
 				873CCB2D2B8E88C900FC249A /* Interpreter.swift in Sources */,
 				876A31632B8987740085A350 /* ScanError.swift in Sources */,
 				873CCB2C2B8E88A500FC249A /* InterpreterTests.swift in Sources */,
+				8702307A2B9575460056FE57 /* Resolver.swift in Sources */,
 				873CCB2E2B8E88D200FC249A /* RuntimeError.swift in Sources */,
 				873CCB342B8EE0FF00FC249A /* Environment.swift in Sources */,
 				8755B8B42B91983F00530DC4 /* UserDefinedFunction.swift in Sources */,
+				870230772B9575250056FE57 /* ResolverError.swift in Sources */,
 				876A315C2B897C000085A350 /* Token.swift in Sources */,
 				876A31572B8979BD0085A350 /* ScannerTests.swift in Sources */,
 				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
+				870230782B95752C0056FE57 /* FunctionType.swift in Sources */,
 				873CCB312B8EBB7800FC249A /* Statement.swift in Sources */,
 				8755B8B52B91984C00530DC4 /* LoxCallable.swift in Sources */,
 				873283902B93FC0900E49035 /* NativeFunction.swift in Sources */,
+				8702307B2B95755E0056FE57 /* ResolvedExpression.swift in Sources */,
 				87C2F3742B91C2BA00126707 /* Return.swift in Sources */,
 				873CCB282B8E7B6300FC249A /* Parser.swift in Sources */,
 				873CCB272B8E7AD100FC249A /* ParserTests.swift in Sources */,
 				876A315D2B897C020085A350 /* Scanner.swift in Sources */,
 				876A315B2B897BFD0085A350 /* TokenType.swift in Sources */,
 				873CCB292B8E7B6900FC249A /* ParseError.swift in Sources */,
+				870230792B9575420056FE57 /* MutableCollection+Extension.swift in Sources */,
 				873CCB2A2B8E7BB600FC249A /* Expression.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
