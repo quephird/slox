@@ -9,6 +9,7 @@ import XCTest
 
 final class InterpreterTests: XCTestCase {
     func testInterpretStringLiteralExpression() throws {
+        // "forty-two"
         let stmt: ResolvedStatement = .expression(.literal(.string("forty-two")))
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
@@ -17,6 +18,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretNumericLiteralExpression() throws {
+        // 42
         let stmt: ResolvedStatement = .expression(.literal(.number(42)))
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
@@ -25,6 +27,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretGroupingExpression() throws {
+        // (42)
         let stmt: ResolvedStatement = .expression(.grouping(.literal(.number(42))))
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: [stmt])!
@@ -33,6 +36,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretUnaryExpression() throws {
+        // !true
         let stmt: ResolvedStatement =
             .expression(
                 .unary(
@@ -45,6 +49,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretInvalidUnaryExpression() throws {
+        // -"forty-two"
         let stmt: ResolvedStatement =
             .expression(
                 .unary(
@@ -59,6 +64,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretNumericBinaryExpression() throws {
+        // 21 * 2
         let stmt: ResolvedStatement =
             .expression(
                 .binary(
@@ -72,6 +78,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretStringlyBinaryExpression() throws {
+        // "forty" + "-two"
         let stmt: ResolvedStatement =
             .expression(
                 .binary(
@@ -85,6 +92,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretEqualityExpression() throws {
+        // true != false
         let stmt: ResolvedStatement =
             .expression(
                 .binary(
@@ -98,6 +106,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretInvalidBinaryExpression() throws {
+        // "twenty-one" * 2
         let stmt: ResolvedStatement =
             .expression(
                 .binary(
@@ -113,6 +122,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretComplexExpression() throws {
+        // (-2) * (3 + 4)
         let stmt: ResolvedStatement =
             .expression(
                 .binary(
@@ -131,6 +141,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretLogicalExpression() throws {
+        // true and false or true
         let stmt: ResolvedStatement =
             .expression(
                 .logical(
@@ -147,6 +158,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretComparisonExpression() throws {
+        // 10 < 20
         let stmt: ResolvedStatement =
             .expression(
                 .binary(
@@ -161,15 +173,19 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpretVariableDeclaration() throws {
-        let stmt: ResolvedStatement =
+        // var theAnswer = 42; theAnswer
+        let statements: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
-                .literal(.number(42)))
+                .literal(.number(42))),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 1),
+                    0)),
+        ]
 
         let interpreter = Interpreter()
-        let _ = try interpreter.interpretRepl(statements: [stmt])
-        let environment = interpreter.environment
-        let actual = try environment.getValue(name: "theAnswer")
+        let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
     }
@@ -197,11 +213,12 @@ final class InterpreterTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
-    func testInterpretWhileStatement() throws {
+    func testInterpretWhileStatementWithMutationOfVariable() throws {
         // var i = 0;
         // while (i < 3) {
         //    i = i + 1;
         // }
+        // i
         let statements: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "i", line: 1),
@@ -223,22 +240,25 @@ final class InterpreterTests: XCTestCase {
                             Token(type: .plus, lexeme: "+", line: 3),
                             .literal(.number(1))),
                         1))),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "i", line: 5),
+                    0)),
         ]
 
         let interpreter = Interpreter()
-        let _ = try interpreter.interpretRepl(statements: statements)
-        let environment = interpreter.environment
-        let actual = try environment.getValue(name: "i")
+        let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(3)
         XCTAssertEqual(actual, expected)
     }
 
-    func testInterpretIfStatement() throws {
-        // var x;
+    func testInterpretIfStatementWithConditionalMutationOfVariable() throws {
+        // var theAnswer;
         // if (true)
         //     x = 42;
         // else
         //     x = 0;
+        // theAnswer
         let statements: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
@@ -255,21 +275,24 @@ final class InterpreterTests: XCTestCase {
                         Token(type: .identifier, lexeme: "theAnswer", line: 3),
                         .literal(.number(0)),
                         0))),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 6),
+                    0)),
         ]
 
         let interpreter = Interpreter()
-        let _ = try interpreter.interpretRepl(statements: statements)
-        let environment = interpreter.environment
-        let actual = try environment.getValue(name: "theAnswer")
+        let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
     }
 
-    func testInterpretBlockStatement() throws {
+    func testInterpretBlockStatementThatMutatesVariableAtTopLevel() throws {
         // var theAnswer = 21
         // {
         //     theAnswer = theAnswer * 2;
         // }
+        // theAnswer
         let statements: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
@@ -285,13 +308,15 @@ final class InterpreterTests: XCTestCase {
                             Token(type: .star, lexeme: "*", line: 3),
                             .literal(.number(2))),
                             1)),
-            ])
+            ]),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 5),
+                    0)),
         ]
 
         let interpreter = Interpreter()
-        let _ = try interpreter.interpretRepl(statements: statements)
-        let environment = interpreter.environment
-        let actual = try environment.getValue(name: "theAnswer")
+        let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
     }
@@ -301,6 +326,7 @@ final class InterpreterTests: XCTestCase {
         // {
         //     var theAnswer = "forty-two";
         // }
+        // theAnswer
         let statements: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
@@ -309,13 +335,15 @@ final class InterpreterTests: XCTestCase {
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
                     .literal(.string("forty-two"))),
-            ])
+            ]),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 5),
+                    0)),
         ]
 
         let interpreter = Interpreter()
-        let _ = try interpreter.interpretRepl(statements: statements)
-        let environment = interpreter.environment
-        let actual = try environment.getValue(name: "theAnswer")
+        let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
     }
@@ -519,7 +547,7 @@ final class InterpreterTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
-    func testInterpretFunctionInvocationDoesNotDisaffectGlobalEnvironment() throws {
+    func testInterpretVariablesReferencedInsideFunctionDeclarationDoNotLeakOut() throws {
         // fun add(a, b) { return a + b; }
         // add(2, 3)
         // a
