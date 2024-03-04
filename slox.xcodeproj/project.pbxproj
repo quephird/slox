@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		870230752B9571490056FE57 /* MutableCollection+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870230742B9571490056FE57 /* MutableCollection+Extension.swift */; };
 		8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283902B93FC0900E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283922B95118A00E49035 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
@@ -63,6 +64,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		870230742B9571490056FE57 /* MutableCollection+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MutableCollection+Extension.swift"; sourceTree = "<group>"; };
 		8732838E2B93F89300E49035 /* NativeFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFunction.swift; sourceTree = "<group>"; };
 		873283912B95118A00E49035 /* ResolvedExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedExpression.swift; sourceTree = "<group>"; };
 		873283932B95122800E49035 /* ResolvedStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedStatement.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				873CCB242B8D765D00FC249A /* Lox.swift */,
 				87BAFC482B9179CB0013E5FE /* LoxCallable.swift */,
 				876A315E2B897EEB0085A350 /* LoxValue.swift */,
+				870230742B9571490056FE57 /* MutableCollection+Extension.swift */,
 				8732838E2B93F89300E49035 /* NativeFunction.swift */,
 				876A31682B8C3AAB0085A350 /* ParseError.swift */,
 				876A31662B8C11810085A350 /* Parser.swift */,
@@ -277,6 +280,7 @@
 				8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */,
 				873283922B95118A00E49035 /* ResolvedExpression.swift in Sources */,
 				876A31692B8C3AAB0085A350 /* ParseError.swift in Sources */,
+				870230752B9571490056FE57 /* MutableCollection+Extension.swift in Sources */,
 				873CCB252B8D765D00FC249A /* Lox.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
