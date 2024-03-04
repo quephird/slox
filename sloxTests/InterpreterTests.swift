@@ -230,16 +230,18 @@ final class InterpreterTests: XCTestCase {
                         0),
                     Token(type: .less, lexeme: "<", line: 2),
                     .literal(.number(3))),
-                .expression(
-                    .assignment(
-                        Token(type: .identifier, lexeme: "i", line: 3),
-                        .binary(
-                            .variable(
-                                Token(type: .identifier, lexeme: "i", line: 3),
-                                1),
-                            Token(type: .plus, lexeme: "+", line: 3),
-                            .literal(.number(1))),
-                        1))),
+                .block([
+                    .expression(
+                        .assignment(
+                            Token(type: .identifier, lexeme: "i", line: 3),
+                            .binary(
+                                .variable(
+                                    Token(type: .identifier, lexeme: "i", line: 3),
+                                    1),
+                                Token(type: .plus, lexeme: "+", line: 3),
+                                .literal(.number(1))),
+                            1))
+                ])),
             .expression(
                 .variable(
                     Token(type: .identifier, lexeme: "i", line: 5),

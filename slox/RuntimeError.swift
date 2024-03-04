@@ -17,6 +17,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notAFunction
     case wrongArity(Int, Int)
     case notALambda
+    case couldNotFindAncestorEnvironmentAtDepth(Int)
 
     var description: String {
         switch self {
@@ -38,6 +39,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Incorrect number of arguments: expected \(expected), got \(actual)"
         case .notALambda:
             return "Expected lambda as body of function declaration"
+        case .couldNotFindAncestorEnvironmentAtDepth(let depth):
+            return "Could not find ancestor environment at depth \(depth)."
         }
     }
 }
