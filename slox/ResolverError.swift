@@ -10,6 +10,7 @@ import Foundation
 enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case variableAccessedBeforeInitialization
     case notAFunction
+    case variableAlreadyDefined(String)
 
     var description: String {
         switch self {
@@ -17,6 +18,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Can't read local variable in its own initializer"
         case .notAFunction:
             return "Expected lambda as body of function declaration"
+        case .variableAlreadyDefined(let name):
+            return "Variable \(name) already defined in this scope"
         }
     }
 }

@@ -8,6 +8,7 @@
 struct Resolver {
     private var scopeStack: [[String: Bool]] = []
 
+    // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
         var resolvedStatements: [ResolvedStatement] = []
 
@@ -18,6 +19,7 @@ struct Resolver {
         return resolvedStatements
     }
 
+    // Resolver for statements
     private mutating func resolve(statement: Statement) throws -> ResolvedStatement {
         switch statement {
         case .block(let statements):
@@ -51,7 +53,7 @@ struct Resolver {
     }
 
     mutating private func handleVariableDeclaration(nameToken: Token, initializeExpr: Expression?) throws -> ResolvedStatement {
-        declareVariable(name: nameToken.lexeme)
+        try declareVariable(name: nameToken.lexeme)
 
         var resolvedInitializerExpr: ResolvedExpression? = nil
         if let initializeExpr {
@@ -67,7 +69,7 @@ struct Resolver {
             throw ResolverError.notAFunction
         }
 
-        declareVariable(name: nameToken.lexeme)
+        try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
         let resolvedLambda = try handleLambda(params: paramTokens, statements: statements)
@@ -115,6 +117,7 @@ struct Resolver {
         return .while(resolvedConditionExpr, resolvedBodyStmt)
     }
 
+    // Resolver for expressions
     mutating private func resolve(expression: Expression) throws -> ResolvedExpression {
         switch expression {
         case .variable(let nameToken):
@@ -198,7 +201,7 @@ struct Resolver {
         }
 
         for param in params {
-            declareVariable(name: param.lexeme)
+            try declareVariable(name: param.lexeme)
             defineVariable(name: param.lexeme)
         }
 
@@ -218,13 +221,17 @@ struct Resolver {
         scopeStack.removeLast()
     }
 
-    mutating private func declareVariable(name: String) {
+    mutating private func declareVariable(name: String) throws {
         // ACHTUNG!!! Only variables declared/defined in local
         // blocks are tracked by the resolver, which is why
         // we bail here since the stack is empty in the
         // global environment.
         if scopeStack.isEmpty {
             return
+        }
+
+        if scopeStack.lastMutable.keys.contains(name) {
+            throw ResolverError.variableAlreadyDefined(name)
         }
 
         scopeStack.lastMutable[name] = false
