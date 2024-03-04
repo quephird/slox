@@ -11,11 +11,8 @@ struct Resolver {
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
-        var resolvedStatements: [ResolvedStatement] = []
-
-        for statement in statements {
-            let resolvedStatement = try resolve(statement: statement)
-            resolvedStatements.append(resolvedStatement)
+        let resolvedStatements = try statements.map { statement in
+            return try resolve(statement: statement)
         }
         return resolvedStatements
     }

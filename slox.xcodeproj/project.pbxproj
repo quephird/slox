@@ -14,6 +14,7 @@
 		8702307A2B9575460056FE57 /* Resolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283952B95127100E49035 /* Resolver.swift */; };
 		8702307B2B95755E0056FE57 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
 		8702307C2B9575610056FE57 /* ResolvedStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283932B95122800E49035 /* ResolvedStatement.swift */; };
+		8702307E2B95AA2A0056FE57 /* ResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307D2B95AA2A0056FE57 /* ResolverTests.swift */; };
 		8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283902B93FC0900E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283922B95118A00E49035 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
@@ -72,6 +73,7 @@
 /* Begin PBXFileReference section */
 		870230742B9571490056FE57 /* MutableCollection+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MutableCollection+Extension.swift"; sourceTree = "<group>"; };
 		870230762B9574A90056FE57 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
+		8702307D2B95AA2A0056FE57 /* ResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverTests.swift; sourceTree = "<group>"; };
 		8732838E2B93F89300E49035 /* NativeFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFunction.swift; sourceTree = "<group>"; };
 		873283912B95118A00E49035 /* ResolvedExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedExpression.swift; sourceTree = "<group>"; };
 		873283932B95122800E49035 /* ResolvedStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedStatement.swift; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 			children = (
 				876A31562B8979BD0085A350 /* ScannerTests.swift */,
 				873CCB262B8E7AD100FC249A /* ParserTests.swift */,
+				8702307D2B95AA2A0056FE57 /* ResolverTests.swift */,
 				873CCB2B2B8E88A500FC249A /* InterpreterTests.swift */,
 			);
 			path = sloxTests;
@@ -306,6 +309,7 @@
 				873CCB342B8EE0FF00FC249A /* Environment.swift in Sources */,
 				8755B8B42B91983F00530DC4 /* UserDefinedFunction.swift in Sources */,
 				870230772B9575250056FE57 /* ResolverError.swift in Sources */,
+				8702307E2B95AA2A0056FE57 /* ResolverTests.swift in Sources */,
 				876A315C2B897C000085A350 /* Token.swift in Sources */,
 				876A31572B8979BD0085A350 /* ScannerTests.swift in Sources */,
 				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
