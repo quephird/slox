@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "B46B5910-702E-49A1-AC55-98D04F278EE5",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:slox.xcodeproj",
+        "identifier" : "876A31532B8979BD0085A350",
+        "name" : "sloxTests"
+      }
+    }
+  ],
+  "version" : 1
+}

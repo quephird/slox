@@ -17,30 +17,41 @@ class Environment: Equatable {
         values[name] = value
     }
 
-    func assign(name: String, value: LoxValue) throws {
-        if values.keys.contains(name) {
-            values[name] = value
-            return
-        }
+    func assignAtDepth(name: String, value: LoxValue, depth: Int) throws {
+        let ancestor = try ancestor(depth: depth)
 
-        if let enclosingEnvironment = enclosingEnvironment {
-            try enclosingEnvironment.assign(name: name, value: value)
+        if ancestor.values.keys.contains(name) {
+            ancestor.values[name] = value
             return
         }
 
         throw RuntimeError.undefinedVariable(name)
     }
 
-    func getValue(name: String) throws -> LoxValue {
-        if let value = values[name] {
+    func getValueAtDepth(name: String, depth: Int) throws -> LoxValue {
+        let ancestor = try ancestor(depth: depth)
+
+        if let value = ancestor.values[name] {
             return value
         }
 
-        if let enclosingEnvironment = enclosingEnvironment {
-            return try enclosingEnvironment.getValue(name: name)
+        throw RuntimeError.undefinedVariable(name)
+    }
+
+    private func ancestor(depth: Int) throws -> Environment {
+        var i = 0
+        var ancestor: Environment = self
+        while i < depth {
+            guard let parent = ancestor.enclosingEnvironment else {
+                // NOTA BENE: This should not happen but it _is_ possible
+                throw RuntimeError.couldNotFindAncestorEnvironmentAtDepth(depth)
+            }
+
+            ancestor = parent
+            i = i + 1
         }
 
-        throw RuntimeError.undefinedVariable(name)
+        return ancestor
     }
 
     static func == (lhs: Environment, rhs: Environment) -> Bool {

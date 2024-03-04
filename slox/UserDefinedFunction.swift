@@ -12,7 +12,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
         return params.count
     }
     var enclosingEnvironment: Environment
-    var body: [Statement]
+    var body: [ResolvedStatement]
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         let newEnvironment = Environment(enclosingEnvironment: enclosingEnvironment)
