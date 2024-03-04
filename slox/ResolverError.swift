@@ -11,6 +11,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case variableAccessedBeforeInitialization
     case notAFunction
     case variableAlreadyDefined(String)
+    case cannotReturnOutsideFunction
 
     var description: String {
         switch self {
@@ -20,6 +21,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Expected lambda as body of function declaration"
         case .variableAlreadyDefined(let name):
             return "Variable \(name) already defined in this scope"
+        case .cannotReturnOutsideFunction:
+            return "Cannot return from outside a function"
         }
     }
 }

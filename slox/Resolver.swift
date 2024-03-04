@@ -7,6 +7,7 @@
 
 struct Resolver {
     private var scopeStack: [[String: Bool]] = []
+    private var currentFunctionType: FunctionType = .none
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
@@ -72,7 +73,9 @@ struct Resolver {
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
-        let resolvedLambda = try handleLambda(params: paramTokens, statements: statements)
+        let resolvedLambda = try handleLambda(params: paramTokens,
+                                              statements: statements,
+                                              functionType: .function)
 
         return .function(nameToken, resolvedLambda)
     }
@@ -102,6 +105,10 @@ struct Resolver {
     }
 
     mutating private func handleReturnStatement(returnToken: Token, expr: Expression?) throws -> ResolvedStatement {
+        if currentFunctionType == .none {
+            throw ResolverError.cannotReturnOutsideFunction
+        }
+
         if let expr {
             let resolvedExpr = try resolve(expression: expr)
             return .return(returnToken, resolvedExpr)
@@ -138,7 +145,7 @@ struct Resolver {
         case .logical(let leftExpr, let operToken, let rightExpr):
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
         case .lambda(let params, let statements):
-            return try handleLambda(params: params, statements: statements)
+            return try handleLambda(params: params, statements: statements, functionType: .lambda)
         }
     }
 
@@ -194,10 +201,15 @@ struct Resolver {
         return .logical(resolvedLeftExpr, operToken, resolvedRightExpr)
     }
 
-    mutating private func handleLambda(params: [Token], statements: [Statement]) throws -> ResolvedExpression {
+    mutating private func handleLambda(params: [Token],
+                                       statements: [Statement],
+                                       functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
+        let previousFunctionType = currentFunctionType
+        currentFunctionType = .function
         defer {
             endScope()
+            currentFunctionType = previousFunctionType
         }
 
         for param in params {
