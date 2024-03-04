@@ -144,13 +144,13 @@ struct Resolver {
             throw ResolverError.variableAccessedBeforeInitialization
         }
 
-        let depth = resolveLocalVariable(name: nameToken.lexeme)
+        let depth = getDepth(name: nameToken.lexeme)
         return .variable(nameToken, depth)
     }
 
     mutating private func handleAssignment(nameToken: Token, valueExpr: Expression) throws -> ResolvedExpression {
         let resolveValueExpr = try resolve(expression: valueExpr)
-        let depth = resolveLocalVariable(name: nameToken.lexeme)
+        let depth = getDepth(name: nameToken.lexeme)
 
         return .assignment(nameToken, resolveValueExpr, depth)
     }
@@ -219,6 +219,10 @@ struct Resolver {
     }
 
     mutating private func declareVariable(name: String) {
+        // ACHTUNG!!! Only variables declared/defined in local
+        // blocks are tracked by the resolver, which is why
+        // we bail here since the stack is empty in the
+        // global environment.
         if scopeStack.isEmpty {
             return
         }
@@ -227,6 +231,10 @@ struct Resolver {
     }
 
     mutating private func defineVariable(name: String) {
+        // ACHTUNG!!! Only variables declared/defined in local
+        // blocks are tracked by the resolver, which is why
+        // we bail here since the stack is empty in the
+        // global environment.
         if scopeStack.isEmpty {
             return
         }
@@ -234,17 +242,21 @@ struct Resolver {
         scopeStack.lastMutable[name] = true
     }
 
-    private func resolveLocalVariable(name: String) -> Int {
+    private func getDepth(name: String) -> Int {
         var i = scopeStack.count - 1
         while i >= 0 {
-            if let isDefined = scopeStack[i][name] {
+            if let _ = scopeStack[i][name] {
                 return scopeStack.count - 1 - i
             }
 
             i = i - 1
         }
 
-        return scopeStack.count - 1
+        // If we get here, the variable must be defined
+        // in the global environment, and not tracked by the
+        // resolver, and so we return the depth required to
+        // fetch the value of that variable.
+        return scopeStack.count
     }
 }
 

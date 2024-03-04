@@ -142,9 +142,9 @@ class Interpreter {
         case .binary(let leftExpr, let oper, let rightExpr):
             return try handleBinaryExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .variable(let varToken, let depth):
-            return try environment.getValue(name: varToken.lexeme)
+            return try handleVariableExpression(varToken: varToken, depth: depth)
         case .assignment(let varToken, let valueExpr, let depth):
-            return try handleAssignmentExpression(name: varToken, expr: valueExpr)
+            return try handleAssignmentExpression(name: varToken, expr: valueExpr, depth: depth)
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
@@ -221,9 +221,15 @@ class Interpreter {
         }
     }
 
-    private func handleAssignmentExpression(name: Token, expr: ResolvedExpression) throws -> LoxValue {
+    private func handleVariableExpression(varToken: Token, depth: Int) throws -> LoxValue {
+        return try environment.getValueAtDepth(name: varToken.lexeme, depth: depth)
+    }
+
+    private func handleAssignmentExpression(name: Token,
+                                            expr: ResolvedExpression,
+                                            depth: Int) throws -> LoxValue {
         let value = try evaluate(expr: expr)
-        try environment.assign(name: name.lexeme, value: value)
+        try environment.assignAtDepth(name: name.lexeme, value: value, depth: depth)
         return value
     }
 
