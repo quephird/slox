@@ -22,25 +22,25 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     var description: String {
         switch self {
         case .unaryOperandMustBeNumber:
-            return "Operand must be a number"
+            return "Error: operand must be a number"
         case .unsupportedUnaryOperator:
-            return "Unsupported unary operator"
+            return "Error: unsupported unary operator"
         case .binaryOperandsMustBeNumbers:
-            return "Operands must be both numbers"
+            return "Error: operands must be both numbers"
         case .binaryOperandsMustBeNumbersOrStrings:
-            return "Operands must be either both numbers or both strings"
+            return "Error: operands must be either both numbers or both strings"
         case .unsupportedBinaryOperator:
-            return "Unsupported binary operator"
+            return "Error: unsupported binary operator"
         case .undefinedVariable(let name):
-            return "Undefined variable: \(name)"
+            return "Error: undefined variable: \(name)"
         case .notAFunction:
-            return "Can only call functions"
+            return "Error: can only call functions"
         case .wrongArity(let expected, let actual):
-            return "Incorrect number of arguments: expected \(expected), got \(actual)"
+            return "Error: incorrect number of arguments: expected \(expected), got \(actual)"
         case .notALambda:
-            return "Expected lambda as body of function declaration"
+            return "Error: expected lambda as body of function declaration"
         case .couldNotFindAncestorEnvironmentAtDepth(let depth):
-            return "Could not find ancestor environment at depth \(depth)."
+            return "Error: could not find ancestor environment at depth \(depth)."
         }
     }
 }
