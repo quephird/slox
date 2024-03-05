@@ -27,7 +27,9 @@ struct Resolver {
         case .class(let nameToken, let body):
             return try handleClassDeclaration(nameToken: nameToken, body: body)
         case .function(let nameToken, let lambdaExpr):
-            return try handleFunctionDeclaration(nameToken: nameToken, lambdaExpr: lambdaExpr)
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .function)
         case .expression(let expr):
             return try handleExpressionStatement(expr: expr)
         case .if(let testExpr, let consequentStmt, let alternativeStmt):
@@ -68,17 +70,23 @@ struct Resolver {
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
-        for method in body {
-            guard case .function = method else {
+        let resolvedBody = try body.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
                 throw ResolverError.notAFunction
             }
+
+            return try handleFunctionDeclaration(
+                nameToken: nameToken,
+                lambdaExpr: lambdaExpr,
+                functionType: .method)
         }
-        let resolvedBody = try resolve(statements: body)
 
         return .class(nameToken, resolvedBody)
     }
 
-    mutating private func handleFunctionDeclaration(nameToken: Token, lambdaExpr: Expression) throws -> ResolvedStatement {
+    mutating private func handleFunctionDeclaration(nameToken: Token,
+                                                    lambdaExpr: Expression,
+                                                    functionType: FunctionType) throws -> ResolvedStatement {
         guard case .lambda(let paramTokens, let statements) = lambdaExpr else {
             throw ResolverError.notAFunction
         }
@@ -88,7 +96,7 @@ struct Resolver {
 
         let resolvedLambda = try handleLambda(params: paramTokens,
                                               statements: statements,
-                                              functionType: .function)
+                                              functionType: functionType)
 
         return .function(nameToken, resolvedLambda)
     }
@@ -245,7 +253,7 @@ struct Resolver {
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
         let previousFunctionType = currentFunctionType
-        currentFunctionType = .function
+        currentFunctionType = functionType
         defer {
             endScope()
             currentFunctionType = previousFunctionType

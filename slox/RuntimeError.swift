@@ -14,6 +14,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case binaryOperandsMustBeNumbersOrStrings
     case unsupportedBinaryOperator
     case undefinedVariable(String)
+    case notAFunctionDeclaration
     case notACallableObject
     case onlyInstancesHaveProperties
     case undefinedProperty(String)
@@ -35,6 +36,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: unsupported binary operator"
         case .undefinedVariable(let name):
             return "Error: undefined variable '\(name)'"
+        case .notAFunctionDeclaration:
+            return "Error: expected function declaration in class"
         case .notACallableObject:
             return "Error: can only callable objects"
         case .onlyInstancesHaveProperties:

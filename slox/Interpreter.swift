@@ -84,9 +84,26 @@ class Interpreter {
         // NOTA BENE: We temporarily set the initial value associated with
         // the class name to `.nil` so that, according to the book,
         // "allows references to the class inside its own methods".
-        // We haven't gotten there yet.
         environment.define(name: nameToken.lexeme, value: .nil)
-        let newClass = LoxClass(name: nameToken.lexeme)
+
+        var methods: [String: UserDefinedFunction] = [:]
+        for method in body {
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw RuntimeError.notAFunctionDeclaration
+            }
+
+            guard case .lambda(let paramTokens, let methodBody) = lambdaExpr else {
+                throw RuntimeError.notALambda
+            }
+
+            let method = UserDefinedFunction(name: nameToken.lexeme,
+                                             params: paramTokens,
+                                             enclosingEnvironment: environment,
+                                             body: methodBody)
+            methods[nameToken.lexeme] = method
+        }
+
+        let newClass = LoxClass(name: nameToken.lexeme, methods: methods)
         try environment.assignAtDepth(name: nameToken.lexeme, value: .class(newClass), depth: 0)
     }
 
@@ -327,10 +344,10 @@ class Interpreter {
     private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
-        let function = UserDefinedFunction(name: "<lambda>",
-                                   params: params,
-                                   enclosingEnvironment: environmentWhenDeclared,
-                                   body: statements)
+        let function = UserDefinedFunction(name: "lambda",
+                                           params: params,
+                                           enclosingEnvironment: environmentWhenDeclared,
+                                           body: statements)
 
         return .userDefinedFunction(function)
     }

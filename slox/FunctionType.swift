@@ -8,5 +8,6 @@
 enum FunctionType {
     case none
     case function
+    case method
     case lambda
 }

@@ -18,6 +18,10 @@ class LoxInstance: Equatable {
             return propertyValue
         }
 
+        if let method = klass.methods[propertyName] {
+            return .userDefinedFunction(method)
+        }
+
         throw RuntimeError.undefinedProperty(propertyName)
     }
 
