@@ -328,7 +328,8 @@ struct Parser {
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     //    unary          → ( "!" | "-" ) unary
     //                   | call ;
-    //    call           → primary ( "(" arguments? ")" )* ;
+    //    call           → primary ( "(" arguments? ")" )*
+    //                   | "." IDENTIFIER )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
     //                   | IDENTIFIER
@@ -450,6 +451,12 @@ struct Parser {
                 }
 
                 expr = .call(expr, previousToken, args)
+            } else if currentTokenMatchesAny(types: [.dot]) {
+                if !currentTokenMatchesAny(types: [.identifier]) {
+                    throw ParseError.missingIdentifierAfterDot(currentToken)
+                }
+
+                expr = .get(expr, previousToken)
             } else {
                 break
             }

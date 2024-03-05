@@ -15,6 +15,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case unsupportedBinaryOperator
     case undefinedVariable(String)
     case notACallableObject
+    case notAnInstance
+    case undefinedProperty(String)
     case wrongArity(Int, Int)
     case notALambda
     case couldNotFindAncestorEnvironmentAtDepth(Int)
@@ -32,11 +34,15 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
         case .unsupportedBinaryOperator:
             return "Error: unsupported binary operator"
         case .undefinedVariable(let name):
-            return "Error: undefined variable: \(name)"
+            return "Error: undefined variable '\(name)'"
         case .notACallableObject:
             return "Error: can only callable objects"
+        case .notAnInstance:
+            return "Error: can only fetch properties of instances"
+        case .undefinedProperty(let name):
+            return "Error: undefined property '\(name)'"
         case .wrongArity(let expected, let actual):
-            return "Error: incorrect number of arguments: expected \(expected), got \(actual)"
+            return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
         case .notALambda:
             return "Error: expected lambda as body of function declaration"
         case .couldNotFindAncestorEnvironmentAtDepth(let depth):

@@ -28,6 +28,7 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingParameterName(Token)
     case missingOpenBraceBeforeFunctionBody(Token)
     case missingCloseParenAfterArguments(Token)
+    case missingIdentifierAfterDot(Token)
 
     var description: String {
         switch self {
@@ -71,6 +72,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected open brace before function body"
         case .missingCloseParenAfterArguments(let token):
             return "[Line \(token.line)] Error: expected right parenthesis after arguments"
+        case .missingIdentifierAfterDot(let token):
+            return "[Line \(token.line)] Error: expected identifer after dot"
         }
     }
 }

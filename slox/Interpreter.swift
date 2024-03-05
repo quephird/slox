@@ -161,6 +161,8 @@ class Interpreter {
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
             return try handleCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
+        case .get(let instanceExpr, let propertyNameToken):
+            return try handleGetExpression(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
         case .lambda(let params, let statements):
             return try handleLambdaExpression(params: params, statements: statements)
         }
@@ -292,6 +294,16 @@ class Interpreter {
         }
 
         return try actualCallable.call(interpreter: self, args: argValues)
+    }
+
+    private func handleGetExpression(instanceExpr: ResolvedExpression,
+                                     propertyNameToken: Token) throws -> LoxValue {
+        let instanceValue = try evaluate(expr: instanceExpr)
+        guard case .instance(let instance) = instanceValue else {
+            throw RuntimeError.notAnInstance
+        }
+
+        return try instance.get(propertyName: propertyNameToken.lexeme)
     }
 
     private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {

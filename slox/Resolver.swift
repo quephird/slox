@@ -150,6 +150,8 @@ struct Resolver {
             return try handleUnary(operToken: operToken, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParenToken, let args):
             return try handleCall(calleeExpr: calleeExpr, rightParenToken: rightParenToken, args: args)
+        case .get(let instanceExpr, let propertyNameToken):
+            return try handleGet(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
         case .literal(let value):
             return .literal(value)
         case .grouping(let expr):
@@ -203,6 +205,15 @@ struct Resolver {
         }
 
         return .call(resolvedCalleeExpr, rightParenToken, resolvedArgs)
+    }
+
+    mutating private func handleGet(instanceExpr: Expression,
+                                    propertyNameToken: Token) throws -> ResolvedExpression {
+        // Note that we don't attempt to resolve property names
+        // because they are defined and looked up at _runtime_.
+        let resolvedInstanceExpr = try resolve(expression: instanceExpr)
+
+        return .get(resolvedInstanceExpr, propertyNameToken)
     }
 
     mutating private func handleLogical(leftExpr: Expression,
