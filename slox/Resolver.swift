@@ -24,6 +24,8 @@ struct Resolver {
             return try handleBlock(statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
+        case .class(let nameToken, let body):
+            return try handleClassDeclaration(nameToken: nameToken, body: body)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken, lambdaExpr: lambdaExpr)
         case .expression(let expr):
@@ -60,6 +62,20 @@ struct Resolver {
 
         defineVariable(name: nameToken.lexeme)
         return .variableDeclaration(nameToken, resolvedInitializerExpr)
+    }
+
+    mutating private func handleClassDeclaration(nameToken: Token, body: [Statement]) throws -> ResolvedStatement {
+        try declareVariable(name: nameToken.lexeme)
+        defineVariable(name: nameToken.lexeme)
+
+        for method in body {
+            guard case .function = method else {
+                throw ResolverError.notAFunction
+            }
+        }
+        let resolvedBody = try resolve(statements: body)
+
+        return .class(nameToken, resolvedBody)
     }
 
     mutating private func handleFunctionDeclaration(nameToken: Token, lambdaExpr: Expression) throws -> ResolvedStatement {

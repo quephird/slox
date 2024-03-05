@@ -56,6 +56,8 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
+        case .class(let nameToken, let body):
+            try handleClassDeclaration(nameToken: nameToken, body: body)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -76,6 +78,16 @@ class Interpreter {
     private func handlePrintStatement(expr: ResolvedExpression) throws {
         let literal = try evaluate(expr: expr)
         print(literal)
+    }
+
+    private func handleClassDeclaration(nameToken: Token, body: [ResolvedStatement]) throws {
+        // NOTA BENE: We temporarily set the initial value associated with
+        // the class name to `.nil` so that, according to the book,
+        // "allows references to the class inside its own methods".
+        // We haven't gotten there yet.
+        environment.define(name: nameToken.lexeme, value: .nil)
+        let newClass = LoxClass(name: nameToken.lexeme)
+        try environment.assignAtDepth(name: nameToken.lexeme, value: .class(newClass), depth: 0)
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
