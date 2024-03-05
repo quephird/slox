@@ -15,7 +15,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case unsupportedBinaryOperator
     case undefinedVariable(String)
     case notACallableObject
-    case notAnInstance
+    case onlyInstancesHaveProperties
     case undefinedProperty(String)
     case wrongArity(Int, Int)
     case notALambda
@@ -37,8 +37,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: undefined variable '\(name)'"
         case .notACallableObject:
             return "Error: can only callable objects"
-        case .notAnInstance:
-            return "Error: can only fetch properties of instances"
+        case .onlyInstancesHaveProperties:
+            return "Error: can only get/set properties of instances"
         case .undefinedProperty(let name):
             return "Error: undefined property '\(name)'"
         case .wrongArity(let expected, let actual):

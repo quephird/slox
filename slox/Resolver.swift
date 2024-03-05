@@ -152,6 +152,10 @@ struct Resolver {
             return try handleCall(calleeExpr: calleeExpr, rightParenToken: rightParenToken, args: args)
         case .get(let instanceExpr, let propertyNameToken):
             return try handleGet(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
+        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSet(instanceExpr: instanceExpr,
+                                 propertyNameToken: propertyNameToken,
+                                 valueExpr: valueExpr)
         case .literal(let value):
             return .literal(value)
         case .grouping(let expr):
@@ -214,6 +218,17 @@ struct Resolver {
         let resolvedInstanceExpr = try resolve(expression: instanceExpr)
 
         return .get(resolvedInstanceExpr, propertyNameToken)
+    }
+
+    mutating private func handleSet(instanceExpr: Expression,
+                                    propertyNameToken: Token,
+                                    valueExpr: Expression) throws -> ResolvedExpression {
+        // As with `get` expressions, we do _not_ try to
+        // resolve property names.
+        let resolvedInstanceExpr = try resolve(expression: instanceExpr)
+        let resolvedValueExpr = try resolve(expression: valueExpr)
+
+        return .set(resolvedInstanceExpr, propertyNameToken, resolvedValueExpr)
     }
 
     mutating private func handleLogical(leftExpr: Expression,

@@ -21,6 +21,10 @@ class LoxInstance: Equatable {
         throw RuntimeError.undefinedProperty(propertyName)
     }
 
+    func set(propertyName: String, propertyValue: LoxValue) {
+        self.properties[propertyName] = propertyValue
+    }
+
     static func == (lhs: LoxInstance, rhs: LoxInstance) -> Bool {
         return lhs === rhs
     }

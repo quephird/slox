@@ -163,6 +163,10 @@ class Interpreter {
             return try handleCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
         case .get(let instanceExpr, let propertyNameToken):
             return try handleGetExpression(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
+        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSetExpression(instanceExpr: instanceExpr,
+                                           propertyNameToken: propertyNameToken,
+                                           valueExpr: valueExpr)
         case .lambda(let params, let statements):
             return try handleLambdaExpression(params: params, statements: statements)
         }
@@ -300,10 +304,24 @@ class Interpreter {
                                      propertyNameToken: Token) throws -> LoxValue {
         let instanceValue = try evaluate(expr: instanceExpr)
         guard case .instance(let instance) = instanceValue else {
-            throw RuntimeError.notAnInstance
+            throw RuntimeError.onlyInstancesHaveProperties
         }
 
         return try instance.get(propertyName: propertyNameToken.lexeme)
+    }
+
+    private func handleSetExpression(instanceExpr: ResolvedExpression,
+                                     propertyNameToken: Token,
+                                     valueExpr: ResolvedExpression) throws -> LoxValue {
+        let instanceValue = try evaluate(expr: instanceExpr)
+        guard case .instance(let instance) = instanceValue else {
+            throw RuntimeError.onlyInstancesHaveProperties
+        }
+
+        let propertyValue = try evaluate(expr: valueExpr)
+
+        instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
+        return propertyValue
     }
 
     private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {

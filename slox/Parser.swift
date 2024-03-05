@@ -318,7 +318,7 @@ struct Parser {
     // in _ascending_ order:
     //
     //    expression     → assignment ;
-    //    assignment     → IDENTIFIER "=" assignment
+    //    assignment     → ( call "." )? IDENTIFIER "=" assignment
     //                   | logicOr ;
     //    logicOr        → logicAnd ( "or" logicAnd )* ;
     //    logicAnd       → equality ( "and" equality )* ;
@@ -349,6 +349,8 @@ struct Parser {
 
             if case .variable(let name) = expr {
                 return .assignment(name, valueExpr)
+            } else if case .get(let instanceExpr, let propertyNameToken) = expr {
+                return .set(instanceExpr, propertyNameToken, valueExpr)
             }
 
             throw ParseError.invalidAssignmentTarget(equalToken)
