@@ -14,7 +14,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case binaryOperandsMustBeNumbersOrStrings
     case unsupportedBinaryOperator
     case undefinedVariable(String)
-    case notAFunction
+    case notACallableObject
     case wrongArity(Int, Int)
     case notALambda
     case couldNotFindAncestorEnvironmentAtDepth(Int)
@@ -33,8 +33,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: unsupported binary operator"
         case .undefinedVariable(let name):
             return "Error: undefined variable: \(name)"
-        case .notAFunction:
-            return "Error: can only call functions"
+        case .notACallableObject:
+            return "Error: can only callable objects"
         case .wrongArity(let expected, let actual):
             return "Error: incorrect number of arguments: expected \(expected), got \(actual)"
         case .notALambda:

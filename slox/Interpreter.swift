@@ -160,7 +160,7 @@ class Interpreter {
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
-            return try handleFunctionCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
+            return try handleCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
         case .lambda(let params, let statements):
             return try handleLambdaExpression(params: params, statements: statements)
         }
@@ -265,22 +265,24 @@ class Interpreter {
         }
     }
 
-    private func handleFunctionCallExpression(calleeExpr: ResolvedExpression,
-                                              rightParen: Token,
-                                              args: [ResolvedExpression]) throws -> LoxValue {
+    private func handleCallExpression(calleeExpr: ResolvedExpression,
+                                      rightParen: Token,
+                                      args: [ResolvedExpression]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
 
-        let actualFunction: LoxCallable = switch callee {
+        let actualCallable: LoxCallable = switch callee {
         case .userDefinedFunction(let userDefinedFunction):
             userDefinedFunction
         case .nativeFunction(let nativeFunction):
             nativeFunction
+        case .class(let klass):
+            klass
         default:
-            throw RuntimeError.notAFunction
+            throw RuntimeError.notACallableObject
         }
 
-        guard args.count == actualFunction.arity else {
-            throw RuntimeError.wrongArity(actualFunction.arity, args.count)
+        guard args.count == actualCallable.arity else {
+            throw RuntimeError.wrongArity(actualCallable.arity, args.count)
         }
 
         var argValues: [LoxValue] = []
@@ -289,7 +291,7 @@ class Interpreter {
             argValues.append(argValue)
         }
 
-        return try actualFunction.call(interpreter: self, args: argValues)
+        return try actualCallable.call(interpreter: self, args: argValues)
     }
 
     private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {
