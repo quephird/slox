@@ -17,4 +17,5 @@ indirect enum Expression: Equatable {
     case lambda([Token], [Statement])
     case get(Expression, Token)
     case set(Expression, Token, Expression)
+    case this(Token)
 }

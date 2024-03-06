@@ -332,6 +332,7 @@ struct Parser {
     //                   | "." IDENTIFIER )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
+    //                   | "this"
     //                   | IDENTIFIER
     //                   | lambda ;
     //    lambda         → "fun" "(" parameters? ")" block ;
@@ -499,6 +500,10 @@ struct Parser {
             }
 
             throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.this]) {
+            return .this(previousToken)
         }
 
         if currentTokenMatchesAny(types: [.identifier]) {

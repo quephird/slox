@@ -17,4 +17,5 @@ indirect enum ResolvedExpression: Equatable {
     case lambda([Token], [ResolvedStatement])
     case get(ResolvedExpression, Token)
     case set(ResolvedExpression, Token, ResolvedExpression)
+    case this(Token, Int)
 }

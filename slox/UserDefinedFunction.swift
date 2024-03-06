@@ -29,4 +29,16 @@ struct UserDefinedFunction: LoxCallable, Equatable {
 
         return .nil
     }
+
+    func bind(instance: LoxInstance) -> Self {
+        // We do this to ensure that `this` is 1) available to the method
+        // when invoked, and 2) that `this` resolves to the correct instance,
+        // namely the one that owns this method.
+        let newEnvironment = Environment(enclosingEnvironment: enclosingEnvironment)
+        newEnvironment.define(name: "this", value: .instance(instance))
+        return UserDefinedFunction(name: name,
+                                   params: params,
+                                   enclosingEnvironment: newEnvironment,
+                                   body: body)
+    }
 }

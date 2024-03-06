@@ -70,6 +70,13 @@ struct Resolver {
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
+        beginScope()
+        // NOTA BENE: Note that the scope stack is never empty at this point
+        scopeStack.lastMutable["this"] = true
+        defer {
+            endScope()
+        }
+
         let resolvedBody = try body.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
                 throw ResolverError.notAFunction
@@ -164,6 +171,8 @@ struct Resolver {
             return try handleSet(instanceExpr: instanceExpr,
                                  propertyNameToken: propertyNameToken,
                                  valueExpr: valueExpr)
+        case .this(let thisToken):
+            return try handleThis(thisToken: thisToken)
         case .literal(let value):
             return .literal(value)
         case .grouping(let expr):
@@ -237,6 +246,11 @@ struct Resolver {
         let resolvedValueExpr = try resolve(expression: valueExpr)
 
         return .set(resolvedInstanceExpr, propertyNameToken, resolvedValueExpr)
+    }
+
+    mutating private func handleThis(thisToken: Token) throws -> ResolvedExpression {
+        let depth = getDepth(name: thisToken.lexeme)
+        return .this(thisToken, depth)
     }
 
     mutating private func handleLogical(leftExpr: Expression,

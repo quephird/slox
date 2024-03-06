@@ -184,6 +184,8 @@ class Interpreter {
             return try handleSetExpression(instanceExpr: instanceExpr,
                                            propertyNameToken: propertyNameToken,
                                            valueExpr: valueExpr)
+        case .this(let thisToken, let depth):
+            return try handleThis(thisToken: thisToken, depth: depth)
         case .lambda(let params, let statements):
             return try handleLambdaExpression(params: params, statements: statements)
         }
@@ -339,6 +341,10 @@ class Interpreter {
 
         instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
         return propertyValue
+    }
+
+    private func handleThis(thisToken: Token, depth: Int) throws -> LoxValue {
+        return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
     }
 
     private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {

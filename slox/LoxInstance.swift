@@ -19,7 +19,8 @@ class LoxInstance: Equatable {
         }
 
         if let method = klass.methods[propertyName] {
-            return .userDefinedFunction(method)
+            let boundMethod = method.bind(instance: self)
+            return .userDefinedFunction(boundMethod)
         }
 
         throw RuntimeError.undefinedProperty(propertyName)
