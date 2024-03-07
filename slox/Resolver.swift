@@ -6,8 +6,21 @@
 //
 
 struct Resolver {
+    private enum FunctionType {
+        case none
+        case function
+        case method
+        case lambda
+    }
+
+    private enum ClassType {
+        case none
+        case `class`
+    }
+
     private var scopeStack: [[String: Bool]] = []
     private var currentFunctionType: FunctionType = .none
+    private var currentClassType: ClassType = .none
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
@@ -67,6 +80,9 @@ struct Resolver {
     }
 
     mutating private func handleClassDeclaration(nameToken: Token, body: [Statement]) throws -> ResolvedStatement {
+        let previousClassType = currentClassType
+        currentClassType = .class
+
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
@@ -75,6 +91,7 @@ struct Resolver {
         scopeStack.lastMutable["this"] = true
         defer {
             endScope()
+            currentClassType = previousClassType
         }
 
         let resolvedBody = try body.map { method in
@@ -249,6 +266,10 @@ struct Resolver {
     }
 
     mutating private func handleThis(thisToken: Token) throws -> ResolvedExpression {
+        guard case .class = currentClassType else {
+            throw ResolverError.cannotReferenceThisOutsideClass
+        }
+
         let depth = getDepth(name: thisToken.lexeme)
         return .this(thisToken, depth)
     }

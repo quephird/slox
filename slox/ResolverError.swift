@@ -12,6 +12,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case notAFunction
     case variableAlreadyDefined(String)
     case cannotReturnOutsideFunction
+    case cannotReferenceThisOutsideClass
 
     var description: String {
         switch self {
@@ -23,6 +24,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Variable \(name) already defined in this scope"
         case .cannotReturnOutsideFunction:
             return "Cannot return from outside a function"
+        case .cannotReferenceThisOutsideClass:
+            return "Cannot use `this` from outside a class"
         }
     }
 }

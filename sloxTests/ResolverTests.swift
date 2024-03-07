@@ -237,4 +237,27 @@ final class ResolverTests: XCTestCase {
         ]
         XCTAssertEqual(actual, expected)
     }
+
+    func testResolveIllegalUseOfThis() throws {
+        // fun foo() {
+        //     return this;
+        // }
+        let statements: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "foo", line: 1),
+                .lambda(
+                    [],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .this(Token(type: .this, lexeme: "this", line: 2)))
+                    ])),
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotReferenceThisOutsideClass
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }
