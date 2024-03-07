@@ -196,4 +196,45 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveClassDeclaration() throws {
+        let statements: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "sayName", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .print(
+                                    .get(
+                                        .this(Token(type: .this, lexeme: "this", line: 3)),
+                                        Token(type: .identifier, lexeme: "name", line: 3)))
+                            ]))
+                ])
+        ]
+
+        var resolver = Resolver()
+        let actual = try resolver.resolve(statements: statements)
+        let expected: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "sayName", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .print(
+                                    .get(
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 3),
+                                            1),
+                                        Token(type: .identifier, lexeme: "name", line: 3)))
+                            ]))
+                ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
 }
