@@ -18,6 +18,8 @@ So far, the following have been implemented in `slox`:
 - Variable declaration and assignment
 - Function declaration and invocation
 - Lambda expressions
+- Class declaration and instantiation
+- Instance properties and methods
 
 # Design
 
@@ -55,6 +57,10 @@ I also decided to create specialized error enums, one for each phase of processi
 ### Native functions
 
 Instead of maintaining set of native functions in `Interpreter`'s constructor, they reside inside the `NativeFunction` enum. When the interpreter is constructed, it defines each of the native functions enumerated in `NativeFunction`. That keeps the responsibility of `Interpreter` clean and focused.
+
+# Unit testing
+
+This repository contains a fairly comprehensive suite of unit tests that exercise the scanner, parser, resolver, and interpreter; to run them, hit ⌘-U.
 
 # Relevant links
 
