@@ -11,6 +11,7 @@ struct Resolver {
         case function
         case method
         case lambda
+        case initializer
     }
 
     private enum ClassType {
@@ -99,10 +100,15 @@ struct Resolver {
                 throw ResolverError.notAFunction
             }
 
+            let functionType: FunctionType = if nameToken.lexeme == "init" {
+                .initializer
+            } else {
+                .method
+            }
             return try handleFunctionDeclaration(
                 nameToken: nameToken,
                 lambdaExpr: lambdaExpr,
-                functionType: .method)
+                functionType: functionType)
         }
 
         return .class(nameToken, resolvedBody)
@@ -154,7 +160,13 @@ struct Resolver {
             throw ResolverError.cannotReturnOutsideFunction
         }
 
+        // NOTA BENE: We allow for an initializer to have a `return`
+        // statement if it does _not_ include an expression.
         if let expr {
+            if currentFunctionType == .initializer {
+                throw ResolverError.cannotReturnValueFromInitializer
+            }
+
             let resolvedExpr = try resolve(expression: expr)
             return .return(returnToken, resolvedExpr)
         }

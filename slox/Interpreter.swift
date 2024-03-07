@@ -96,10 +96,12 @@ class Interpreter {
                 throw RuntimeError.notALambda
             }
 
+            let isInitializer = nameToken.lexeme == "init"
             let method = UserDefinedFunction(name: nameToken.lexeme,
                                              params: paramTokens,
                                              enclosingEnvironment: environment,
-                                             body: methodBody)
+                                             body: methodBody,
+                                             isInitializer: isInitializer)
             methods[nameToken.lexeme] = method
         }
 
@@ -114,9 +116,10 @@ class Interpreter {
 
         let environmentWhenDeclared = self.environment
         let function = UserDefinedFunction(name: name.lexeme,
-                                   params: params,
-                                   enclosingEnvironment: environmentWhenDeclared,
-                                   body: body)
+                                           params: params,
+                                           enclosingEnvironment: environmentWhenDeclared,
+                                           body: body,
+                                           isInitializer: false)
         environment.define(name: name.lexeme, value: .userDefinedFunction(function))
     }
 
@@ -353,7 +356,8 @@ class Interpreter {
         let function = UserDefinedFunction(name: "lambda",
                                            params: params,
                                            enclosingEnvironment: environmentWhenDeclared,
-                                           body: statements)
+                                           body: statements,
+                                           isInitializer: false)
 
         return .userDefinedFunction(function)
     }

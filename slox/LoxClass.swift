@@ -8,6 +8,10 @@
 class LoxClass: LoxCallable, Equatable {
     var name: String
     var arity: Int {
+        if let initializer = methods["init"] {
+            return initializer.params.count
+        }
+
         return 0
     }
     var methods: [String: UserDefinedFunction]
@@ -22,6 +26,13 @@ class LoxClass: LoxCallable, Equatable {
     }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
-        return .instance(LoxInstance(klass: self))
+        let newInstance = LoxInstance(klass: self)
+
+        if let initializer = methods["init"] {
+            let boundInit = initializer.bind(instance: newInstance)
+            let _ = try boundInit.call(interpreter: interpreter, args: args)
+        }
+
+        return .instance(newInstance)
     }
 }
