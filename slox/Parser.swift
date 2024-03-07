@@ -32,9 +32,11 @@ struct Parser {
     // Statements are parsed in the following order:
     //
     //    program        → declaration* EOF ;
-    //    declaration    → funDecl
+    //    declaration    → classDecl
+    //                   | funDecl
     //                   | varDecl
     //                   | statement ;
+    //    classDecl      → "class" IDENTIFIER "{" function* "}" ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -56,6 +58,10 @@ struct Parser {
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement {
+        if currentTokenMatchesAny(types: [.class]) {
+            return try parseClassDeclaration()
+        }
+
         // We look ahead to see if the next token is an identifer,
         // and if so we assume this is a function declaration. Otherwise,
         // if the current token is `fun`, then we have a lambda, and we
@@ -70,6 +76,33 @@ struct Parser {
         }
 
         return try parseStatement()
+    }
+
+    mutating private func parseClassDeclaration() throws -> Statement {
+        guard case .identifier = currentToken.type else {
+            throw ParseError.missingClassName(currentToken)
+        }
+        let className = currentToken
+        advanceCursor()
+
+        if !currentTokenMatchesAny(types: [.leftBrace]) {
+            throw ParseError.missingOpenBraceBeforeClassBody(currentToken)
+        }
+
+        var methodStatements: [Statement] = []
+        while currentToken.type != .rightBrace && currentToken.type != .eof {
+            // Note that we don't look for/consume a `fun` token before
+            // calling `parseFunctionDeclaration()`. That's a deliberate
+            // design decision by the original author.
+            let methodStatement = try parseFunctionDeclaration()
+            methodStatements.append(methodStatement)
+        }
+
+        if currentTokenMatchesAny(types: [.rightBrace]) {
+            return .class(className, methodStatements)
+        }
+
+        throw ParseError.missingClosingBrace(previousToken)
     }
 
     mutating private func parseFunctionDeclaration() throws -> Statement {
@@ -285,7 +318,7 @@ struct Parser {
     // in _ascending_ order:
     //
     //    expression     → assignment ;
-    //    assignment     → IDENTIFIER "=" assignment
+    //    assignment     → ( call "." )? IDENTIFIER "=" assignment
     //                   | logicOr ;
     //    logicOr        → logicAnd ( "or" logicAnd )* ;
     //    logicAnd       → equality ( "and" equality )* ;
@@ -295,9 +328,11 @@ struct Parser {
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     //    unary          → ( "!" | "-" ) unary
     //                   | call ;
-    //    call           → primary ( "(" arguments? ")" )* ;
+    //    call           → primary ( "(" arguments? ")" )*
+    //                   | "." IDENTIFIER )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
+    //                   | "this"
     //                   | IDENTIFIER
     //                   | lambda ;
     //    lambda         → "fun" "(" parameters? ")" block ;
@@ -315,6 +350,8 @@ struct Parser {
 
             if case .variable(let name) = expr {
                 return .assignment(name, valueExpr)
+            } else if case .get(let instanceExpr, let propertyNameToken) = expr {
+                return .set(instanceExpr, propertyNameToken, valueExpr)
             }
 
             throw ParseError.invalidAssignmentTarget(equalToken)
@@ -417,6 +454,12 @@ struct Parser {
                 }
 
                 expr = .call(expr, previousToken, args)
+            } else if currentTokenMatchesAny(types: [.dot]) {
+                if !currentTokenMatchesAny(types: [.identifier]) {
+                    throw ParseError.missingIdentifierAfterDot(currentToken)
+                }
+
+                expr = .get(expr, previousToken)
             } else {
                 break
             }
@@ -457,6 +500,10 @@ struct Parser {
             }
 
             throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.this]) {
+            return .this(previousToken)
         }
 
         if currentTokenMatchesAny(types: [.identifier]) {

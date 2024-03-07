@@ -56,6 +56,8 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
+        case .class(let nameToken, let body):
+            try handleClassDeclaration(nameToken: nameToken, body: body)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -78,6 +80,35 @@ class Interpreter {
         print(literal)
     }
 
+    private func handleClassDeclaration(nameToken: Token, body: [ResolvedStatement]) throws {
+        // NOTA BENE: We temporarily set the initial value associated with
+        // the class name to `.nil` so that, according to the book,
+        // "allows references to the class inside its own methods".
+        environment.define(name: nameToken.lexeme, value: .nil)
+
+        var methods: [String: UserDefinedFunction] = [:]
+        for method in body {
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw RuntimeError.notAFunctionDeclaration
+            }
+
+            guard case .lambda(let paramTokens, let methodBody) = lambdaExpr else {
+                throw RuntimeError.notALambda
+            }
+
+            let isInitializer = nameToken.lexeme == "init"
+            let method = UserDefinedFunction(name: nameToken.lexeme,
+                                             params: paramTokens,
+                                             enclosingEnvironment: environment,
+                                             body: methodBody,
+                                             isInitializer: isInitializer)
+            methods[nameToken.lexeme] = method
+        }
+
+        let newClass = LoxClass(name: nameToken.lexeme, methods: methods)
+        try environment.assignAtDepth(name: nameToken.lexeme, value: .class(newClass), depth: 0)
+    }
+
     private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
         guard case .lambda(let params, let body) = lambda else {
             throw RuntimeError.notALambda
@@ -85,9 +116,10 @@ class Interpreter {
 
         let environmentWhenDeclared = self.environment
         let function = UserDefinedFunction(name: name.lexeme,
-                                   params: params,
-                                   enclosingEnvironment: environmentWhenDeclared,
-                                   body: body)
+                                           params: params,
+                                           enclosingEnvironment: environmentWhenDeclared,
+                                           body: body,
+                                           isInitializer: false)
         environment.define(name: name.lexeme, value: .userDefinedFunction(function))
     }
 
@@ -148,7 +180,15 @@ class Interpreter {
         case .logical(let leftExpr, let oper, let rightExpr):
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
-            return try handleFunctionCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
+            return try handleCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
+        case .get(let instanceExpr, let propertyNameToken):
+            return try handleGetExpression(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
+        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSetExpression(instanceExpr: instanceExpr,
+                                           propertyNameToken: propertyNameToken,
+                                           valueExpr: valueExpr)
+        case .this(let thisToken, let depth):
+            return try handleThis(thisToken: thisToken, depth: depth)
         case .lambda(let params, let statements):
             return try handleLambdaExpression(params: params, statements: statements)
         }
@@ -253,22 +293,24 @@ class Interpreter {
         }
     }
 
-    private func handleFunctionCallExpression(calleeExpr: ResolvedExpression,
-                                              rightParen: Token,
-                                              args: [ResolvedExpression]) throws -> LoxValue {
+    private func handleCallExpression(calleeExpr: ResolvedExpression,
+                                      rightParen: Token,
+                                      args: [ResolvedExpression]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
 
-        let actualFunction: LoxCallable = switch callee {
+        let actualCallable: LoxCallable = switch callee {
         case .userDefinedFunction(let userDefinedFunction):
             userDefinedFunction
         case .nativeFunction(let nativeFunction):
             nativeFunction
+        case .class(let klass):
+            klass
         default:
-            throw RuntimeError.notAFunction
+            throw RuntimeError.notACallableObject
         }
 
-        guard args.count == actualFunction.arity else {
-            throw RuntimeError.wrongArity(actualFunction.arity, args.count)
+        guard args.count == actualCallable.arity else {
+            throw RuntimeError.wrongArity(actualCallable.arity, args.count)
         }
 
         var argValues: [LoxValue] = []
@@ -277,16 +319,45 @@ class Interpreter {
             argValues.append(argValue)
         }
 
-        return try actualFunction.call(interpreter: self, args: argValues)
+        return try actualCallable.call(interpreter: self, args: argValues)
+    }
+
+    private func handleGetExpression(instanceExpr: ResolvedExpression,
+                                     propertyNameToken: Token) throws -> LoxValue {
+        let instanceValue = try evaluate(expr: instanceExpr)
+        guard case .instance(let instance) = instanceValue else {
+            throw RuntimeError.onlyInstancesHaveProperties
+        }
+
+        return try instance.get(propertyName: propertyNameToken.lexeme)
+    }
+
+    private func handleSetExpression(instanceExpr: ResolvedExpression,
+                                     propertyNameToken: Token,
+                                     valueExpr: ResolvedExpression) throws -> LoxValue {
+        let instanceValue = try evaluate(expr: instanceExpr)
+        guard case .instance(let instance) = instanceValue else {
+            throw RuntimeError.onlyInstancesHaveProperties
+        }
+
+        let propertyValue = try evaluate(expr: valueExpr)
+
+        instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
+        return propertyValue
+    }
+
+    private func handleThis(thisToken: Token, depth: Int) throws -> LoxValue {
+        return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
     }
 
     private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
-        let function = UserDefinedFunction(name: "<lambda>",
-                                   params: params,
-                                   enclosingEnvironment: environmentWhenDeclared,
-                                   body: statements)
+        let function = UserDefinedFunction(name: "lambda",
+                                           params: params,
+                                           enclosingEnvironment: environmentWhenDeclared,
+                                           body: statements,
+                                           isInitializer: false)
 
         return .userDefinedFunction(function)
     }

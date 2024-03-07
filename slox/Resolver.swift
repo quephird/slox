@@ -6,8 +6,22 @@
 //
 
 struct Resolver {
+    private enum FunctionType {
+        case none
+        case function
+        case method
+        case lambda
+        case initializer
+    }
+
+    private enum ClassType {
+        case none
+        case `class`
+    }
+
     private var scopeStack: [[String: Bool]] = []
     private var currentFunctionType: FunctionType = .none
+    private var currentClassType: ClassType = .none
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
@@ -24,8 +38,12 @@ struct Resolver {
             return try handleBlock(statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
+        case .class(let nameToken, let body):
+            return try handleClassDeclaration(nameToken: nameToken, body: body)
         case .function(let nameToken, let lambdaExpr):
-            return try handleFunctionDeclaration(nameToken: nameToken, lambdaExpr: lambdaExpr)
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .function)
         case .expression(let expr):
             return try handleExpressionStatement(expr: expr)
         case .if(let testExpr, let consequentStmt, let alternativeStmt):
@@ -62,7 +80,43 @@ struct Resolver {
         return .variableDeclaration(nameToken, resolvedInitializerExpr)
     }
 
-    mutating private func handleFunctionDeclaration(nameToken: Token, lambdaExpr: Expression) throws -> ResolvedStatement {
+    mutating private func handleClassDeclaration(nameToken: Token, body: [Statement]) throws -> ResolvedStatement {
+        let previousClassType = currentClassType
+        currentClassType = .class
+
+        try declareVariable(name: nameToken.lexeme)
+        defineVariable(name: nameToken.lexeme)
+
+        beginScope()
+        // NOTA BENE: Note that the scope stack is never empty at this point
+        scopeStack.lastMutable["this"] = true
+        defer {
+            endScope()
+            currentClassType = previousClassType
+        }
+
+        let resolvedBody = try body.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw ResolverError.notAFunction
+            }
+
+            let functionType: FunctionType = if nameToken.lexeme == "init" {
+                .initializer
+            } else {
+                .method
+            }
+            return try handleFunctionDeclaration(
+                nameToken: nameToken,
+                lambdaExpr: lambdaExpr,
+                functionType: functionType)
+        }
+
+        return .class(nameToken, resolvedBody)
+    }
+
+    mutating private func handleFunctionDeclaration(nameToken: Token,
+                                                    lambdaExpr: Expression,
+                                                    functionType: FunctionType) throws -> ResolvedStatement {
         guard case .lambda(let paramTokens, let statements) = lambdaExpr else {
             throw ResolverError.notAFunction
         }
@@ -72,7 +126,7 @@ struct Resolver {
 
         let resolvedLambda = try handleLambda(params: paramTokens,
                                               statements: statements,
-                                              functionType: .function)
+                                              functionType: functionType)
 
         return .function(nameToken, resolvedLambda)
     }
@@ -106,7 +160,13 @@ struct Resolver {
             throw ResolverError.cannotReturnOutsideFunction
         }
 
+        // NOTA BENE: We allow for an initializer to have a `return`
+        // statement if it does _not_ include an expression.
         if let expr {
+            if currentFunctionType == .initializer {
+                throw ResolverError.cannotReturnValueFromInitializer
+            }
+
             let resolvedExpr = try resolve(expression: expr)
             return .return(returnToken, resolvedExpr)
         }
@@ -134,6 +194,14 @@ struct Resolver {
             return try handleUnary(operToken: operToken, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParenToken, let args):
             return try handleCall(calleeExpr: calleeExpr, rightParenToken: rightParenToken, args: args)
+        case .get(let instanceExpr, let propertyNameToken):
+            return try handleGet(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
+        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSet(instanceExpr: instanceExpr,
+                                 propertyNameToken: propertyNameToken,
+                                 valueExpr: valueExpr)
+        case .this(let thisToken):
+            return try handleThis(thisToken: thisToken)
         case .literal(let value):
             return .literal(value)
         case .grouping(let expr):
@@ -189,6 +257,35 @@ struct Resolver {
         return .call(resolvedCalleeExpr, rightParenToken, resolvedArgs)
     }
 
+    mutating private func handleGet(instanceExpr: Expression,
+                                    propertyNameToken: Token) throws -> ResolvedExpression {
+        // Note that we don't attempt to resolve property names
+        // because they are defined and looked up at _runtime_.
+        let resolvedInstanceExpr = try resolve(expression: instanceExpr)
+
+        return .get(resolvedInstanceExpr, propertyNameToken)
+    }
+
+    mutating private func handleSet(instanceExpr: Expression,
+                                    propertyNameToken: Token,
+                                    valueExpr: Expression) throws -> ResolvedExpression {
+        // As with `get` expressions, we do _not_ try to
+        // resolve property names.
+        let resolvedInstanceExpr = try resolve(expression: instanceExpr)
+        let resolvedValueExpr = try resolve(expression: valueExpr)
+
+        return .set(resolvedInstanceExpr, propertyNameToken, resolvedValueExpr)
+    }
+
+    mutating private func handleThis(thisToken: Token) throws -> ResolvedExpression {
+        guard case .class = currentClassType else {
+            throw ResolverError.cannotReferenceThisOutsideClass
+        }
+
+        let depth = getDepth(name: thisToken.lexeme)
+        return .this(thisToken, depth)
+    }
+
     mutating private func handleLogical(leftExpr: Expression,
                                         operToken: Token,
                                         rightExpr: Expression) throws -> ResolvedExpression {
@@ -203,7 +300,7 @@ struct Resolver {
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
         let previousFunctionType = currentFunctionType
-        currentFunctionType = .function
+        currentFunctionType = functionType
         defer {
             endScope()
             currentFunctionType = previousFunctionType

@@ -309,7 +309,7 @@ final class InterpreterTests: XCTestCase {
                                 1),
                             Token(type: .star, lexeme: "*", line: 3),
                             .literal(.number(2))),
-                            1)),
+                        1)),
             ]),
             .expression(
                 .variable(
@@ -374,8 +374,7 @@ final class InterpreterTests: XCTestCase {
                                 .variable(
                                     Token(type: .identifier, lexeme: "b", line: 2),
                                     0)))
-                    ])
-                ),
+                    ])),
             .expression(
                 .call(
                     .variable(
@@ -572,8 +571,7 @@ final class InterpreterTests: XCTestCase {
                                 .variable(
                                     Token(type: .identifier, lexeme: "b", line: 1),
                                     0)))
-                    ])
-                ),
+                    ])),
             .expression(
                 .call(
                     .variable(
@@ -595,5 +593,325 @@ final class InterpreterTests: XCTestCase {
         XCTAssertThrowsError(try interpreter.interpretRepl(statements: statements)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
+    }
+
+    func testInterpretClassDeclarationAndInstantiation() throws {
+        // class Person {}
+        // var person = Person();
+        // person.name = "Danielle";
+        // person.name
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                []),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "person", line: 2),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Person", line: 2),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 2),
+                    [])),
+            .expression(
+                .set(
+                    .variable(
+                        Token(type: .identifier, lexeme: "person", line: 3),
+                        0),
+                    Token(type: .identifier, lexeme: "name", line: 3),
+                    .literal(.string("Danielle")))),
+            .expression(
+                .get(
+                    .variable(
+                        Token(type: .identifier, lexeme: "person", line: 4),
+                        0),
+                    Token(type: .identifier, lexeme: "name", line: 4))),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .string("Danielle")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretMethodInvocation() throws {
+        // class Person {
+        //     sayHello(name) {
+        //         return "Hello, " + name;
+        //     }
+        // }
+        // var me = Person();
+        // me.sayHello("Becca")
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "sayHello", line: 2),
+                        .lambda(
+                            [
+                                Token(type: .identifier, lexeme: "name", line: 2)
+                            ],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .binary(
+                                        .literal(.string("Hello, ")),
+                                        Token(type: .plus, lexeme: "+", line: 3),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "name", line: 3),
+                                            0))),
+                            ])),
+                ]),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "me", line: 6),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Person", line: 6),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 6),
+                    [])),
+            .expression(
+                .call(
+                    .get(
+                        .variable(
+                            Token(type: .identifier, lexeme: "me", line: 7),
+                            0),
+                        Token(type: .identifier, lexeme: "sayHello", line: 7)),
+                    Token(type: .rightParen, lexeme: ")", line: 7),
+                    [
+                        .literal(.string("Becca"))
+                    ])),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .string("Hello, Becca")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretStatementsInvolvingThis() throws {
+        // class Person {
+        //     greeting() {
+        //         return "My name is " + this.name;
+        //     }
+        // }
+        // var me = Person();
+        // me.name = "Danielle";
+        // me.greeting()
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "greeting", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .binary(
+                                        .literal(.string("My name is ")),
+                                        Token(type: .plus, lexeme: "+", line: 3),
+                                        .get(
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 3),
+                                                1),
+                                            Token(type: .identifier, lexeme: "name", line: 3)))),
+                            ])),
+                ]),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "me", line: 6),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Person", line: 6),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 6),
+                    [])),
+            .expression(
+                .set(
+                    .variable(
+                        Token(type: .identifier, lexeme: "me", line: 7),
+                        0),
+                    Token(type: .identifier, lexeme: "name", line: 7),
+                    .literal(.string("Danielle")))),
+            .expression(
+                .call(
+                    .get(
+                        .variable(
+                            Token(type: .identifier, lexeme: "me", line: 8),
+                            0),
+                        Token(type: .identifier, lexeme: "greeting", line: 8)),
+                    Token(type: .rightParen, lexeme: ")", line: 8),
+                    [])),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .string("My name is Danielle")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretInstancePropertyHasNotYetBeenSet() throws {
+        // class Person {}
+        // var person = Person();
+        // person.name
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                []),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "person", line: 2),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Person", line: 2),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 2),
+                    [])),
+            .expression(
+                .get(
+                    .variable(
+                        Token(type: .identifier, lexeme: "person", line: 4),
+                        0),
+                    Token(type: .identifier, lexeme: "name", line: 4))),
+        ]
+
+        let interpreter = Interpreter()
+        let expectedError = RuntimeError.undefinedProperty("name")
+        XCTAssertThrowsError(try interpreter.interpretRepl(statements: statements)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
+    func testInterpretClassWithInitializerWithNonzeroArity() throws {
+        // class Person {
+        //     init(name, age) {
+        //         this.name = name;
+        //         this.age = age;
+        //     }
+        // }
+        // var me = Person("Danielle", 55);
+        // me.age
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "init", line: 2),
+                        .lambda(
+                            [
+                                Token(type: .identifier, lexeme: "name", line: 2),
+                                Token(type: .identifier, lexeme: "age", line: 2),
+                            ],
+                            [
+                                .expression(
+                                    .set(
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 3),
+                                            1),
+                                        Token(type: .identifier, lexeme: "name", line: 3),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "name", line: 3),
+                                            0))),
+                                .expression(
+                                    .set(
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 4),
+                                            1),
+                                        Token(type: .identifier, lexeme: "age", line: 4),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "age", line: 4),
+                                            0))),
+                            ]))
+                ]),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "person", line: 7),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Person", line: 7),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 7),
+                    [
+                        .literal(.string("Danielle")),
+                        .literal(.number(55)),
+                    ])),
+            .expression(
+                .get(
+                    .variable(
+                        Token(type: .identifier, lexeme: "person", line: 8),
+                        0),
+                    Token(type: .identifier, lexeme: "age", line: 8))),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(55)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretCallingInitDirectlyOnAnInstance() throws {
+        // class Person {
+        //     init(name) {
+        //         this.name = name;
+        //     }
+        // }
+        // var me = Person("Danielle");
+        // var becca = me.init("Becca");
+        // becca.name
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Person", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "init", line: 2),
+                        .lambda(
+                            [
+                                Token(type: .identifier, lexeme: "name", line: 2),
+                            ],
+                            [
+                                .expression(
+                                    .set(
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 3),
+                                            1),
+                                        Token(type: .identifier, lexeme: "name", line: 3),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "name", line: 3),
+                                            0))),
+                            ]))
+                ]),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "me", line: 6),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Person", line: 6),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 6),
+                    [
+                        .literal(.string("Danielle")),
+                    ])),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "becca", line: 6),
+                .call(
+                    .get(
+                        .variable(
+                            Token(type: .identifier, lexeme: "me", line: 6),
+                            0),
+                        Token(type: .identifier, lexeme: "init", line: 6)),
+                    Token(type: .rightParen, lexeme: ")", line: 6),
+                    [
+                        .literal(.string("Becca"))
+                    ])),
+            .expression(
+                .get(
+                    .variable(
+                        Token(type: .identifier, lexeme: "becca", line: 8),
+                        0),
+                    Token(type: .identifier, lexeme: "name", line: 8))),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .string("Becca")
+        XCTAssertEqual(actual, expected)
     }
 }

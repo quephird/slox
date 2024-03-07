@@ -9,19 +9,18 @@
 /* Begin PBXBuildFile section */
 		870230752B9571490056FE57 /* MutableCollection+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870230742B9571490056FE57 /* MutableCollection+Extension.swift */; };
 		870230772B9575250056FE57 /* ResolverError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283972B9523AD00E49035 /* ResolverError.swift */; };
-		870230782B95752C0056FE57 /* FunctionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283992B956A2F00E49035 /* FunctionType.swift */; };
 		870230792B9575420056FE57 /* MutableCollection+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870230742B9571490056FE57 /* MutableCollection+Extension.swift */; };
 		8702307A2B9575460056FE57 /* Resolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283952B95127100E49035 /* Resolver.swift */; };
 		8702307B2B95755E0056FE57 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
 		8702307C2B9575610056FE57 /* ResolvedStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283932B95122800E49035 /* ResolvedStatement.swift */; };
 		8702307E2B95AA2A0056FE57 /* ResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307D2B95AA2A0056FE57 /* ResolverTests.swift */; };
+		870230802B96E9580056FE57 /* LoxClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307F2B96E9580056FE57 /* LoxClass.swift */; };
 		8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283902B93FC0900E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283922B95118A00E49035 /* ResolvedExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283912B95118A00E49035 /* ResolvedExpression.swift */; };
 		873283942B95122800E49035 /* ResolvedStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283932B95122800E49035 /* ResolvedStatement.swift */; };
 		873283962B95127100E49035 /* Resolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283952B95127100E49035 /* Resolver.swift */; };
 		873283982B9523AD00E49035 /* ResolverError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283972B9523AD00E49035 /* ResolverError.swift */; };
-		8732839A2B956A2F00E49035 /* FunctionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283992B956A2F00E49035 /* FunctionType.swift */; };
 		873CCB212B8D5FAE00FC249A /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873CCB202B8D5FAE00FC249A /* Interpreter.swift */; };
 		873CCB232B8D617C00FC249A /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873CCB222B8D617C00FC249A /* RuntimeError.swift */; };
 		873CCB252B8D765D00FC249A /* Lox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873CCB242B8D765D00FC249A /* Lox.swift */; };
@@ -56,6 +55,9 @@
 		87BAFC492B9179CB0013E5FE /* LoxCallable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BAFC482B9179CB0013E5FE /* LoxCallable.swift */; };
 		87BAFC4B2B918C520013E5FE /* UserDefinedFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */; };
 		87C2F3742B91C2BA00126707 /* Return.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877168C12B91A9BD00723543 /* Return.swift */; };
+		87EEDFBE2B96F52D00C7FE6D /* LoxInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */; };
+		87EEDFBF2B9920F900C7FE6D /* LoxClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307F2B96E9580056FE57 /* LoxClass.swift */; };
+		87EEDFC02B9920FD00C7FE6D /* LoxInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -74,12 +76,12 @@
 		870230742B9571490056FE57 /* MutableCollection+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MutableCollection+Extension.swift"; sourceTree = "<group>"; };
 		870230762B9574A90056FE57 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		8702307D2B95AA2A0056FE57 /* ResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverTests.swift; sourceTree = "<group>"; };
+		8702307F2B96E9580056FE57 /* LoxClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxClass.swift; sourceTree = "<group>"; };
 		8732838E2B93F89300E49035 /* NativeFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFunction.swift; sourceTree = "<group>"; };
 		873283912B95118A00E49035 /* ResolvedExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedExpression.swift; sourceTree = "<group>"; };
 		873283932B95122800E49035 /* ResolvedStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedStatement.swift; sourceTree = "<group>"; };
 		873283952B95127100E49035 /* Resolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resolver.swift; sourceTree = "<group>"; };
 		873283972B9523AD00E49035 /* ResolverError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverError.swift; sourceTree = "<group>"; };
-		873283992B956A2F00E49035 /* FunctionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionType.swift; sourceTree = "<group>"; };
 		873CCB202B8D5FAE00FC249A /* Interpreter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interpreter.swift; sourceTree = "<group>"; };
 		873CCB222B8D617C00FC249A /* RuntimeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeError.swift; sourceTree = "<group>"; };
 		873CCB242B8D765D00FC249A /* Lox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lox.swift; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 		877168C12B91A9BD00723543 /* Return.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Return.swift; sourceTree = "<group>"; };
 		87BAFC482B9179CB0013E5FE /* LoxCallable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxCallable.swift; sourceTree = "<group>"; };
 		87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefinedFunction.swift; sourceTree = "<group>"; };
+		87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxInstance.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,10 +148,11 @@
 			children = (
 				873CCB322B8ED8B900FC249A /* Environment.swift */,
 				876A31642B8C04990085A350 /* Expression.swift */,
-				873283992B956A2F00E49035 /* FunctionType.swift */,
 				873CCB202B8D5FAE00FC249A /* Interpreter.swift */,
 				873CCB242B8D765D00FC249A /* Lox.swift */,
 				87BAFC482B9179CB0013E5FE /* LoxCallable.swift */,
+				8702307F2B96E9580056FE57 /* LoxClass.swift */,
+				87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */,
 				876A315E2B897EEB0085A350 /* LoxValue.swift */,
 				870230742B9571490056FE57 /* MutableCollection+Extension.swift */,
 				8732838E2B93F89300E49035 /* NativeFunction.swift */,
@@ -280,13 +284,14 @@
 				87BAFC492B9179CB0013E5FE /* LoxCallable.swift in Sources */,
 				873CCB212B8D5FAE00FC249A /* Interpreter.swift in Sources */,
 				877168C22B91A9BD00723543 /* Return.swift in Sources */,
+				870230802B96E9580056FE57 /* LoxClass.swift in Sources */,
 				876A31672B8C11810085A350 /* Parser.swift in Sources */,
-				8732839A2B956A2F00E49035 /* FunctionType.swift in Sources */,
 				876560072B8827F9002BDE42 /* Scanner.swift in Sources */,
 				87BAFC4B2B918C520013E5FE /* UserDefinedFunction.swift in Sources */,
 				873CCB332B8ED8B900FC249A /* Environment.swift in Sources */,
 				876A31652B8C04990085A350 /* Expression.swift in Sources */,
 				876560032B882259002BDE42 /* TokenType.swift in Sources */,
+				87EEDFBE2B96F52D00C7FE6D /* LoxInstance.swift in Sources */,
 				873283962B95127100E49035 /* Resolver.swift in Sources */,
 				8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */,
 				873283922B95118A00E49035 /* ResolvedExpression.swift in Sources */,
@@ -313,7 +318,6 @@
 				876A315C2B897C000085A350 /* Token.swift in Sources */,
 				876A31572B8979BD0085A350 /* ScannerTests.swift in Sources */,
 				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
-				870230782B95752C0056FE57 /* FunctionType.swift in Sources */,
 				873CCB312B8EBB7800FC249A /* Statement.swift in Sources */,
 				8755B8B52B91984C00530DC4 /* LoxCallable.swift in Sources */,
 				873283902B93FC0900E49035 /* NativeFunction.swift in Sources */,
@@ -322,7 +326,9 @@
 				873CCB282B8E7B6300FC249A /* Parser.swift in Sources */,
 				873CCB272B8E7AD100FC249A /* ParserTests.swift in Sources */,
 				876A315D2B897C020085A350 /* Scanner.swift in Sources */,
+				87EEDFBF2B9920F900C7FE6D /* LoxClass.swift in Sources */,
 				876A315B2B897BFD0085A350 /* TokenType.swift in Sources */,
+				87EEDFC02B9920FD00C7FE6D /* LoxInstance.swift in Sources */,
 				873CCB292B8E7B6900FC249A /* ParseError.swift in Sources */,
 				870230792B9575420056FE57 /* MutableCollection+Extension.swift in Sources */,
 				873CCB2A2B8E7BB600FC249A /* Expression.swift in Sources */,

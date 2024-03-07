@@ -12,6 +12,8 @@ enum LoxValue: CustomStringConvertible, Equatable {
     case `nil`
     case userDefinedFunction(UserDefinedFunction)
     case nativeFunction(NativeFunction)
+    case `class`(LoxClass)
+    case instance(LoxInstance)
 
     var description: String {
         switch self {
@@ -27,6 +29,10 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return "<function: \(function.name)>"
         case .nativeFunction(let function):
             return "<function: \(function)>"
+        case .class(let klass):
+            return "<class: \(klass.name)>"
+        case .instance(let instance):
+            return "<instance: \(instance.klass.name)>"
         }
     }
 }
