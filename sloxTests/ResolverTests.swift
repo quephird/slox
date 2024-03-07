@@ -260,4 +260,34 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveClassWithInitializerThatReturnsExplicitValue() throws {
+        // class Answer {
+        //     init() {
+        //         return 42;
+        //     }
+        // }
+        let statements: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Answer", line: 1),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "init", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .literal(.number(42)))
+                            ]))
+                ])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotReturnValueFromInitializer
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+
+    }
 }
