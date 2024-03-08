@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 3/4/24.
 //
 
-class LoxClass: LoxCallable, Equatable {
+class LoxClass: LoxInstance, LoxCallable {
     var name: String
     var arity: Int {
         if let initializer = methods["init"] {
@@ -16,9 +16,10 @@ class LoxClass: LoxCallable, Equatable {
     }
     var methods: [String: UserDefinedFunction]
 
-    init(name: String, methods: [String: UserDefinedFunction]) {
+    init(name: String, methods: [String: UserDefinedFunction], metaclass: LoxClass?) {
         self.name = name
         self.methods = methods
+        super.init(klass: metaclass)
     }
 
     static func == (lhs: LoxClass, rhs: LoxClass) -> Bool {

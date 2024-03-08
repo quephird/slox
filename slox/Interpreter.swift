@@ -56,8 +56,8 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
-        case .class(let nameToken, let body):
-            try handleClassDeclaration(nameToken: nameToken, body: body)
+        case .class(let nameToken, let methods, let staticMethods):
+            try handleClassDeclaration(nameToken: nameToken, methods: methods, staticMethods: staticMethods)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -80,14 +80,16 @@ class Interpreter {
         print(literal)
     }
 
-    private func handleClassDeclaration(nameToken: Token, body: [ResolvedStatement]) throws {
+    private func handleClassDeclaration(nameToken: Token,
+                                        methods: [ResolvedStatement],
+                                        staticMethods: [ResolvedStatement]) throws {
         // NOTA BENE: We temporarily set the initial value associated with
         // the class name to `.nil` so that, according to the book,
         // "allows references to the class inside its own methods".
         environment.define(name: nameToken.lexeme, value: .nil)
 
-        var methods: [String: UserDefinedFunction] = [:]
-        for method in body {
+        var methodImpls: [String: UserDefinedFunction] = [:]
+        for method in methods {
             guard case .function(let nameToken, let lambdaExpr) = method else {
                 throw RuntimeError.notAFunctionDeclaration
             }
@@ -97,15 +99,38 @@ class Interpreter {
             }
 
             let isInitializer = nameToken.lexeme == "init"
-            let method = UserDefinedFunction(name: nameToken.lexeme,
-                                             params: paramTokens,
-                                             enclosingEnvironment: environment,
-                                             body: methodBody,
-                                             isInitializer: isInitializer)
-            methods[nameToken.lexeme] = method
+            let methodImpl = UserDefinedFunction(name: nameToken.lexeme,
+                                                 params: paramTokens,
+                                                 enclosingEnvironment: environment,
+                                                 body: methodBody,
+                                                 isInitializer: isInitializer)
+            methodImpls[nameToken.lexeme] = methodImpl
         }
 
-        let newClass = LoxClass(name: nameToken.lexeme, methods: methods)
+        var staticMethodImpls: [String: UserDefinedFunction] = [:]
+        for staticMethod in staticMethods {
+            guard case .function(let nameToken, let lambdaExpr) = staticMethod else {
+                throw RuntimeError.notAFunctionDeclaration
+            }
+
+            guard case .lambda(let paramTokens, let methodBody) = lambdaExpr else {
+                throw RuntimeError.notALambda
+            }
+
+            let staticMethodImpl = UserDefinedFunction(name: nameToken.lexeme,
+                                                       params: paramTokens,
+                                                       enclosingEnvironment: environment,
+                                                       body: methodBody,
+                                                       isInitializer: false)
+            staticMethodImpls[nameToken.lexeme] = staticMethodImpl
+        }
+
+        let metaclass = LoxClass(name: "\(nameToken.lexeme) metaclass" ,
+                                 methods: staticMethodImpls,
+                                 metaclass: nil)
+        let newClass = LoxClass(name: nameToken.lexeme,
+                                methods: methodImpls,
+                                metaclass: metaclass)
         try environment.assignAtDepth(name: nameToken.lexeme, value: .class(newClass), depth: 0)
     }
 
@@ -324,12 +349,21 @@ class Interpreter {
 
     private func handleGetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token) throws -> LoxValue {
-        let instanceValue = try evaluate(expr: instanceExpr)
-        guard case .instance(let instance) = instanceValue else {
-            throw RuntimeError.onlyInstancesHaveProperties
-        }
+        let targetValue = try evaluate(expr: instanceExpr)
 
-        return try instance.get(propertyName: propertyNameToken.lexeme)
+        let target: LoxInstance = switch targetValue {
+        case .instance(let instance):
+            instance
+        case .class(let klass):
+            klass
+        default:
+            fatalError()
+        }
+//        guard case .instance(let instance) = instanceValue else {
+//            throw RuntimeError.onlyInstancesHaveProperties
+//        }
+
+        return try target.get(propertyName: propertyNameToken.lexeme)
     }
 
     private func handleSetExpression(instanceExpr: ResolvedExpression,

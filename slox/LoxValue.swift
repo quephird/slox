@@ -32,7 +32,11 @@ enum LoxValue: CustomStringConvertible, Equatable {
         case .class(let klass):
             return "<class: \(klass.name)>"
         case .instance(let instance):
-            return "<instance: \(instance.klass.name)>"
+            if let klass = instance.klass {
+                return "<instance: \(klass.name)>"
+            }
+
+            return "<instance: metaclass>"
         }
     }
 }

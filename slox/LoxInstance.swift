@@ -6,24 +6,28 @@
 //
 
 class LoxInstance: Equatable {
-    var klass: LoxClass
+    var klass: LoxClass?
     var properties: [String: LoxValue] = [:]
 
-    init(klass: LoxClass) {
+    init(klass: LoxClass?) {
         self.klass = klass
     }
 
     func get(propertyName: String) throws -> LoxValue {
-        if let propertyValue = self.properties[propertyName] {
-            return propertyValue
+        if let klass {
+            if let propertyValue = self.properties[propertyName] {
+                return propertyValue
+            }
+
+            if let method = klass.methods[propertyName] {
+                let boundMethod = method.bind(instance: self)
+                return .userDefinedFunction(boundMethod)
+            }
+
+            throw RuntimeError.undefinedProperty(propertyName)
         }
 
-        if let method = klass.methods[propertyName] {
-            let boundMethod = method.bind(instance: self)
-            return .userDefinedFunction(boundMethod)
-        }
-
-        throw RuntimeError.undefinedProperty(propertyName)
+        fatalError()
     }
 
     func set(propertyName: String, propertyValue: LoxValue) {

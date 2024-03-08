@@ -90,16 +90,22 @@ struct Parser {
         }
 
         var methodStatements: [Statement] = []
+        var staticMethodStatements: [Statement] = []
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             // Note that we don't look for/consume a `fun` token before
             // calling `parseFunctionDeclaration()`. That's a deliberate
             // design decision by the original author.
-            let methodStatement = try parseFunctionDeclaration()
-            methodStatements.append(methodStatement)
+            if currentTokenMatchesAny(types: [.class]) {
+                let staticMethodStatement = try parseFunctionDeclaration()
+                staticMethodStatements.append(staticMethodStatement)
+            } else {
+                let methodStatement = try parseFunctionDeclaration()
+                methodStatements.append(methodStatement)
+            }
         }
 
         if currentTokenMatchesAny(types: [.rightBrace]) {
-            return .class(className, methodStatements)
+            return .class(className, methodStatements, staticMethodStatements)
         }
 
         throw ParseError.missingClosingBrace(previousToken)
