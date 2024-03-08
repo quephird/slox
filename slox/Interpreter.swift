@@ -356,7 +356,7 @@ class Interpreter {
             // NOTA BENE: Remember that LoxClass inherits from LoxInstance now!
             klass
         default:
-            fatalError()
+            throw RuntimeError.onlyInstancesHaveProperties
         }
 
         return try instance.get(propertyName: propertyNameToken.lexeme)
@@ -365,8 +365,13 @@ class Interpreter {
     private func handleSetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token,
                                      valueExpr: ResolvedExpression) throws -> LoxValue {
-        let instanceValue = try evaluate(expr: instanceExpr)
-        guard case .instance(let instance) = instanceValue else {
+        let instance: LoxInstance = switch try evaluate(expr: instanceExpr) {
+        case .instance(let instance):
+            instance
+        case .class(let klass):
+            // NOTA BENE: Remember that LoxClass inherits from LoxInstance now!
+            klass
+        default:
             throw RuntimeError.onlyInstancesHaveProperties
         }
 

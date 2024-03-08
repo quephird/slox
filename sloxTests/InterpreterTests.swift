@@ -603,6 +603,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                [],
                 []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "person", line: 2),
@@ -661,7 +662,8 @@ final class InterpreterTests: XCTestCase {
                                             Token(type: .identifier, lexeme: "name", line: 3),
                                             0))),
                             ])),
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "me", line: 6),
                 .call(
@@ -718,7 +720,8 @@ final class InterpreterTests: XCTestCase {
                                                 1),
                                             Token(type: .identifier, lexeme: "name", line: 3)))),
                             ])),
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "me", line: 6),
                 .call(
@@ -758,6 +761,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                [],
                 []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "person", line: 2),
@@ -822,7 +826,8 @@ final class InterpreterTests: XCTestCase {
                                             Token(type: .identifier, lexeme: "age", line: 4),
                                             0))),
                             ]))
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "person", line: 7),
                 .call(
@@ -878,7 +883,8 @@ final class InterpreterTests: XCTestCase {
                                             Token(type: .identifier, lexeme: "name", line: 3),
                                             0))),
                             ]))
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "me", line: 6),
                 .call(

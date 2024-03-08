@@ -212,7 +212,8 @@ final class ResolverTests: XCTestCase {
                                         .this(Token(type: .this, lexeme: "this", line: 3)),
                                         Token(type: .identifier, lexeme: "name", line: 3)))
                             ]))
-                ])
+                ],
+                [])
         ]
 
         var resolver = Resolver()
@@ -233,7 +234,8 @@ final class ResolverTests: XCTestCase {
                                             1),
                                         Token(type: .identifier, lexeme: "name", line: 3)))
                             ]))
-                ])
+                ],
+                [])
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -280,7 +282,8 @@ final class ResolverTests: XCTestCase {
                                     Token(type: .return, lexeme: "return", line: 3),
                                     .literal(.number(42)))
                             ]))
-                ])
+                ],
+                [])
         ]
 
         var resolver = Resolver()

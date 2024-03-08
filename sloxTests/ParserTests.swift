@@ -995,7 +995,8 @@ final class ParserTests: XCTestCase {
                                         .this(Token(type: .this, lexeme: "this", line: 3)),
                                         Token(type: .identifier, lexeme: "name", line: 3)))
                             ]))
-                ])
+                ],
+                [])
         ]
         XCTAssertEqual(actual, expected)
     }
