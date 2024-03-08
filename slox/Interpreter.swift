@@ -349,21 +349,17 @@ class Interpreter {
 
     private func handleGetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token) throws -> LoxValue {
-        let targetValue = try evaluate(expr: instanceExpr)
-
-        let target: LoxInstance = switch targetValue {
+        let instance: LoxInstance = switch try evaluate(expr: instanceExpr) {
         case .instance(let instance):
             instance
         case .class(let klass):
+            // NOTA BENE: Remember that LoxClass inherits from LoxInstance now!
             klass
         default:
             fatalError()
         }
-//        guard case .instance(let instance) = instanceValue else {
-//            throw RuntimeError.onlyInstancesHaveProperties
-//        }
 
-        return try target.get(propertyName: propertyNameToken.lexeme)
+        return try instance.get(propertyName: propertyNameToken.lexeme)
     }
 
     private func handleSetExpression(instanceExpr: ResolvedExpression,
