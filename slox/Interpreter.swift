@@ -131,7 +131,7 @@ class Interpreter {
         let newClass = LoxClass(name: nameToken.lexeme,
                                 methods: methodImpls,
                                 metaclass: metaclass)
-        try environment.assignAtDepth(name: nameToken.lexeme, value: .class(newClass), depth: 0)
+        try environment.assignAtDepth(name: nameToken.lexeme, value: .instance(newClass), depth: 0)
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
@@ -328,7 +328,7 @@ class Interpreter {
             userDefinedFunction
         case .nativeFunction(let nativeFunction):
             nativeFunction
-        case .class(let klass):
+        case .instance(let klass as LoxClass):
             klass
         default:
             throw RuntimeError.notACallableObject
@@ -349,13 +349,7 @@ class Interpreter {
 
     private func handleGetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token) throws -> LoxValue {
-        let instance: LoxInstance = switch try evaluate(expr: instanceExpr) {
-        case .instance(let instance):
-            instance
-        case .class(let klass):
-            // NOTA BENE: Remember that LoxClass inherits from LoxInstance now!
-            klass
-        default:
+        guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
             throw RuntimeError.onlyInstancesHaveProperties
         }
 
@@ -365,13 +359,7 @@ class Interpreter {
     private func handleSetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token,
                                      valueExpr: ResolvedExpression) throws -> LoxValue {
-        let instance: LoxInstance = switch try evaluate(expr: instanceExpr) {
-        case .instance(let instance):
-            instance
-        case .class(let klass):
-            // NOTA BENE: Remember that LoxClass inherits from LoxInstance now!
-            klass
-        default:
+        guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
             throw RuntimeError.onlyInstancesHaveProperties
         }
 

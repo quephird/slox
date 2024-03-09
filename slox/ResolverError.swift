@@ -14,6 +14,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case cannotReturnOutsideFunction
     case cannotReferenceThisOutsideClass
     case cannotReturnValueFromInitializer
+    case staticInitsNotAllowed
 
     var description: String {
         switch self {
@@ -29,6 +30,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot use `this` from outside a class"
         case .cannotReturnValueFromInitializer:
             return "Cannot return value from an initializer"
+        case .staticInitsNotAllowed:
+            return "Cannot have class-level init function"
         }
     }
 }

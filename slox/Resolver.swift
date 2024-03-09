@@ -118,15 +118,14 @@ struct Resolver {
                 throw ResolverError.notAFunction
             }
 
-            let functionType: FunctionType = if nameToken.lexeme == "init" {
-                .initializer
-            } else {
-                .method
+            if nameToken.lexeme == "init" {
+                throw ResolverError.staticInitsNotAllowed
             }
+
             return try handleFunctionDeclaration(
                 nameToken: nameToken,
                 lambdaExpr: lambdaExpr,
-                functionType: functionType)
+                functionType: .method)
         }
 
         return .class(nameToken, resolvedMethods, resolvedStaticMethods)
