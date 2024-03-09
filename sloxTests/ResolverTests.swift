@@ -291,7 +291,6 @@ final class ResolverTests: XCTestCase {
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
-
     }
 
     func testResolveClassWithStaticMethod() throws {
@@ -347,5 +346,37 @@ final class ResolverTests: XCTestCase {
                 ])
         ]
         XCTAssertEqual(actual, expected)
+    }
+
+    func testResolveClassWithStaticInitMethod() throws {
+        // class BadClass {
+        //     class init() {
+        //         this.name = "bad";
+        //     }
+        // }
+        let statements: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Math", line: 1),
+                [],
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "init", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .expression(
+                                    .set(
+                                        .this(Token(type: .this, lexeme: "this", line: 3)),
+                                        Token(type: .identifier, lexeme: "name", line: 3),
+                                        .literal(.string("bad"))))
+                            ]))
+                ])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.staticInitsNotAllowed
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
     }
 }
