@@ -603,6 +603,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                [],
                 []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "person", line: 2),
@@ -661,7 +662,8 @@ final class InterpreterTests: XCTestCase {
                                             Token(type: .identifier, lexeme: "name", line: 3),
                                             0))),
                             ])),
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "me", line: 6),
                 .call(
@@ -718,7 +720,8 @@ final class InterpreterTests: XCTestCase {
                                                 1),
                                             Token(type: .identifier, lexeme: "name", line: 3)))),
                             ])),
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "me", line: 6),
                 .call(
@@ -758,6 +761,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                [],
                 []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "person", line: 2),
@@ -822,7 +826,8 @@ final class InterpreterTests: XCTestCase {
                                             Token(type: .identifier, lexeme: "age", line: 4),
                                             0))),
                             ]))
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "person", line: 7),
                 .call(
@@ -878,7 +883,8 @@ final class InterpreterTests: XCTestCase {
                                             Token(type: .identifier, lexeme: "name", line: 3),
                                             0))),
                             ]))
-                ]),
+                ],
+                []),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "me", line: 6),
                 .call(
@@ -912,6 +918,58 @@ final class InterpreterTests: XCTestCase {
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .string("Becca")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretClassWithStaticMethod() throws {
+        // class Math {
+        //     class add(a, b) {
+        //         return a + b;
+        //     }
+        // }
+        // Math.add(2, 3)
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Math", line: 1),
+                [],
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "add", line: 2),
+                        .lambda(
+                            [
+                                Token(type: .identifier, lexeme: "a", line: 2),
+                                Token(type: .identifier, lexeme: "b", line: 2),
+                            ],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .binary(
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "a", line: 3),
+                                            0),
+                                        Token(type: .plus, lexeme: "+", line: 3),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "b", line: 3),
+                                            0)))
+                            ]))
+                ]),
+            .expression(
+                .call(
+                    .get(
+                        .variable(
+                            Token(type: .identifier, lexeme: "Math", line: 6),
+                            0),
+                        Token(type: .identifier, lexeme: "add", line: 6)),
+                    Token(type: .rightParen, lexeme: ")", line: 6),
+                    [
+                        .literal(.number(2)),
+                        .literal(.number(3)),
+                    ])),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(5)
         XCTAssertEqual(actual, expected)
     }
 }

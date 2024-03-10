@@ -38,8 +38,8 @@ struct Resolver {
             return try handleBlock(statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
-        case .class(let nameToken, let body):
-            return try handleClassDeclaration(nameToken: nameToken, body: body)
+        case .class(let nameToken, let methods, let staticMethods):
+            return try handleClassDeclaration(nameToken: nameToken, methods: methods, staticMethods: staticMethods)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -80,7 +80,9 @@ struct Resolver {
         return .variableDeclaration(nameToken, resolvedInitializerExpr)
     }
 
-    mutating private func handleClassDeclaration(nameToken: Token, body: [Statement]) throws -> ResolvedStatement {
+    mutating private func handleClassDeclaration(nameToken: Token,
+                                                 methods: [Statement],
+                                                 staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
         currentClassType = .class
 
@@ -95,7 +97,7 @@ struct Resolver {
             currentClassType = previousClassType
         }
 
-        let resolvedBody = try body.map { method in
+        let resolvedMethods = try methods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
                 throw ResolverError.notAFunction
             }
@@ -111,7 +113,22 @@ struct Resolver {
                 functionType: functionType)
         }
 
-        return .class(nameToken, resolvedBody)
+        let resolvedStaticMethods = try staticMethods.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw ResolverError.notAFunction
+            }
+
+            if nameToken.lexeme == "init" {
+                throw ResolverError.staticInitsNotAllowed
+            }
+
+            return try handleFunctionDeclaration(
+                nameToken: nameToken,
+                lambdaExpr: lambdaExpr,
+                functionType: .method)
+        }
+
+        return .class(nameToken, resolvedMethods, resolvedStaticMethods)
     }
 
     mutating private func handleFunctionDeclaration(nameToken: Token,

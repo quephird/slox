@@ -830,8 +830,9 @@ final class ParserTests: XCTestCase {
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
                 .lambda(
                     [],
-                    [.print(.literal(.number(42)))])
-                ),
+                    [
+                        .print(.literal(.number(42)))
+                    ])),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -995,7 +996,8 @@ final class ParserTests: XCTestCase {
                                         .this(Token(type: .this, lexeme: "this", line: 3)),
                                         Token(type: .identifier, lexeme: "name", line: 3)))
                             ]))
-                ])
+                ],
+                [])
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1041,6 +1043,65 @@ final class ParserTests: XCTestCase {
                     .variable(Token(type: .identifier, lexeme: "person", line: 1)),
                     Token(type: .identifier, lexeme: "name", line: 1),
                     .literal(.string("Danielle")))),
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseClassWithStaticMethod() throws {
+        // class Math {
+        //     class add(a, b) {
+        //         return a + b;
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "Math", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .class, lexeme: "class", line: 2),
+            Token(type: .identifier, lexeme: "add", line: 2),
+            Token(type: .leftParen, lexeme: "(", line: 2),
+            Token(type: .identifier, lexeme: "a", line: 2),
+            Token(type: .comma, lexeme: ",", line: 2),
+            Token(type: .identifier, lexeme: "b", line: 2),
+            Token(type: .rightParen, lexeme: ")", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .return, lexeme: "return", line: 3),
+            Token(type: .identifier, lexeme: "a", line: 3),
+            Token(type: .plus, lexeme: "+", line: 3),
+            Token(type: .identifier, lexeme: "b", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .rightBrace, lexeme: "}", line: 5),
+            Token(type: .eof, lexeme: "", line: 5),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Math", line: 1),
+                [],
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "add", line: 2),
+                        .lambda(
+                            [
+                                Token(type: .identifier, lexeme: "a", line: 2),
+                                Token(type: .identifier, lexeme: "b", line: 2),
+                            ],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .binary(
+                                        .variable(Token(type: .identifier, lexeme: "a", line: 3)),
+                                        Token(type: .plus, lexeme: "+", line: 3),
+                                        .variable(Token(type: .identifier, lexeme: "b", line: 3))))
+                            ]))
+                ])
         ]
         XCTAssertEqual(actual, expected)
     }
