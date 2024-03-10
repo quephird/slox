@@ -37,7 +37,7 @@ class LoxInstance: Equatable {
             return propertyValue
         }
 
-        if let method = klass.methods[propertyName] {
+        if let method = klass.findMethod(name: propertyName) {
             let boundMethod = method.bind(instance: self)
             return .userDefinedFunction(boundMethod)
         }

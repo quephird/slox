@@ -29,6 +29,14 @@ class LoxClass: LoxInstance, LoxCallable {
         return lhs === rhs
     }
 
+    func findMethod(name: String) -> UserDefinedFunction? {
+        if let method = methods[name] {
+            return method
+        }
+
+        return superclass?.findMethod(name: name)
+    }
+
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         let newInstance = LoxInstance(klass: self)
 
