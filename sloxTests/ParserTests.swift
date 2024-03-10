@@ -985,6 +985,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
@@ -1084,6 +1085,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(

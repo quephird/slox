@@ -603,6 +603,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [],
                 []),
             .variableDeclaration(
@@ -645,6 +646,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayHello", line: 2),
@@ -703,6 +705,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "greeting", line: 2),
@@ -761,6 +764,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [],
                 []),
             .variableDeclaration(
@@ -798,6 +802,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
@@ -865,6 +870,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
@@ -931,6 +937,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(

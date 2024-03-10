@@ -201,6 +201,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
@@ -221,6 +222,7 @@ final class ResolverTests: XCTestCase {
         let expected: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
@@ -272,6 +274,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Answer", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
@@ -297,6 +300,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -322,6 +326,7 @@ final class ResolverTests: XCTestCase {
         let expected: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -357,6 +362,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
