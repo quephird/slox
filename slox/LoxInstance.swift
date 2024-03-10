@@ -19,12 +19,15 @@ class LoxInstance: Equatable {
         if _klass == nil {
             // Only metaclasses should ever have a `nil` value for `_klass`
             let selfClass = self as! LoxClass
-            _klass = LoxClass(name: "\(selfClass.name) metaclass", methods: [:], metaclass: nil)
+            _klass = LoxClass(name: "\(selfClass.name) metaclass", methods: [:])
         }
         return _klass!
     }
     var properties: [String: LoxValue] = [:]
 
+    /// - Parameter klass: The class this instance belongs to.
+    /// Use `nil` if this instance *is* a class; the `klass` property
+    /// will then instantiate a metaclass for it on demand.
     init(klass: LoxClass?) {
         self._klass = klass
     }

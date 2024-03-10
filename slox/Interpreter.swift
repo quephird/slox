@@ -125,12 +125,13 @@ class Interpreter {
             staticMethodImpls[nameToken.lexeme] = staticMethodImpl
         }
 
-        let metaclass = LoxClass(name: "\(nameToken.lexeme) metaclass" ,
-                                 methods: staticMethodImpls,
-                                 metaclass: nil)
-        let newClass = LoxClass(name: nameToken.lexeme,
-                                methods: methodImpls,
-                                metaclass: metaclass)
+        let newClass = LoxClass(name: nameToken.lexeme, methods: methodImpls)
+        if !staticMethodImpls.isEmpty {
+            // NOTA BENE: This assigns the static methods to the metaclass,
+            // which is lazily created in `LoxInstance`
+            newClass.klass.methods = staticMethodImpls
+        }
+
         try environment.assignAtDepth(name: nameToken.lexeme, value: .instance(newClass), depth: 0)
     }
 

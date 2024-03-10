@@ -16,10 +16,11 @@ class LoxClass: LoxInstance, LoxCallable {
     }
     var methods: [String: UserDefinedFunction]
 
-    init(name: String, methods: [String: UserDefinedFunction], metaclass: LoxClass?) {
+    init(name: String, methods: [String: UserDefinedFunction]) {
         self.name = name
         self.methods = methods
-        super.init(klass: metaclass)
+
+        super.init(klass: nil)
     }
 
     static func == (lhs: LoxClass, rhs: LoxClass) -> Bool {
