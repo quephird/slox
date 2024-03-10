@@ -29,6 +29,7 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingOpenBraceBeforeFunctionBody(Token)
     case missingCloseParenAfterArguments(Token)
     case missingIdentifierAfterDot(Token)
+    case missingSuperclassName(Token)
 
     var description: String {
         switch self {
@@ -74,6 +75,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected right parenthesis after arguments"
         case .missingIdentifierAfterDot(let token):
             return "[Line \(token.line)] Error: expected identifer after dot"
+        case .missingSuperclassName(let token):
+            return "[Line \(token.line)] Error: expected superclass name"
         }
     }
 }

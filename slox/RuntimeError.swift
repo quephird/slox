@@ -21,6 +21,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case wrongArity(Int, Int)
     case notALambda
     case couldNotFindAncestorEnvironmentAtDepth(Int)
+    case superclassMustBeAClass
 
     var description: String {
         switch self {
@@ -50,6 +51,9 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected lambda as body of function declaration"
         case .couldNotFindAncestorEnvironmentAtDepth(let depth):
             return "Error: could not find ancestor environment at depth \(depth)."
+        case .superclassMustBeAClass:
+            return "Error: superclass must be a class"
+
         }
     }
 }

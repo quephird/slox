@@ -38,8 +38,11 @@ struct Resolver {
             return try handleBlock(statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
-        case .class(let nameToken, let methods, let staticMethods):
-            return try handleClassDeclaration(nameToken: nameToken, methods: methods, staticMethods: staticMethods)
+        case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
+            return try handleClassDeclaration(nameToken: nameToken,
+                                              superclassExpr: superclassExpr,
+                                              methods: methods,
+                                              staticMethods: staticMethods)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -81,21 +84,32 @@ struct Resolver {
     }
 
     mutating private func handleClassDeclaration(nameToken: Token,
+                                                 superclassExpr: Expression?,
                                                  methods: [Statement],
                                                  staticMethods: [Statement]) throws -> ResolvedStatement {
-        let previousClassType = currentClassType
-        currentClassType = .class
-
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
+        // ACHTUNG! We need to attmept to resolve the superclass _before_
+        // pushing `this` onto the stack, otherwise we won't find it!
+        var resolvedSuperclassExpr: ResolvedExpression? = nil
+        if case .variable(let superclassName) = superclassExpr {
+            if superclassName.lexeme == nameToken.lexeme {
+                throw ResolverError.classCannotInheritFromItself
+            }
+
+            resolvedSuperclassExpr = try handleVariable(nameToken: superclassName)
+        }
+
         beginScope()
-        // NOTA BENE: Note that the scope stack is never empty at this point
-        scopeStack.lastMutable["this"] = true
+        let previousClassType = currentClassType
+        currentClassType = .class
         defer {
             endScope()
             currentClassType = previousClassType
         }
+        // NOTA BENE: Note that the scope stack is never empty at this point
+        scopeStack.lastMutable["this"] = true
 
         let resolvedMethods = try methods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
@@ -128,7 +142,7 @@ struct Resolver {
                 functionType: .method)
         }
 
-        return .class(nameToken, resolvedMethods, resolvedStaticMethods)
+        return .class(nameToken, resolvedSuperclassExpr, resolvedMethods, resolvedStaticMethods)
     }
 
     mutating private func handleFunctionDeclaration(nameToken: Token,

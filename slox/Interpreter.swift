@@ -56,8 +56,11 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
-        case .class(let nameToken, let methods, let staticMethods):
-            try handleClassDeclaration(nameToken: nameToken, methods: methods, staticMethods: staticMethods)
+        case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
+            try handleClassDeclaration(nameToken: nameToken,
+                                       superclassExpr: superclassExpr,
+                                       methods: methods,
+                                       staticMethods: staticMethods)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -81,12 +84,21 @@ class Interpreter {
     }
 
     private func handleClassDeclaration(nameToken: Token,
+                                        superclassExpr: ResolvedExpression?,
                                         methods: [ResolvedStatement],
                                         staticMethods: [ResolvedStatement]) throws {
         // NOTA BENE: We temporarily set the initial value associated with
         // the class name to `.nil` so that, according to the book,
         // "allows references to the class inside its own methods".
         environment.define(name: nameToken.lexeme, value: .nil)
+
+        let superclass = try superclassExpr.map { superclassExpr in
+            guard case .instance(let superclass as LoxClass) = try evaluate(expr: superclassExpr) else {
+                throw RuntimeError.superclassMustBeAClass
+            }
+
+            return superclass
+        }
 
         var methodImpls: [String: UserDefinedFunction] = [:]
         for method in methods {
@@ -125,7 +137,9 @@ class Interpreter {
             staticMethodImpls[nameToken.lexeme] = staticMethodImpl
         }
 
-        let newClass = LoxClass(name: nameToken.lexeme, methods: methodImpls)
+        let newClass = LoxClass(name: nameToken.lexeme,
+                                superclass: superclass,
+                                methods: methodImpls)
         if !staticMethodImpls.isEmpty {
             // NOTA BENE: This assigns the static methods to the metaclass,
             // which is lazily created in `LoxInstance`
