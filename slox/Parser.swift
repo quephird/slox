@@ -349,6 +349,7 @@ struct Parser {
     //                   | "." IDENTIFIER )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
+    //                   | "[" arguments? "]"
     //                   | "this"
     //                   | IDENTIFIER
     //                   | lambda
@@ -518,6 +519,16 @@ struct Parser {
             }
 
             throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.leftBracket]) {
+            let elements = try parseArguments()
+
+            if currentTokenMatchesAny(types: [.rightBracket]) {
+                return .list(elements)
+            }
+
+            throw ParseError.missingClosingBracket(previousToken)
         }
 
         if currentTokenMatchesAny(types: [.super]) {

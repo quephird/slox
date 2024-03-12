@@ -1172,4 +1172,50 @@ final class ParserTests: XCTestCase {
         ]
         XCTAssertEqual(actual, expected)
     }
+
+    func testParseListOfValues() throws {
+        // [1, "one", true]
+        let tokens: [Token] = [
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .string, lexeme: "\"one\"", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
+            Token(type: .eof, lexeme: "", line: 1)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .list([
+                    .literal(.number(1)),
+                    .literal(.string("one")),
+                    .literal(.boolean(true))
+                ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseOfInvalidListExpression() throws {
+        // [1, "one", true
+        let tokens: [Token] = [
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .string, lexeme: "\"one\"", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .true, lexeme: "true", line: 1),
+            Token(type: .eof, lexeme: "", line: 1)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .true, lexeme: "true", line: 1)
+        let expectedError = ParseError.missingClosingBracket(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
 }
