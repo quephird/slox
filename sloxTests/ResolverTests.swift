@@ -395,4 +395,56 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveInvocationOfSuperAtTopLevel() throws {
+        // super.someMethod()
+        let statements: [Statement] = [
+            .expression(
+                .super(
+                    Token(type: .super, lexeme: "super", line: 1),
+                    Token(type: .identifier, lexeme: "someMethod", line: 1)))
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotReferenceSuperOutsideClass
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
+    func testResolveInvocationOfSuperFromWithinClassThatDoesNotSubclassAnother() throws {
+        // class A {
+        //     someMethod() {
+        //         super.someMethod();
+        //     }
+        // }
+        let statements: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "A", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "someMethod", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .expression(
+                                    .call(
+                                        .super(
+                                            Token(type: .super, lexeme: "super", line: 3),
+                                            Token(type: .identifier, lexeme: "someMethod", line: 3)),
+                                        Token(type: .rightParen, lexeme: ")", line: 3),
+                                        [])
+                                )
+                            ]))
+                ],
+                [])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotReferenceSuperWithoutSubclassing
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }

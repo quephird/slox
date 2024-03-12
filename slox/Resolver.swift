@@ -17,6 +17,7 @@ struct Resolver {
     private enum ClassType {
         case none
         case `class`
+        case subclass
     }
 
     private var scopeStack: [[String: Bool]] = []
@@ -87,6 +88,12 @@ struct Resolver {
                                                  superclassExpr: Expression?,
                                                  methods: [Statement],
                                                  staticMethods: [Statement]) throws -> ResolvedStatement {
+        let previousClassType = currentClassType
+        currentClassType = .class
+        defer {
+            currentClassType = previousClassType
+        }
+
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
@@ -94,6 +101,8 @@ struct Resolver {
         // pushing `this` onto the stack, otherwise we won't find it!
         var resolvedSuperclassExpr: ResolvedExpression? = nil
         if case .variable(let superclassName) = superclassExpr {
+            currentClassType = .subclass
+
             if superclassName.lexeme == nameToken.lexeme {
                 throw ResolverError.classCannotInheritFromItself
             }
@@ -112,11 +121,8 @@ struct Resolver {
         }
 
         beginScope()
-        let previousClassType = currentClassType
-        currentClassType = .class
         defer {
             endScope()
-            currentClassType = previousClassType
         }
         // NOTA BENE: Note that the scope stack is never empty at this point
         scopeStack.lastMutable["this"] = true
@@ -360,6 +366,15 @@ struct Resolver {
     }
 
     mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> ResolvedExpression {
+        switch currentClassType {
+        case .none:
+            throw ResolverError.cannotReferenceSuperOutsideClass
+        case .class:
+            throw ResolverError.cannotReferenceSuperWithoutSubclassing
+        case .subclass:
+            break
+        }
+
         let depth = getDepth(name: superToken.lexeme)
         return .super(superToken, methodToken, depth)
     }

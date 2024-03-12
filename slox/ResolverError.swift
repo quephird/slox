@@ -16,6 +16,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case cannotReturnValueFromInitializer
     case staticInitsNotAllowed
     case classCannotInheritFromItself
+    case cannotReferenceSuperOutsideClass
+    case cannotReferenceSuperWithoutSubclassing
 
     var description: String {
         switch self {
@@ -35,6 +37,10 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot have class-level init function"
         case .classCannotInheritFromItself:
             return "Class cannot inherit from itself"
+        case .cannotReferenceSuperOutsideClass:
+            return "Cannot use `super` from outside a class"
+        case .cannotReferenceSuperWithoutSubclassing:
+            return "Cannot use `super` without subclassing"
         }
     }
 }
