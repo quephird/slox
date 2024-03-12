@@ -198,6 +198,11 @@ final class ResolverTests: XCTestCase {
     }
 
     func testResolveClassDeclaration() throws {
+        // class Person {
+        //     sayName() {
+        //         print this.name;
+        //     }
+        // }
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
@@ -297,6 +302,11 @@ final class ResolverTests: XCTestCase {
     }
 
     func testResolveClassWithStaticMethod() throws {
+        // class Math {
+        //     class add(a, b) {
+        //         return a + b;
+        //     }
+        // }
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),

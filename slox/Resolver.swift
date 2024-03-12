@@ -101,6 +101,16 @@ struct Resolver {
             resolvedSuperclassExpr = try handleVariable(nameToken: superclassName)
         }
 
+        if resolvedSuperclassExpr != nil {
+            beginScope()
+            scopeStack.lastMutable["super"] = true
+        }
+        defer {
+            if resolvedSuperclassExpr != nil {
+                endScope()
+            }
+        }
+
         beginScope()
         let previousClassType = currentClassType
         currentClassType = .class
@@ -121,10 +131,9 @@ struct Resolver {
             } else {
                 .method
             }
-            return try handleFunctionDeclaration(
-                nameToken: nameToken,
-                lambdaExpr: lambdaExpr,
-                functionType: functionType)
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: functionType)
         }
 
         let resolvedStaticMethods = try staticMethods.map { method in
@@ -136,10 +145,9 @@ struct Resolver {
                 throw ResolverError.staticInitsNotAllowed
             }
 
-            return try handleFunctionDeclaration(
-                nameToken: nameToken,
-                lambdaExpr: lambdaExpr,
-                functionType: .method)
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .method)
         }
 
         return .class(nameToken, resolvedSuperclassExpr, resolvedMethods, resolvedStaticMethods)
@@ -242,6 +250,8 @@ struct Resolver {
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
         case .lambda(let params, let statements):
             return try handleLambda(params: params, statements: statements, functionType: .lambda)
+        case .super(let superToken, let methodToken):
+            return try handleSuper(superToken: superToken, methodToken: methodToken)
         }
     }
 
@@ -347,6 +357,11 @@ struct Resolver {
         }
 
         return .lambda(params, resolvedStatements)
+    }
+
+    mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> ResolvedExpression {
+        let depth = getDepth(name: superToken.lexeme)
+        return .super(superToken, methodToken, depth)
     }
 
     // Internal helpers

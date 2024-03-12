@@ -30,6 +30,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingCloseParenAfterArguments(Token)
     case missingIdentifierAfterDot(Token)
     case missingSuperclassName(Token)
+    case missingDotAfterSuper(Token)
+    case expectedSuperclassMethodName(Token)
 
     var description: String {
         switch self {
@@ -77,6 +79,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected identifer after dot"
         case .missingSuperclassName(let token):
             return "[Line \(token.line)] Error: expected superclass name"
+        case .missingDotAfterSuper(let token):
+            return "[Line \(token.line)] Error: expected dot after super"
+        case .expectedSuperclassMethodName(let token):
+            return "[Line \(token.line)] Error: expected superclass method name"
         }
     }
 }

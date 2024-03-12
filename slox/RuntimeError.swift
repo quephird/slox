@@ -16,6 +16,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case undefinedVariable(String)
     case notAFunctionDeclaration
     case notACallableObject
+    case notAnInstance
     case onlyInstancesHaveProperties
     case undefinedProperty(String)
     case wrongArity(Int, Int)
@@ -40,7 +41,9 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
         case .notAFunctionDeclaration:
             return "Error: expected function declaration in class"
         case .notACallableObject:
-            return "Error: can only callable objects"
+            return "Error: expected a callable object"
+        case .notAnInstance:
+            return "Error: expected an instance"
         case .onlyInstancesHaveProperties:
             return "Error: can only get/set properties of instances"
         case .undefinedProperty(let name):

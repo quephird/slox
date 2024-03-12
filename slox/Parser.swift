@@ -351,7 +351,8 @@ struct Parser {
     //                   | "(" expression ")"
     //                   | "this"
     //                   | IDENTIFIER
-    //                   | lambda ;
+    //                   | lambda
+    //                   | "super" "." IDENTIFIER ;
     //    lambda         → "fun" "(" parameters? ")" block ;
     //
     mutating private func parseExpression() throws -> Expression {
@@ -517,6 +518,21 @@ struct Parser {
             }
 
             throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.super]) {
+            let superToken = previousToken
+            if !currentTokenMatchesAny(types: [.dot]) {
+                throw ParseError.missingDotAfterSuper(currentToken)
+            }
+
+            guard case .identifier = currentToken.type else {
+                throw ParseError.expectedSuperclassMethodName(currentToken)
+            }
+            let methodToken = currentToken
+            advanceCursor()
+
+            return .super(superToken, methodToken)
         }
 
         if currentTokenMatchesAny(types: [.this]) {

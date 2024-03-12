@@ -6,7 +6,7 @@
 //
 
 class Environment: Equatable {
-    private var enclosingEnvironment: Environment?
+    var enclosingEnvironment: Environment?
     private var values: [String: LoxValue] = [:]
 
     init(enclosingEnvironment: Environment? = nil) {
