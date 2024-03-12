@@ -52,6 +52,8 @@
 		876A31672B8C11810085A350 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A31662B8C11810085A350 /* Parser.swift */; };
 		876A31692B8C3AAB0085A350 /* ParseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876A31682B8C3AAB0085A350 /* ParseError.swift */; };
 		877168C22B91A9BD00723543 /* Return.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877168C12B91A9BD00723543 /* Return.swift */; };
+		87777E3C2BA0FF70002E38F2 /* LoxList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87777E3B2BA0FF70002E38F2 /* LoxList.swift */; };
+		87777E3D2BA1015F002E38F2 /* LoxList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87777E3B2BA0FF70002E38F2 /* LoxList.swift */; };
 		87BAFC492B9179CB0013E5FE /* LoxCallable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BAFC482B9179CB0013E5FE /* LoxCallable.swift */; };
 		87BAFC4B2B918C520013E5FE /* UserDefinedFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */; };
 		87C2F3742B91C2BA00126707 /* Return.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877168C12B91A9BD00723543 /* Return.swift */; };
@@ -101,6 +103,7 @@
 		876A31662B8C11810085A350 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		876A31682B8C3AAB0085A350 /* ParseError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseError.swift; sourceTree = "<group>"; };
 		877168C12B91A9BD00723543 /* Return.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Return.swift; sourceTree = "<group>"; };
+		87777E3B2BA0FF70002E38F2 /* LoxList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxList.swift; sourceTree = "<group>"; };
 		87BAFC482B9179CB0013E5FE /* LoxCallable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxCallable.swift; sourceTree = "<group>"; };
 		87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefinedFunction.swift; sourceTree = "<group>"; };
 		87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxInstance.swift; sourceTree = "<group>"; };
@@ -153,6 +156,7 @@
 				87BAFC482B9179CB0013E5FE /* LoxCallable.swift */,
 				8702307F2B96E9580056FE57 /* LoxClass.swift */,
 				87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */,
+				87777E3B2BA0FF70002E38F2 /* LoxList.swift */,
 				876A315E2B897EEB0085A350 /* LoxValue.swift */,
 				870230742B9571490056FE57 /* MutableCollection+Extension.swift */,
 				8732838E2B93F89300E49035 /* NativeFunction.swift */,
@@ -275,6 +279,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				876A31622B8986630085A350 /* ScanError.swift in Sources */,
+				87777E3C2BA0FF70002E38F2 /* LoxList.swift in Sources */,
 				876560052B8825AC002BDE42 /* Token.swift in Sources */,
 				873283942B95122800E49035 /* ResolvedStatement.swift in Sources */,
 				876A315F2B897EEB0085A350 /* LoxValue.swift in Sources */,
@@ -320,6 +325,7 @@
 				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
 				873CCB312B8EBB7800FC249A /* Statement.swift in Sources */,
 				8755B8B52B91984C00530DC4 /* LoxCallable.swift in Sources */,
+				87777E3D2BA1015F002E38F2 /* LoxList.swift in Sources */,
 				873283902B93FC0900E49035 /* NativeFunction.swift in Sources */,
 				8702307B2B95755E0056FE57 /* ResolvedExpression.swift in Sources */,
 				87C2F3742B91C2BA00126707 /* Return.swift in Sources */,

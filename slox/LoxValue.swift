@@ -13,11 +13,12 @@ enum LoxValue: CustomStringConvertible, Equatable {
     case userDefinedFunction(UserDefinedFunction)
     case nativeFunction(NativeFunction)
     case instance(LoxInstance)
+    case list(LoxList)
 
     var description: String {
         switch self {
         case .string(let string):
-            return string
+            return "\"\(string)\""
         case .number(let number):
             return "\(number)"
         case .boolean(let boolean):
@@ -32,6 +33,16 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return "<class: \(klass.name)>"
         case .instance(let instance):
             return "<instance: \(instance.klass.name)>"
+        case .list(let list):
+            var string = "["
+            for (i, element) in list.elements.enumerated() {
+                if i > 0 {
+                    string.append(", ")
+                }
+                string.append("\(element)")
+            }
+            string.append("]")
+            return string
         }
     }
 }

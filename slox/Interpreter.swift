@@ -242,6 +242,8 @@ class Interpreter {
             return try handleLambdaExpression(params: params, statements: statements)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
+        case .list(let elements):
+            return try handleListExpression(elements: elements)
         }
     }
 
@@ -425,6 +427,15 @@ class Interpreter {
         }
 
         throw RuntimeError.undefinedProperty(methodToken.lexeme)
+    }
+
+    private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
+        let elementValues = try elements.map { element in
+            return try evaluate(expr: element)
+        }
+
+        let list = LoxList(elements: elementValues)
+        return .list(list)
     }
 
     // Utility functions below
