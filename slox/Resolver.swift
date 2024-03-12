@@ -258,6 +258,8 @@ struct Resolver {
             return try handleLambda(params: params, statements: statements, functionType: .lambda)
         case .super(let superToken, let methodToken):
             return try handleSuper(superToken: superToken, methodToken: methodToken)
+        case .list(let elements):
+            return try handleList(elements: elements)
         }
     }
 
@@ -377,6 +379,14 @@ struct Resolver {
 
         let depth = getDepth(name: superToken.lexeme)
         return .super(superToken, methodToken, depth)
+    }
+
+    mutating private func handleList(elements: [Expression]) throws -> ResolvedExpression {
+        let resolvedElements = try elements.map { element in
+            return try resolve(expression: element)
+        }
+
+        return .list(resolvedElements)
     }
 
     // Internal helpers
