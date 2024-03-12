@@ -17,6 +17,7 @@ struct Resolver {
     private enum ClassType {
         case none
         case `class`
+        case subclass
     }
 
     private var scopeStack: [[String: Bool]] = []
@@ -38,8 +39,11 @@ struct Resolver {
             return try handleBlock(statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
-        case .class(let nameToken, let methods, let staticMethods):
-            return try handleClassDeclaration(nameToken: nameToken, methods: methods, staticMethods: staticMethods)
+        case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
+            return try handleClassDeclaration(nameToken: nameToken,
+                                              superclassExpr: superclassExpr,
+                                              methods: methods,
+                                              staticMethods: staticMethods)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -81,21 +85,47 @@ struct Resolver {
     }
 
     mutating private func handleClassDeclaration(nameToken: Token,
+                                                 superclassExpr: Expression?,
                                                  methods: [Statement],
                                                  staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
         currentClassType = .class
+        defer {
+            currentClassType = previousClassType
+        }
 
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
+        // ACHTUNG! We need to attmept to resolve the superclass _before_
+        // pushing `this` onto the stack, otherwise we won't find it!
+        var resolvedSuperclassExpr: ResolvedExpression? = nil
+        if case .variable(let superclassName) = superclassExpr {
+            currentClassType = .subclass
+
+            if superclassName.lexeme == nameToken.lexeme {
+                throw ResolverError.classCannotInheritFromItself
+            }
+
+            resolvedSuperclassExpr = try handleVariable(nameToken: superclassName)
+        }
+
+        if resolvedSuperclassExpr != nil {
+            beginScope()
+            scopeStack.lastMutable["super"] = true
+        }
+        defer {
+            if resolvedSuperclassExpr != nil {
+                endScope()
+            }
+        }
+
         beginScope()
-        // NOTA BENE: Note that the scope stack is never empty at this point
-        scopeStack.lastMutable["this"] = true
         defer {
             endScope()
-            currentClassType = previousClassType
         }
+        // NOTA BENE: Note that the scope stack is never empty at this point
+        scopeStack.lastMutable["this"] = true
 
         let resolvedMethods = try methods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
@@ -107,10 +137,9 @@ struct Resolver {
             } else {
                 .method
             }
-            return try handleFunctionDeclaration(
-                nameToken: nameToken,
-                lambdaExpr: lambdaExpr,
-                functionType: functionType)
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: functionType)
         }
 
         let resolvedStaticMethods = try staticMethods.map { method in
@@ -122,13 +151,12 @@ struct Resolver {
                 throw ResolverError.staticInitsNotAllowed
             }
 
-            return try handleFunctionDeclaration(
-                nameToken: nameToken,
-                lambdaExpr: lambdaExpr,
-                functionType: .method)
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .method)
         }
 
-        return .class(nameToken, resolvedMethods, resolvedStaticMethods)
+        return .class(nameToken, resolvedSuperclassExpr, resolvedMethods, resolvedStaticMethods)
     }
 
     mutating private func handleFunctionDeclaration(nameToken: Token,
@@ -228,6 +256,8 @@ struct Resolver {
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
         case .lambda(let params, let statements):
             return try handleLambda(params: params, statements: statements, functionType: .lambda)
+        case .super(let superToken, let methodToken):
+            return try handleSuper(superToken: superToken, methodToken: methodToken)
         }
     }
 
@@ -333,6 +363,20 @@ struct Resolver {
         }
 
         return .lambda(params, resolvedStatements)
+    }
+
+    mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> ResolvedExpression {
+        switch currentClassType {
+        case .none:
+            throw ResolverError.cannotReferenceSuperOutsideClass
+        case .class:
+            throw ResolverError.cannotReferenceSuperWithoutSubclassing
+        case .subclass:
+            break
+        }
+
+        let depth = getDepth(name: superToken.lexeme)
+        return .super(superToken, methodToken, depth)
     }
 
     // Internal helpers

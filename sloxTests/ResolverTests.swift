@@ -198,9 +198,15 @@ final class ResolverTests: XCTestCase {
     }
 
     func testResolveClassDeclaration() throws {
+        // class Person {
+        //     sayName() {
+        //         print this.name;
+        //     }
+        // }
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
@@ -221,6 +227,7 @@ final class ResolverTests: XCTestCase {
         let expected: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
@@ -272,6 +279,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Answer", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
@@ -294,9 +302,15 @@ final class ResolverTests: XCTestCase {
     }
 
     func testResolveClassWithStaticMethod() throws {
+        // class Math {
+        //     class add(a, b) {
+        //         return a + b;
+        //     }
+        // }
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -322,6 +336,7 @@ final class ResolverTests: XCTestCase {
         let expected: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -357,6 +372,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -375,6 +391,58 @@ final class ResolverTests: XCTestCase {
 
         var resolver = Resolver()
         let expectedError = ResolverError.staticInitsNotAllowed
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
+    func testResolveInvocationOfSuperAtTopLevel() throws {
+        // super.someMethod()
+        let statements: [Statement] = [
+            .expression(
+                .super(
+                    Token(type: .super, lexeme: "super", line: 1),
+                    Token(type: .identifier, lexeme: "someMethod", line: 1)))
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotReferenceSuperOutsideClass
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
+    func testResolveInvocationOfSuperFromWithinClassThatDoesNotSubclassAnother() throws {
+        // class A {
+        //     someMethod() {
+        //         super.someMethod();
+        //     }
+        // }
+        let statements: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "A", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "someMethod", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .expression(
+                                    .call(
+                                        .super(
+                                            Token(type: .super, lexeme: "super", line: 3),
+                                            Token(type: .identifier, lexeme: "someMethod", line: 3)),
+                                        Token(type: .rightParen, lexeme: ")", line: 3),
+                                        [])
+                                )
+                            ]))
+                ],
+                [])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotReferenceSuperWithoutSubclassing
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }

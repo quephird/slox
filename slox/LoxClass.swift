@@ -7,6 +7,7 @@
 
 class LoxClass: LoxInstance, LoxCallable {
     var name: String
+    var superclass: LoxClass?
     var arity: Int {
         if let initializer = methods["init"] {
             return initializer.params.count
@@ -16,8 +17,9 @@ class LoxClass: LoxInstance, LoxCallable {
     }
     var methods: [String: UserDefinedFunction]
 
-    init(name: String, methods: [String: UserDefinedFunction]) {
+    init(name: String, superclass: LoxClass?, methods: [String: UserDefinedFunction]) {
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
         super.init(klass: nil)
@@ -25,6 +27,14 @@ class LoxClass: LoxInstance, LoxCallable {
 
     static func == (lhs: LoxClass, rhs: LoxClass) -> Bool {
         return lhs === rhs
+    }
+
+    func findMethod(name: String) -> UserDefinedFunction? {
+        if let method = methods[name] {
+            return method
+        }
+
+        return superclass?.findMethod(name: name)
     }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {

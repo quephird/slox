@@ -603,6 +603,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [],
                 []),
             .variableDeclaration(
@@ -645,6 +646,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayHello", line: 2),
@@ -703,6 +705,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "greeting", line: 2),
@@ -761,6 +764,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [],
                 []),
             .variableDeclaration(
@@ -798,6 +802,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
@@ -865,6 +870,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
@@ -931,6 +937,7 @@ final class InterpreterTests: XCTestCase {
         let statements: [ResolvedStatement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -970,6 +977,143 @@ final class InterpreterTests: XCTestCase {
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: statements)
         let expected: LoxValue = .number(5)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretCallToMethodOnSuperclass() throws {
+        // class A {
+        //     getTheAnswer() {
+        //         return 42;
+        //     }
+        // }
+        // class B < A {}
+        // var b = B();
+        // b.getTheAnswer()
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "A", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "getTheAnswer", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .literal(.number(42)))
+                            ]))
+                ],
+                []),
+            .class(
+                Token(type: .identifier, lexeme: "B", line: 6),
+                .variable(
+                    Token(type: .identifier, lexeme: "A", line: 6),
+                    0),
+                [],
+                []),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "b", line: 7),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "B", line: 7),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 7),
+                    [])),
+            .expression(
+                .call(
+                    .get(
+                        .variable(
+                            Token(type: .identifier, lexeme: "b", line: 8),
+                            0),
+                        Token(type: .identifier, lexeme: "getTheAnswer", line: 8)),
+                    Token(type: .rightParen, lexeme: ")", line: 8),
+                    []))
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretCallingMethodInSuperclassResolvesProperly() throws {
+        // class A {
+        //     method() {
+        //         return 21;
+        //     }
+        // }
+        // class B < A {
+        //     method() {
+        //         return 2*super.someMethod();
+        //     }
+        // }
+        // var b = B();
+        // b.method()
+        let statements: [ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "A", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "method", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .literal(.number(21)))
+                            ]))
+                ],
+                []),
+            .class(
+                Token(type: .identifier, lexeme: "B", line: 6),
+                .variable(
+                    Token(type: .identifier, lexeme: "A", line: 6),
+                    0),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "method", line: 7),
+                        .lambda(
+                            [],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 8),
+                                    .binary(
+                                        .literal(.number(2)),
+                                        Token(type: .star, lexeme: "*", line: 8),
+                                        .call(
+                                            .super(
+                                                Token(type: .super, lexeme: "super", line: 8),
+                                                Token(type: .identifier, lexeme: "method", line: 8),
+                                                2),
+                                            Token(type: .rightParen, lexeme: ")", line: 8),
+                                            []))),
+                            ]))
+                ],
+                []),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "b", line: 9),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "B", line: 9),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 9),
+                    [])),
+            .expression(
+                .call(
+                    .get(
+                        .variable(
+                            Token(type: .identifier, lexeme: "b", line: 10),
+                            0),
+                        Token(type: .identifier, lexeme: "method", line: 10)),
+                    Token(type: .rightParen, lexeme: ")", line: 10),
+                    [])),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
     }
 }

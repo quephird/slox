@@ -36,7 +36,8 @@ struct Parser {
     //                   | funDecl
     //                   | varDecl
     //                   | statement ;
-    //    classDecl      → "class" IDENTIFIER "{" function* "}" ;
+    //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
+    //                     "{" function* "}" ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -85,6 +86,16 @@ struct Parser {
         let className = currentToken
         advanceCursor()
 
+        var superclassExpr: Expression? = nil
+        if currentTokenMatchesAny(types: [.less]) {
+            guard case .identifier = currentToken.type else {
+                throw ParseError.missingSuperclassName(currentToken)
+            }
+
+            superclassExpr = .variable(currentToken)
+            advanceCursor()
+        }
+
         if !currentTokenMatchesAny(types: [.leftBrace]) {
             throw ParseError.missingOpenBraceBeforeClassBody(currentToken)
         }
@@ -105,7 +116,7 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.rightBrace]) {
-            return .class(className, methodStatements, staticMethodStatements)
+            return .class(className, superclassExpr, methodStatements, staticMethodStatements)
         }
 
         throw ParseError.missingClosingBrace(previousToken)
@@ -340,7 +351,8 @@ struct Parser {
     //                   | "(" expression ")"
     //                   | "this"
     //                   | IDENTIFIER
-    //                   | lambda ;
+    //                   | lambda
+    //                   | "super" "." IDENTIFIER ;
     //    lambda         → "fun" "(" parameters? ")" block ;
     //
     mutating private func parseExpression() throws -> Expression {
@@ -506,6 +518,21 @@ struct Parser {
             }
 
             throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.super]) {
+            let superToken = previousToken
+            if !currentTokenMatchesAny(types: [.dot]) {
+                throw ParseError.missingDotAfterSuper(currentToken)
+            }
+
+            guard case .identifier = currentToken.type else {
+                throw ParseError.expectedSuperclassMethodName(currentToken)
+            }
+            let methodToken = currentToken
+            advanceCursor()
+
+            return .super(superToken, methodToken)
         }
 
         if currentTokenMatchesAny(types: [.this]) {

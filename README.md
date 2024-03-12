@@ -20,6 +20,10 @@ So far, the following have been implemented in `slox`:
 - Lambda expressions
 - Class declaration and instantiation
 - Instance properties and methods
+- Referencing the scoped instance via `this`
+- Class-level properties and methods
+- Single inheritance
+- Invoking superclass methods via `super`
 
 # Design
 
@@ -60,7 +64,7 @@ Instead of maintaining set of native functions in `Interpreter`'s constructor, t
 
 # Unit testing
 
-This repository contains a fairly comprehensive suite of unit tests that exercise the scanner, parser, resolver, and interpreter; to run them, hit ⌘-U.
+This repository contains a fairly comprehensive suite of unit tests that exercise the scanner, parser, resolver, and interpreter; to run them, hit ⌘-U from within Xcode.
 
 # Relevant links
 

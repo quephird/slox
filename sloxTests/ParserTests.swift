@@ -985,6 +985,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
+                nil,
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
@@ -1084,6 +1085,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
+                nil,
                 [],
                 [
                     .function(
@@ -1102,6 +1104,71 @@ final class ParserTests: XCTestCase {
                                         .variable(Token(type: .identifier, lexeme: "b", line: 3))))
                             ]))
                 ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseClassThatInheritsFromAnotherAndCallsSuper() throws {
+        // class B < A {
+        //     someMethod(arg) {
+        //         return super.someMethod(arg);
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "B", line: 1),
+            Token(type: .less, lexeme: "<", line: 1),
+            Token(type: .identifier, lexeme: "A", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .identifier, lexeme: "someMethod", line: 2),
+            Token(type: .leftParen, lexeme: "(", line: 2),
+            Token(type: .identifier, lexeme: "arg", line: 2),
+            Token(type: .rightParen, lexeme: ")", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .return, lexeme: "return", line: 3),
+            Token(type: .super, lexeme: "super", line: 3),
+            Token(type: .dot, lexeme: ".", line: 3),
+            Token(type: .identifier, lexeme: "someMethod", line: 3),
+            Token(type: .leftParen, lexeme: "(", line: 3),
+            Token(type: .identifier, lexeme: "arg", line: 3),
+            Token(type: .rightParen, lexeme: ")", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .rightBrace, lexeme: "}", line: 5),
+            Token(type: .eof, lexeme: "", line: 5),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "B", line: 1),
+                .variable(Token(type: .identifier, lexeme: "A", line: 1)),
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "someMethod", line: 2),
+                        .lambda(
+                            [
+                                Token(type: .identifier, lexeme: "arg", line: 2)
+                            ],
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .call(
+                                        .super(
+                                            Token(type: .super, lexeme: "super", line: 3),
+                                            Token(type: .identifier, lexeme: "someMethod", line: 3)),
+                                        Token(type: .rightParen, lexeme: ")", line: 3),
+                                        [
+                                            .variable(Token(type: .identifier, lexeme: "arg", line: 3))
+                                        ]))
+                            ]))
+                ],
+                []),
         ]
         XCTAssertEqual(actual, expected)
     }
