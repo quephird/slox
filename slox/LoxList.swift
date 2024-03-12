@@ -7,6 +7,9 @@
 
 class LoxList: Equatable {
     var elements: [LoxValue]
+    var count: Int {
+        return elements.count
+    }
 
     init(elements: [LoxValue]) {
         self.elements = elements
