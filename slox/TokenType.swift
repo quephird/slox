@@ -7,7 +7,7 @@
 
 enum TokenType: Equatable {
     // Single-character tokens
-    case leftParen, rightParen, leftBrace, rightBrace, comma, dot, minus, plus, semicolon, slash, star
+    case leftParen, rightParen, leftBrace, rightBrace, comma, dot, minus, plus, semicolon, slash, star, leftBracket, rightBracket
 
     // One of two character tokens
     case bang, bangEqual, equal, equalEqual, greater, greaterEqual, less, lessEqual
