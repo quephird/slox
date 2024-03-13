@@ -344,9 +344,8 @@ struct Parser {
     //    term           → factor ( ( "-" | "+" ) factor )* ;
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     //    unary          → ( "!" | "-" ) unary
-    //                   | call ;
-    //    call           → subscript ( "(" arguments? ")" )* | "." IDENTIFIER )* ;
-    //    subscript      → primary ( "[" logicOr "]" )*
+    //                   | postfix ;
+    //    postfix        → primary ( "(" arguments? ")" | "." IDENTIFIER | "[" logicOr "]" )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
     //                   | "[" arguments? "]"
@@ -458,11 +457,11 @@ struct Parser {
             return .unary(oper, expr)
         }
 
-        return try parseCall()
+        return try parsePostfix()
     }
 
-    mutating private func parseCall() throws -> Expression {
-        var expr = try parseSubscript()
+    mutating private func parsePostfix() throws -> Expression {
+        var expr = try parsePrimary()
 
         while true {
             if currentTokenMatchesAny(types: [.leftParen]) {
@@ -479,19 +478,7 @@ struct Parser {
                 }
 
                 expr = .get(expr, previousToken)
-            } else {
-                break
-            }
-        }
-
-        return expr
-    }
-
-    mutating private func parseSubscript() throws -> Expression {
-        var expr = try parsePrimary()
-
-        while true {
-            if currentTokenMatchesAny(types: [.leftBracket]) {
+            } else if currentTokenMatchesAny(types: [.leftBracket]) {
                 let indexExpr = try parseLogicOr()
 
                 if !currentTokenMatchesAny(types: [.rightBracket]) {

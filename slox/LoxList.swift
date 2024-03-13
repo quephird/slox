@@ -19,6 +19,7 @@ class LoxList: Equatable {
         return lhs.elements == rhs.elements
     }
 
+    // TODO: Need to think about how to handle invalid indices!!!
     subscript(index: Int) -> LoxValue {
         get {
             return elements[index]

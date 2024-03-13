@@ -1116,4 +1116,227 @@ final class InterpreterTests: XCTestCase {
         let expected: LoxValue = .number(42)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretAccessingElementOfList() throws {
+        // var foo = [1, 2, 3, 4, 5];
+        // foo[2]
+        let statements: [ResolvedStatement] = [
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "foo", line: 1),
+                .list([
+                    .literal(.number(1)),
+                    .literal(.number(2)),
+                    .literal(.number(3)),
+                    .literal(.number(4)),
+                    .literal(.number(5)),
+                ])),
+            .expression(
+                .subscriptGet(
+                    .variable(
+                        Token(type: .identifier, lexeme: "foo", line: 2),
+                        0),
+                    .literal(.number(2)))),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(3)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretMutationOfList() throws {
+        // var foo = [1, 2, 3, 4, 5];
+        // foo[2] = 6
+        // foo
+        let statements: [ResolvedStatement] = [
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "foo", line: 1),
+                .list([
+                    .literal(.number(1)),
+                    .literal(.number(2)),
+                    .literal(.number(3)),
+                    .literal(.number(4)),
+                    .literal(.number(5)),
+                ])),
+            .expression(
+                .subscriptSet(
+                    .variable(
+                        Token(type: .identifier, lexeme: "foo", line: 2),
+                        0),
+                    .literal(.number(2)),
+                    .literal(.number(6)))),
+            .expression(
+                .variable(
+                    Token(type: .identifier, lexeme: "foo", line: 3),
+                    0)),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .list(
+            LoxList(elements: [
+                .number(1),
+                .number(2),
+                .number(6),
+                .number(4),
+                .number(5),
+            ]))
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretAccessingElementOfListReturnedByFunction() throws {
+        // fun foo() {
+        //     return [1, 2, 3];
+        // }
+        // foo()[1]
+        let statements: [ResolvedStatement] = [
+            .function(
+                Token(type: .identifier, lexeme: "foo", line: 1),
+                .lambda(
+                    [],
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .list([
+                                .literal(.number(1)),
+                                .literal(.number(2)),
+                                .literal(.number(3)),
+                            ]))
+                    ])),
+            .expression(
+                .subscriptGet(
+                    .call(
+                        .variable(
+                            Token(type: .identifier, lexeme: "foo", line: 4),
+                            0),
+                        Token(type: .rightParen, lexeme: ")", line: 4),
+                        []),
+                    .literal(.number(1)))),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(2)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretInvokingFunctionReturnedAsElementOfList() throws {
+        // var bar = [fun() { return "not called!"; }, fun () { return "forty-two"; }]
+        // bar[1]()
+        let statements: [ResolvedStatement] = [
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "bar", line: 1),
+                .list([
+                    .lambda(
+                        [],
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 1),
+                                .literal(.string("not called!")))
+                        ]),
+                    .lambda(
+                        [],
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 1),
+                                .literal(.string("forty-two")))
+                        ]),
+                ])),
+            .expression(
+                .call(
+                    .subscriptGet(
+                        .variable(
+                            Token(type: .identifier, lexeme: "bar", line: 2),
+                            0),
+                        .literal(.number(1))),
+                    Token(type: .rightParen, lexeme: ")", line: 2),
+                    []))
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .string("forty-two")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretAccessingElementInMultidimensionalList() throws {
+        // var baz = [[1, 2], [3, 4]];
+        // baz[1][1]
+        let statements: [ResolvedStatement] = [
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "baz", line: 1),
+                .list([
+                    .list([.literal(.number(1)), .literal(.number(2))]),
+                    .list([.literal(.number(3)), .literal(.number(4))]),
+                ])),
+            .expression(
+                .subscriptGet(
+                    .subscriptGet(
+                        .variable(
+                            Token(type: .identifier, lexeme: "baz", line: 2),
+                            0),
+                        .literal(.number(1))),
+                    .literal(.number(1))))
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(4)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretExpressionWithListSubscriptingMethodInvocationAndPropertyGetting() throws {
+        // class Foo { }
+        // var foo = Foo();
+        // foo.bar = fun() { return [1, 2, 3]; }
+        // foo.bar()[1]
+        let statements:[ResolvedStatement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Foo", line: 1),
+                nil,
+                [],
+                []),
+            .variableDeclaration(
+                Token(type: .identifier, lexeme: "foo", line: 2),
+                .call(
+                    .variable(
+                        Token(type: .identifier, lexeme: "Foo", line: 2),
+                        0),
+                    Token(type: .rightParen, lexeme: ")", line: 2),
+                    [])),
+            .expression(
+                .set(
+                    .variable(
+                        Token(type: .identifier, lexeme: "foo", line: 3),
+                        0),
+                    Token(type: .identifier, lexeme: "bar", line: 3),
+                    .lambda(
+                        [],
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 3),
+                                .list([
+                                    .literal(.number(1)),
+                                    .literal(.number(2)),
+                                    .literal(.number(3)),
+                                ]))
+                        ]))),
+            .expression(
+                .subscriptGet(
+                    .call(
+                        .get(
+                            .variable(
+                                Token(type: .identifier, lexeme: "foo", line: 4),
+                                0),
+                            Token(type: .identifier, lexeme: "bar", line: 4)),
+                        Token(type: .rightParen, lexeme: ")", line: 4),
+                        []),
+                    .literal(.number(1)))),
+        ]
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(statements: statements)
+        let expected: LoxValue = .number(2)
+        XCTAssertEqual(actual, expected)
+    }
 }
