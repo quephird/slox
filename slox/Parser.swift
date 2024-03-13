@@ -498,7 +498,12 @@ struct Parser {
                     throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
                 }
 
-                expr = .subscript(expr, indexExpr)
+                if currentTokenMatchesAny(types: [.equal]) {
+                    let valueExpr = try parseExpression()
+                    expr = .subscriptSet(expr, indexExpr, valueExpr)
+                } else {
+                    expr = .subscriptGet(expr, indexExpr)
+                }
             } else {
                 break
             }

@@ -20,6 +20,11 @@ class LoxList: Equatable {
     }
 
     subscript(index: Int) -> LoxValue {
-        return elements[index]
+        get {
+            return elements[index]
+        }
+        set(newValue) {
+            elements[index] = newValue
+        }
     }
 }

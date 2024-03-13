@@ -20,5 +20,6 @@ indirect enum ResolvedExpression: Equatable {
     case this(Token, Int)
     case `super`(Token, Token, Int)
     case list([ResolvedExpression])
-    case `subscript`(ResolvedExpression, ResolvedExpression)
+    case subscriptGet(ResolvedExpression, ResolvedExpression)
+    case subscriptSet(ResolvedExpression, ResolvedExpression, ResolvedExpression)
 }

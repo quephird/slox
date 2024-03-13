@@ -244,8 +244,12 @@ class Interpreter {
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
         case .list(let elements):
             return try handleListExpression(elements: elements)
-        case .subscript(let listExpr, let indexExpr):
-            return try handleSubscriptExpression(listExpr: listExpr, indexExpr: indexExpr)
+        case .subscriptGet(let listExpr, let indexExpr):
+            return try handleSubscriptGetExpression(listExpr: listExpr, indexExpr: indexExpr)
+        case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
+            return try handleSubscriptSetExpression(listExpr: listExpr,
+                                                    indexExpr: indexExpr,
+                                                    valueExpr: valueExpr)
         }
     }
 
@@ -444,7 +448,7 @@ class Interpreter {
         return .list(list)
     }
 
-    private func handleSubscriptExpression(listExpr: ResolvedExpression,
+    private func handleSubscriptGetExpression(listExpr: ResolvedExpression,
                                            indexExpr: ResolvedExpression) throws -> LoxValue {
         guard case .list(let list) = try evaluate(expr: listExpr) else {
             throw RuntimeError.notAList
@@ -454,6 +458,22 @@ class Interpreter {
         }
 
         return list[Int(index)]
+    }
+
+    private func handleSubscriptSetExpression(listExpr: ResolvedExpression,
+                                              indexExpr: ResolvedExpression,
+                                              valueExpr: ResolvedExpression) throws -> LoxValue {
+        guard case .list(let list) = try evaluate(expr: listExpr) else {
+            throw RuntimeError.notAList
+        }
+        guard case .number(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeANumber
+        }
+
+        let value = try evaluate(expr: valueExpr)
+
+        list[Int(index)] = value
+        return value
     }
 
     // Utility functions below
