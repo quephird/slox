@@ -18,4 +18,8 @@ class LoxList: Equatable {
     static func == (lhs: LoxList, rhs: LoxList) -> Bool {
         return lhs.elements == rhs.elements
     }
+
+    subscript(index: Int) -> LoxValue {
+        return elements[index]
+    }
 }

@@ -244,6 +244,8 @@ class Interpreter {
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
         case .list(let elements):
             return try handleListExpression(elements: elements)
+        case .subscript(let listExpr, let indexExpr):
+            return try handleSubscriptExpression(listExpr: listExpr, indexExpr: indexExpr)
         }
     }
 
@@ -440,6 +442,18 @@ class Interpreter {
 
         let list = LoxList(elements: elementValues)
         return .list(list)
+    }
+
+    private func handleSubscriptExpression(listExpr: ResolvedExpression,
+                                           indexExpr: ResolvedExpression) throws -> LoxValue {
+        guard case .list(let list) = try evaluate(expr: listExpr) else {
+            throw RuntimeError.notAList
+        }
+        guard case .number(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeANumber
+        }
+
+        return list[Int(index)]
     }
 
     // Utility functions below

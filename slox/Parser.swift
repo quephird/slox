@@ -345,8 +345,8 @@ struct Parser {
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     //    unary          → ( "!" | "-" ) unary
     //                   | call ;
-    //    call           → primary ( "(" arguments? ")" )*
-    //                   | "." IDENTIFIER )* ;
+    //    call           → subscript ( "(" arguments? ")" )* | "." IDENTIFIER )* ;
+    //    subscript      → primary ( "[" logicOr "]" )*
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
     //                   | "[" arguments? "]"
@@ -462,7 +462,7 @@ struct Parser {
     }
 
     mutating private func parseCall() throws -> Expression {
-        var expr = try parsePrimary()
+        var expr = try parseSubscript()
 
         while true {
             if currentTokenMatchesAny(types: [.leftParen]) {
@@ -479,6 +479,26 @@ struct Parser {
                 }
 
                 expr = .get(expr, previousToken)
+            } else {
+                break
+            }
+        }
+
+        return expr
+    }
+
+    mutating private func parseSubscript() throws -> Expression {
+        var expr = try parsePrimary()
+
+        while true {
+            if currentTokenMatchesAny(types: [.leftBracket]) {
+                let indexExpr = try parseLogicOr()
+
+                if !currentTokenMatchesAny(types: [.rightBracket]) {
+                    throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
+                }
+
+                expr = .subscript(expr, indexExpr)
             } else {
                 break
             }

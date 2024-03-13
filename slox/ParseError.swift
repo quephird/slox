@@ -33,6 +33,7 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingSuperclassName(Token)
     case missingDotAfterSuper(Token)
     case expectedSuperclassMethodName(Token)
+    case missingCloseBracketForSubscriptAccess(Token)
 
     var description: String {
         switch self {
@@ -86,6 +87,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected dot after super"
         case .expectedSuperclassMethodName(let token):
             return "[Line \(token.line)] Error: expected superclass method name"
+        case .missingCloseBracketForSubscriptAccess(let token):
+            return "[Line \(token.line)] Error: expected closing bracket after subscript index"
         }
     }
 }

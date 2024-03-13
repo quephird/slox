@@ -260,6 +260,8 @@ struct Resolver {
             return try handleSuper(superToken: superToken, methodToken: methodToken)
         case .list(let elements):
             return try handleList(elements: elements)
+        case .subscript(let listExpr, let indexExpr):
+            return try handleSubscript(listExpr: listExpr, indexExpr: indexExpr)
         }
     }
 
@@ -387,6 +389,13 @@ struct Resolver {
         }
 
         return .list(resolvedElements)
+    }
+
+    mutating private func handleSubscript(listExpr: Expression, indexExpr: Expression) throws -> ResolvedExpression {
+        let resolvedListExpr = try resolve(expression: listExpr)
+        let resolvedIndexExpr = try resolve(expression: indexExpr)
+
+        return .subscript(resolvedListExpr, resolvedIndexExpr)
     }
 
     // Internal helpers
