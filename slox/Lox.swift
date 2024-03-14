@@ -43,13 +43,7 @@ struct Lox {
         print("slox>", terminator: " ")
         while let input = readLine() {
             do {
-                var scanner = Scanner(source: input)
-                let tokens = try scanner.scanTokens()
-                var parser = Parser(tokens: tokens)
-                let statements = try parser.parse()
-                var resolver = Resolver()
-                let resolvedStatements = try resolver.resolve(statements: statements)
-                if let result = try interpreter.interpretRepl(statements: resolvedStatements) {
+                if let result = try interpreter.interpretRepl(source: input) {
                     print(result)
                 }
             } catch {
@@ -62,12 +56,6 @@ struct Lox {
 
     // TODO: Need to move pipeline of instantiations and invocations to centralized function
     private static func run(input: String) throws {
-        var scanner = Scanner(source: input)
-        let tokens = try scanner.scanTokens()
-        var parser = Parser(tokens: tokens)
-        let statements = try parser.parse()
-        var resolver = Resolver()
-        let resolvedStatements = try resolver.resolve(statements: statements)
-        try interpreter.interpret(statements: resolvedStatements)
+        try interpreter.interpret(source: input)
     }
 }

@@ -25,23 +25,36 @@ class Interpreter {
         setUpGlobals()
     }
 
+    private func prepareCode(source: String) throws -> [ResolvedStatement] {
+        var scanner = Scanner(source: source)
+        let tokens = try scanner.scanTokens()
+        var parser = Parser(tokens: tokens)
+        let statements = try parser.parse()
+        var resolver = Resolver()
+
+        return try resolver.resolve(statements: statements)
+    }
+
     private func setUpGlobals() {
         for nativeFunction in NativeFunction.allCases {
             environment.define(name: String(describing: nativeFunction),
                                value: .nativeFunction(nativeFunction))
         }
 
-        let preparedCode = try! prepareCode(source: Self.standardLibrary)
-        try! interpret(statements: preparedCode)
+        try! interpret(source: Self.standardLibrary)
     }
 
-    func interpret(statements: [ResolvedStatement]) throws {
+    func interpret(source: String) throws {
+        let statements = try prepareCode(source: source)
+
         for statement in statements {
             try execute(statement: statement)
         }
     }
 
-    func interpretRepl(statements: [ResolvedStatement]) throws -> LoxValue? {
+    func interpretRepl(source: String) throws -> LoxValue? {
+        let statements = try prepareCode(source: source)
+
         for (i, statement) in statements.enumerated() {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
                 return try evaluate(expr: expr)

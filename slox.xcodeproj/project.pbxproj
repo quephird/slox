@@ -60,8 +60,6 @@
 		87EEDFBE2B96F52D00C7FE6D /* LoxInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */; };
 		87EEDFBF2B9920F900C7FE6D /* LoxClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307F2B96E9580056FE57 /* LoxClass.swift */; };
 		87EEDFC02B9920FD00C7FE6D /* LoxInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */; };
-		87FB76DF2BA2DD9300865C7C /* RunCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87FB76DE2BA2DD9200865C7C /* RunCode.swift */; };
-		87FB76E02BA379F600865C7C /* RunCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87FB76DE2BA2DD9200865C7C /* RunCode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -109,7 +107,6 @@
 		87BAFC482B9179CB0013E5FE /* LoxCallable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxCallable.swift; sourceTree = "<group>"; };
 		87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefinedFunction.swift; sourceTree = "<group>"; };
 		87EEDFBD2B96F52D00C7FE6D /* LoxInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxInstance.swift; sourceTree = "<group>"; };
-		87FB76DE2BA2DD9200865C7C /* RunCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunCode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,7 +174,6 @@
 				876560042B8825AC002BDE42 /* Token.swift */,
 				876560022B882259002BDE42 /* TokenType.swift */,
 				87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */,
-				87FB76DE2BA2DD9200865C7C /* RunCode.swift */,
 			);
 			path = slox;
 			sourceTree = "<group>";
@@ -286,7 +282,6 @@
 				87777E3C2BA0FF70002E38F2 /* LoxList.swift in Sources */,
 				876560052B8825AC002BDE42 /* Token.swift in Sources */,
 				873283942B95122800E49035 /* ResolvedStatement.swift in Sources */,
-				87FB76DF2BA2DD9300865C7C /* RunCode.swift in Sources */,
 				876A315F2B897EEB0085A350 /* LoxValue.swift in Sources */,
 				873283982B9523AD00E49035 /* ResolverError.swift in Sources */,
 				873CCB302B8EAEC100FC249A /* Statement.swift in Sources */,
@@ -339,7 +334,6 @@
 				876A315D2B897C020085A350 /* Scanner.swift in Sources */,
 				87EEDFBF2B9920F900C7FE6D /* LoxClass.swift in Sources */,
 				876A315B2B897BFD0085A350 /* TokenType.swift in Sources */,
-				87FB76E02BA379F600865C7C /* RunCode.swift in Sources */,
 				87EEDFC02B9920FD00C7FE6D /* LoxInstance.swift in Sources */,
 				873CCB292B8E7B6900FC249A /* ParseError.swift in Sources */,
 				870230792B9575420056FE57 /* MutableCollection+Extension.swift in Sources */,
