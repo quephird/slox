@@ -10,8 +10,12 @@ import Foundation
 class Interpreter {
     static let standardLibrary = """
         class List {
-            append(elt) {
-                appendNative(this, elt);
+            append(element) {
+                appendNative(this, element);
+            }
+
+            deleteAt(index) {
+                return deleteAtNative(this, index);
             }
         }
 """
