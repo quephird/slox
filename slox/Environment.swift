@@ -38,6 +38,18 @@ class Environment: Equatable {
         throw RuntimeError.undefinedVariable(name)
     }
 
+    func getValue(name: String) throws -> LoxValue {
+        if let value = values[name] {
+            return value
+        }
+
+        if let enclosingEnvironment {
+            return try enclosingEnvironment.getValue(name: name)
+        }
+
+        throw RuntimeError.undefinedVariable(name)
+    }
+
     private func ancestor(depth: Int) throws -> Environment {
         var i = 0
         var ancestor: Environment = self

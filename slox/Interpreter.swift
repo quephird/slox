@@ -9,11 +9,11 @@ import Foundation
 
 class Interpreter {
     static let standardLibrary = """
-class List {
-    append(elt) {
-        appendInternal(this, elt);
-    }
-}
+        class List {
+            append(elt) {
+                appendNative(this, elt);
+            }
+        }
 """
     var environment: Environment = Environment()
 
@@ -394,8 +394,6 @@ class List {
     private func handleGetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token) throws -> LoxValue {
         let instance = switch try evaluate(expr: instanceExpr) {
-        case .list(let listInstance as LoxInstance):
-            listInstance
         case .instance(let otherInstance):
             otherInstance
         default:
@@ -455,19 +453,21 @@ class List {
             return try evaluate(expr: element)
         }
 
-        guard case .instance(let listClass as LoxClass) = try environment.getValueAtDepth(name: "List", depth: 0) else {
+        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
             // TODO: Do we need throw an exception here?
             fatalError()
         }
+
         let list = LoxList(elements: elementValues, klass: listClass)
-        return .list(list)
+        return .instance(list)
     }
 
     private func handleSubscriptGetExpression(listExpr: ResolvedExpression,
-                                           indexExpr: ResolvedExpression) throws -> LoxValue {
-        guard case .list(let list) = try evaluate(expr: listExpr) else {
+                                              indexExpr: ResolvedExpression) throws -> LoxValue {
+        guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
             throw RuntimeError.notAList
         }
+
         guard case .number(let index) = try evaluate(expr: indexExpr) else {
             throw RuntimeError.indexMustBeANumber
         }
@@ -478,7 +478,7 @@ class List {
     private func handleSubscriptSetExpression(listExpr: ResolvedExpression,
                                               indexExpr: ResolvedExpression,
                                               valueExpr: ResolvedExpression) throws -> LoxValue {
-        guard case .list(let list) = try evaluate(expr: listExpr) else {
+        guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
             throw RuntimeError.notAList
         }
         guard case .number(let index) = try evaluate(expr: indexExpr) else {
@@ -491,6 +491,7 @@ class List {
         return value
     }
 
+    // TODO: May need to move these next two functions to the LoxValue enum
     // Utility functions below
     private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
         switch (leftValue, rightValue) {
@@ -502,7 +503,7 @@ class List {
             return leftString == rightString
         case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
             return leftBoolean == rightBoolean
-        case (.list(let leftList), .list(let rightList)):
+        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
             return leftList == rightList
         default:
             return false

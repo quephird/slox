@@ -13,7 +13,6 @@ enum LoxValue: CustomStringConvertible, Equatable {
     case userDefinedFunction(UserDefinedFunction)
     case nativeFunction(NativeFunction)
     case instance(LoxInstance)
-    case list(LoxList)
 
     var description: String {
         switch self {
@@ -31,9 +30,7 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return "<function: \(function)>"
         case .instance(let klass as LoxClass):
             return "<class: \(klass.name)>"
-        case .instance(let instance):
-            return "<instance: \(instance.klass.name)>"
-        case .list(let list):
+        case .instance(let list as LoxList):
             var string = "["
             for (i, element) in list.elements.enumerated() {
                 if i > 0 {
@@ -43,6 +40,8 @@ enum LoxValue: CustomStringConvertible, Equatable {
             }
             string.append("]")
             return string
+        case .instance(let instance):
+            return "<instance: \(instance.klass.name)>"
         }
     }
 }

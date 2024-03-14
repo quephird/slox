@@ -9,13 +9,13 @@ import Foundation
 
 enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case clock
-    case appendInternal
+    case appendNative
 
     var arity: Int {
         switch self {
         case .clock:
             return 0
-        case .appendInternal:
+        case .appendNative:
             return 2
         }
     }
@@ -24,7 +24,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
         switch self {
         case .clock:
             return .number(Date().timeIntervalSince1970)
-        case .appendInternal:
+        case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
                 fatalError()
             }

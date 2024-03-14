@@ -38,6 +38,7 @@ struct Lox {
         }
     }
 
+    // TODO: Need to move pipeline of instantiation and invocations to centralized function
     private static func runRepl() {
         print("slox>", terminator: " ")
         while let input = readLine() {
@@ -59,6 +60,7 @@ struct Lox {
         }
     }
 
+    // TODO: Need to move pipeline of instantiations and invocations to centralized function
     private static func run(input: String) throws {
         var scanner = Scanner(source: input)
         let tokens = try scanner.scanTokens()

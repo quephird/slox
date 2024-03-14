@@ -1147,7 +1147,7 @@ final class InterpreterTests: XCTestCase {
     func testInterpretMutationOfList() throws {
         // var foo = [1, 2, 3, 4, 5];
         // foo[2] = 6
-        // foo
+        // foo[2]
         let statements: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "foo", line: 1),
@@ -1166,21 +1166,16 @@ final class InterpreterTests: XCTestCase {
                     .literal(.number(2)),
                     .literal(.number(6)))),
             .expression(
-                .variable(
-                    Token(type: .identifier, lexeme: "foo", line: 3),
-                    0)),
+                .subscriptGet(
+                    .variable(
+                        Token(type: .identifier, lexeme: "foo", line: 3),
+                        0),
+                    .literal(.number(2))))
         ]
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(statements: statements)
-        let expected: LoxValue = .list(
-            LoxList(elements: [
-                .number(1),
-                .number(2),
-                .number(6),
-                .number(4),
-                .number(5),
-            ]))
+        let expected: LoxValue = .number(6)
         XCTAssertEqual(actual, expected)
     }
 
