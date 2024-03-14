@@ -45,7 +45,7 @@ class LoxInstance: Equatable {
         throw RuntimeError.undefinedProperty(propertyName)
     }
 
-    func set(propertyName: String, propertyValue: LoxValue) {
+    func set(propertyName: String, propertyValue: LoxValue) throws {
         self.properties[propertyName] = propertyValue
     }
 

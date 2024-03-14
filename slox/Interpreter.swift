@@ -383,11 +383,12 @@ class Interpreter {
 
     private func handleGetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token) throws -> LoxValue {
-        if case .list(let list) = try evaluate(expr: instanceExpr), propertyNameToken.lexeme == "count" {
-            return .number(Double(list.count))
-        }
-
-        guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
+        let instance = switch try evaluate(expr: instanceExpr) {
+        case .list(let listInstance as LoxInstance):
+            listInstance
+        case .instance(let otherInstance):
+            otherInstance
+        default:
             throw RuntimeError.onlyInstancesHaveProperties
         }
 
@@ -403,7 +404,7 @@ class Interpreter {
 
         let propertyValue = try evaluate(expr: valueExpr)
 
-        instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
+        try instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
         return propertyValue
     }
 
