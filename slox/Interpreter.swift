@@ -8,6 +8,13 @@
 import Foundation
 
 class Interpreter {
+    static let standardLibrary = """
+class List {
+    append(elt) {
+        appendInternal(this, elt);
+    }
+}
+"""
     var environment: Environment = Environment()
 
     init() {
@@ -19,6 +26,9 @@ class Interpreter {
             environment.define(name: String(describing: nativeFunction),
                                value: .nativeFunction(nativeFunction))
         }
+
+        let preparedCode = try! prepareCode(source: Self.standardLibrary)
+        try! interpret(statements: preparedCode)
     }
 
     func interpret(statements: [ResolvedStatement]) throws {
@@ -445,7 +455,11 @@ class Interpreter {
             return try evaluate(expr: element)
         }
 
-        let list = LoxList(elements: elementValues)
+        guard case .instance(let listClass as LoxClass) = try environment.getValueAtDepth(name: "List", depth: 0) else {
+            // TODO: Do we need throw an exception here?
+            fatalError()
+        }
+        let list = LoxList(elements: elementValues, klass: listClass)
         return .list(list)
     }
 

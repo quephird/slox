@@ -11,29 +11,17 @@ class LoxList: LoxInstance {
         return elements.count
     }
 
-    init(elements: [LoxValue]) {
+    init(elements: [LoxValue], klass: LoxClass) {
         self.elements = elements
-        super.init(klass: nil)
+        super.init(klass: klass)
     }
 
     override func get(propertyName: String) throws -> LoxValue {
         switch propertyName {
         case "count":
             return .number(Double(elements.count))
-        case "append":
-            // TODO: Need to return an object that:
-            //
-            // * conforms to LoxCallable so that it can be invoked
-            // * conforms to Equatable so that it can be a member of a LoxValue case
-            // * can mutate self.elements
-            //
-            // It can't be a UserDefinedFunction because we have no reference to
-            // an Environment instance by the time we get here
-            // It also can't be a NativeFunction because there is no way to access
-            // a reference to the relevant LoxList instance from from within it
-            fatalError()
         default:
-            throw RuntimeError.onlyInstancesHaveProperties
+            return try super.get(propertyName: propertyName)
         }
     }
 
