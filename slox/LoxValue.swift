@@ -44,4 +44,34 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return "<instance: \(instance.klass.name)>"
         }
     }
+
+    // These are the rules of equality for Lox
+    func isEqual(to: Self) -> Bool {
+        switch (self, to) {
+        case (.nil, .nil):
+            return true
+        case (.number(let leftNumber), .number(let rightNumber)):
+            return leftNumber == rightNumber
+        case (.string(let leftString), .string(let rightString)):
+            return leftString == rightString
+        case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
+            return leftBoolean == rightBoolean
+        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
+            return leftList == rightList
+        default:
+            return false
+        }
+    }
+
+    // In Lox, `false` and `nil` are false; everything else is true
+    var isTruthy: Bool {
+        switch self {
+        case .nil:
+            return false
+        case .boolean(let boolean):
+            return boolean
+        default:
+            return true
+        }
+    }
 }

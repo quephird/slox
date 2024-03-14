@@ -98,7 +98,9 @@ class Interpreter {
     private func handleIfStatement(testExpr: ResolvedExpression,
                                    consequentStmt: ResolvedStatement,
                                    alternativeStmt: ResolvedStatement?) throws {
-        if isTruthy(value: try evaluate(expr: testExpr)) {
+        let value = try evaluate(expr: testExpr)
+
+        if value.isTruthy {
             try execute(statement: consequentStmt)
         } else if let alternativeStmt {
             try execute(statement: alternativeStmt)
@@ -234,7 +236,7 @@ class Interpreter {
     }
 
     private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
-        while isTruthy(value: try evaluate(expr: expr)) {
+        while try evaluate(expr: expr).isTruthy {
             try execute(statement: stmt)
         }
     }
@@ -291,7 +293,7 @@ class Interpreter {
 
             return .number(-number)
         case .bang:
-            return .boolean(!isTruthy(value: value))
+            return .boolean(!value.isTruthy)
         default:
             throw RuntimeError.unsupportedUnaryOperator
         }
@@ -335,9 +337,9 @@ class Interpreter {
 
         switch oper.type {
         case .bangEqual:
-            return .boolean(!isEqual(leftValue: leftValue, rightValue: rightValue))
+            return .boolean(!leftValue.isEqual(to: rightValue))
         case .equalEqual:
-            return .boolean(isEqual(leftValue: leftValue, rightValue: rightValue))
+            return .boolean(leftValue.isEqual(to: rightValue))
         case .plus:
             throw RuntimeError.binaryOperandsMustBeNumbersOrStrings
         case .minus, .star, .slash, .greater, .greaterEqual, .less, .lessEqual:
@@ -365,13 +367,13 @@ class Interpreter {
         let leftValue = try evaluate(expr: leftExpr)
 
         if case .and = oper.type {
-            if !isTruthy(value: leftValue) {
+            if !leftValue.isTruthy {
                 return leftValue
             } else {
                 return try evaluate(expr: rightExpr)
             }
         } else {
-            if isTruthy(value: leftValue) {
+            if leftValue.isTruthy {
                 return leftValue
             } else {
                 return try evaluate(expr: rightExpr)
@@ -508,34 +510,22 @@ class Interpreter {
         return value
     }
 
-    // TODO: May need to move these next two functions to the LoxValue enum
-    // Utility functions below
-    private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
-        switch (leftValue, rightValue) {
-        case (.nil, .nil):
-            return true
-        case (.number(let leftNumber), .number(let rightNumber)):
-            return leftNumber == rightNumber
-        case (.string(let leftString), .string(let rightString)):
-            return leftString == rightString
-        case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
-            return leftBoolean == rightBoolean
-        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
-            return leftList == rightList
-        default:
-            return false
-        }
-    }
-
-    // In Lox, `false` and `nil` are false; everything else is true
-    private func isTruthy(value: LoxValue) -> Bool {
-        switch value {
-        case .nil:
-            return false
-        case .boolean(let boolean):
-            return boolean
-        default:
-            return true
-        }
-    }
+//    // TODO: May need to move these next two functions to the LoxValue enum
+//    // Utility functions below
+//    private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
+//        switch (leftValue, rightValue) {
+//        case (.nil, .nil):
+//            return true
+//        case (.number(let leftNumber), .number(let rightNumber)):
+//            return leftNumber == rightNumber
+//        case (.string(let leftString), .string(let rightString)):
+//            return leftString == rightString
+//        case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
+//            return leftBoolean == rightBoolean
+//        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
+//            return leftList == rightList
+//        default:
+//            return false
+//        }
+//    }
 }
