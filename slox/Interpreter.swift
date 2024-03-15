@@ -509,23 +509,4 @@ class Interpreter {
         list[Int(index)] = value
         return value
     }
-
-//    // TODO: May need to move these next two functions to the LoxValue enum
-//    // Utility functions below
-//    private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
-//        switch (leftValue, rightValue) {
-//        case (.nil, .nil):
-//            return true
-//        case (.number(let leftNumber), .number(let rightNumber)):
-//            return leftNumber == rightNumber
-//        case (.string(let leftString), .string(let rightString)):
-//            return leftString == rightString
-//        case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
-//            return leftBoolean == rightBoolean
-//        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
-//            return leftList == rightList
-//        default:
-//            return false
-//        }
-//    }
 }
