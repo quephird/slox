@@ -480,4 +480,30 @@ foo.bar()[1]
         let expected: LoxValue = .number(2)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretAppendingToAList() throws {
+        let input = """
+var foo = [1, 2, 3];
+foo.append(4);
+foo.count
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(4)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretDeletingFromAList() throws {
+        let input = """
+var foo = [1, 2, 3];
+foo.deleteAt(1);
+foo.count
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(2)
+        XCTAssertEqual(actual, expected)
+    }
 }

@@ -497,6 +497,7 @@ class Interpreter {
         guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
             throw RuntimeError.notAList
         }
+
         guard case .number(let index) = try evaluate(expr: indexExpr) else {
             throw RuntimeError.indexMustBeANumber
         }
