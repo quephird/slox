@@ -412,10 +412,7 @@ class Interpreter {
 
     private func handleGetExpression(instanceExpr: ResolvedExpression,
                                      propertyNameToken: Token) throws -> LoxValue {
-        let instance = switch try evaluate(expr: instanceExpr) {
-        case .instance(let otherInstance):
-            otherInstance
-        default:
+        guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
             throw RuntimeError.onlyInstancesHaveProperties
         }
 
