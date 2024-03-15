@@ -64,6 +64,10 @@ struct Scanner {
             handleSingleCharacterLexeme(type: .leftBrace)
         case "}":
             handleSingleCharacterLexeme(type: .rightBrace)
+        case "[":
+            handleSingleCharacterLexeme(type: .leftBracket)
+        case "]":
+            handleSingleCharacterLexeme(type: .rightBracket)
         case ",":
             handleSingleCharacterLexeme(type: .comma)
         case ".":

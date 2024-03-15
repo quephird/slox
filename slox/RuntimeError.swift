@@ -17,12 +17,14 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notAFunctionDeclaration
     case notACallableObject
     case notAnInstance
+    case notAList
     case onlyInstancesHaveProperties
     case undefinedProperty(String)
     case wrongArity(Int, Int)
     case notALambda
     case couldNotFindAncestorEnvironmentAtDepth(Int)
     case superclassMustBeAClass
+    case indexMustBeANumber
 
     var description: String {
         switch self {
@@ -44,6 +46,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected a callable object"
         case .notAnInstance:
             return "Error: expected an instance"
+        case .notAList:
+            return "Error: expected a list"
         case .onlyInstancesHaveProperties:
             return "Error: can only get/set properties of instances"
         case .undefinedProperty(let name):
@@ -56,7 +60,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: could not find ancestor environment at depth \(depth)."
         case .superclassMustBeAClass:
             return "Error: superclass must be a class"
-
+        case .indexMustBeANumber:
+            return "Error: index must be a number"
         }
     }
 }

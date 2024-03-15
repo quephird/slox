@@ -344,11 +344,11 @@ struct Parser {
     //    term           → factor ( ( "-" | "+" ) factor )* ;
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     //    unary          → ( "!" | "-" ) unary
-    //                   | call ;
-    //    call           → primary ( "(" arguments? ")" )*
-    //                   | "." IDENTIFIER )* ;
+    //                   | postfix ;
+    //    postfix        → primary ( "(" arguments? ")" | "." IDENTIFIER | "[" logicOr "]" )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
+    //                   | "[" arguments? "]"
     //                   | "this"
     //                   | IDENTIFIER
     //                   | lambda
@@ -457,10 +457,10 @@ struct Parser {
             return .unary(oper, expr)
         }
 
-        return try parseCall()
+        return try parsePostfix()
     }
 
-    mutating private func parseCall() throws -> Expression {
+    mutating private func parsePostfix() throws -> Expression {
         var expr = try parsePrimary()
 
         while true {
@@ -478,6 +478,19 @@ struct Parser {
                 }
 
                 expr = .get(expr, previousToken)
+            } else if currentTokenMatchesAny(types: [.leftBracket]) {
+                let indexExpr = try parseLogicOr()
+
+                if !currentTokenMatchesAny(types: [.rightBracket]) {
+                    throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
+                }
+
+                if currentTokenMatchesAny(types: [.equal]) {
+                    let valueExpr = try parseExpression()
+                    expr = .subscriptSet(expr, indexExpr, valueExpr)
+                } else {
+                    expr = .subscriptGet(expr, indexExpr)
+                }
             } else {
                 break
             }
@@ -518,6 +531,16 @@ struct Parser {
             }
 
             throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.leftBracket]) {
+            let elements = try parseArguments()
+
+            if currentTokenMatchesAny(types: [.rightBracket]) {
+                return .list(elements)
+            }
+
+            throw ParseError.missingClosingBracket(previousToken)
         }
 
         if currentTokenMatchesAny(types: [.super]) {

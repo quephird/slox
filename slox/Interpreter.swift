@@ -8,10 +8,31 @@
 import Foundation
 
 class Interpreter {
+    static let standardLibrary = """
+        class List {
+            append(element) {
+                appendNative(this, element);
+            }
+
+            deleteAt(index) {
+                return deleteAtNative(this, index);
+            }
+        }
+"""
     var environment: Environment = Environment()
 
     init() {
         setUpGlobals()
+    }
+
+    private func prepareCode(source: String) throws -> [ResolvedStatement] {
+        var scanner = Scanner(source: source)
+        let tokens = try scanner.scanTokens()
+        var parser = Parser(tokens: tokens)
+        let statements = try parser.parse()
+        var resolver = Resolver()
+
+        return try resolver.resolve(statements: statements)
     }
 
     private func setUpGlobals() {
@@ -19,15 +40,21 @@ class Interpreter {
             environment.define(name: String(describing: nativeFunction),
                                value: .nativeFunction(nativeFunction))
         }
+
+        try! interpret(source: Self.standardLibrary)
     }
 
-    func interpret(statements: [ResolvedStatement]) throws {
+    func interpret(source: String) throws {
+        let statements = try prepareCode(source: source)
+
         for statement in statements {
             try execute(statement: statement)
         }
     }
 
-    func interpretRepl(statements: [ResolvedStatement]) throws -> LoxValue? {
+    func interpretRepl(source: String) throws -> LoxValue? {
+        let statements = try prepareCode(source: source)
+
         for (i, statement) in statements.enumerated() {
             if i == statements.endIndex-1, case .expression(let expr) = statement {
                 return try evaluate(expr: expr)
@@ -71,7 +98,9 @@ class Interpreter {
     private func handleIfStatement(testExpr: ResolvedExpression,
                                    consequentStmt: ResolvedStatement,
                                    alternativeStmt: ResolvedStatement?) throws {
-        if isTruthy(value: try evaluate(expr: testExpr)) {
+        let value = try evaluate(expr: testExpr)
+
+        if value.isTruthy {
             try execute(statement: consequentStmt)
         } else if let alternativeStmt {
             try execute(statement: alternativeStmt)
@@ -207,7 +236,7 @@ class Interpreter {
     }
 
     private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
-        while isTruthy(value: try evaluate(expr: expr)) {
+        while try evaluate(expr: expr).isTruthy {
             try execute(statement: stmt)
         }
     }
@@ -242,6 +271,14 @@ class Interpreter {
             return try handleLambdaExpression(params: params, statements: statements)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
+        case .list(let elements):
+            return try handleListExpression(elements: elements)
+        case .subscriptGet(let listExpr, let indexExpr):
+            return try handleSubscriptGetExpression(listExpr: listExpr, indexExpr: indexExpr)
+        case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
+            return try handleSubscriptSetExpression(listExpr: listExpr,
+                                                    indexExpr: indexExpr,
+                                                    valueExpr: valueExpr)
         }
     }
 
@@ -256,7 +293,7 @@ class Interpreter {
 
             return .number(-number)
         case .bang:
-            return .boolean(!isTruthy(value: value))
+            return .boolean(!value.isTruthy)
         default:
             throw RuntimeError.unsupportedUnaryOperator
         }
@@ -300,9 +337,9 @@ class Interpreter {
 
         switch oper.type {
         case .bangEqual:
-            return .boolean(!isEqual(leftValue: leftValue, rightValue: rightValue))
+            return .boolean(!leftValue.isEqual(to: rightValue))
         case .equalEqual:
-            return .boolean(isEqual(leftValue: leftValue, rightValue: rightValue))
+            return .boolean(leftValue.isEqual(to: rightValue))
         case .plus:
             throw RuntimeError.binaryOperandsMustBeNumbersOrStrings
         case .minus, .star, .slash, .greater, .greaterEqual, .less, .lessEqual:
@@ -330,13 +367,13 @@ class Interpreter {
         let leftValue = try evaluate(expr: leftExpr)
 
         if case .and = oper.type {
-            if !isTruthy(value: leftValue) {
+            if !leftValue.isTruthy {
                 return leftValue
             } else {
                 return try evaluate(expr: rightExpr)
             }
         } else {
-            if isTruthy(value: leftValue) {
+            if leftValue.isTruthy {
                 return leftValue
             } else {
                 return try evaluate(expr: rightExpr)
@@ -391,7 +428,7 @@ class Interpreter {
 
         let propertyValue = try evaluate(expr: valueExpr)
 
-        instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
+        try instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
         return propertyValue
     }
 
@@ -427,31 +464,47 @@ class Interpreter {
         throw RuntimeError.undefinedProperty(methodToken.lexeme)
     }
 
-    // Utility functions below
-    private func isEqual(leftValue: LoxValue, rightValue: LoxValue) -> Bool {
-        switch (leftValue, rightValue) {
-        case (.nil, .nil):
-            return true
-        case (.number(let leftNumber), .number(let rightNumber)):
-            return leftNumber == rightNumber
-        case (.string(let leftString), .string(let rightString)):
-            return leftString == rightString
-        case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
-            return leftBoolean == rightBoolean
-        default:
-            return false
+    private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
+        let elementValues = try elements.map { element in
+            return try evaluate(expr: element)
         }
+
+        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
+            // TODO: Do we need throw an exception here?
+            fatalError()
+        }
+
+        let list = LoxList(elements: elementValues, klass: listClass)
+        return .instance(list)
     }
 
-    // In Lox, `false` and `nil` are false; everything else is true
-    private func isTruthy(value: LoxValue) -> Bool {
-        switch value {
-        case .nil:
-            return false
-        case .boolean(let boolean):
-            return boolean
-        default:
-            return true
+    private func handleSubscriptGetExpression(listExpr: ResolvedExpression,
+                                              indexExpr: ResolvedExpression) throws -> LoxValue {
+        guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
+            throw RuntimeError.notAList
         }
+
+        guard case .number(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeANumber
+        }
+
+        return list[Int(index)]
+    }
+
+    private func handleSubscriptSetExpression(listExpr: ResolvedExpression,
+                                              indexExpr: ResolvedExpression,
+                                              valueExpr: ResolvedExpression) throws -> LoxValue {
+        guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
+            throw RuntimeError.notAList
+        }
+
+        guard case .number(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeANumber
+        }
+
+        let value = try evaluate(expr: valueExpr)
+
+        list[Int(index)] = value
+        return value
     }
 }

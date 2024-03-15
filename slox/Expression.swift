@@ -19,4 +19,7 @@ indirect enum Expression: Equatable {
     case set(Expression, Token, Expression)
     case this(Token)
     case `super`(Token, Token)
+    case list([Expression])
+    case subscriptGet(Expression, Expression)
+    case subscriptSet(Expression, Expression, Expression)
 }

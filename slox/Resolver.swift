@@ -258,6 +258,12 @@ struct Resolver {
             return try handleLambda(params: params, statements: statements, functionType: .lambda)
         case .super(let superToken, let methodToken):
             return try handleSuper(superToken: superToken, methodToken: methodToken)
+        case .list(let elements):
+            return try handleList(elements: elements)
+        case .subscriptGet(let listExpr, let indexExpr):
+            return try handleSubscriptGet(listExpr: listExpr, indexExpr: indexExpr)
+        case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
+            return try handleSubscriptSet(listExpr: listExpr, indexExpr: indexExpr, valueExpr: valueExpr)
         }
     }
 
@@ -377,6 +383,31 @@ struct Resolver {
 
         let depth = getDepth(name: superToken.lexeme)
         return .super(superToken, methodToken, depth)
+    }
+
+    mutating private func handleList(elements: [Expression]) throws -> ResolvedExpression {
+        let resolvedElements = try elements.map { element in
+            return try resolve(expression: element)
+        }
+
+        return .list(resolvedElements)
+    }
+
+    mutating private func handleSubscriptGet(listExpr: Expression, indexExpr: Expression) throws -> ResolvedExpression {
+        let resolvedListExpr = try resolve(expression: listExpr)
+        let resolvedIndexExpr = try resolve(expression: indexExpr)
+
+        return .subscriptGet(resolvedListExpr, resolvedIndexExpr)
+    }
+
+    mutating private func handleSubscriptSet(listExpr: Expression,
+                                             indexExpr: Expression,
+                                             valueExpr: Expression) throws -> ResolvedExpression {
+        let resolvedListExpr = try resolve(expression: listExpr)
+        let resolvedIndexExpr = try resolve(expression: indexExpr)
+        let resolvedValueExpr = try resolve(expression: valueExpr)
+
+        return .subscriptSet(resolvedListExpr, resolvedIndexExpr, resolvedValueExpr)
     }
 
     // Internal helpers

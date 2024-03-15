@@ -9,6 +9,7 @@ import Foundation
 
 enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingClosingParenthesis(Token)
+    case missingClosingBracket(Token)
     case expectedPrimaryExpression(Token)
     case missingSemicolon(Token)
     case missingVariableName(Token)
@@ -32,11 +33,14 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingSuperclassName(Token)
     case missingDotAfterSuper(Token)
     case expectedSuperclassMethodName(Token)
+    case missingCloseBracketForSubscriptAccess(Token)
 
     var description: String {
         switch self {
         case .missingClosingParenthesis(let token):
             return "[Line \(token.line)] Error: expected closing parenthesis in expression"
+        case .missingClosingBracket(let token):
+            return "[Line \(token.line)] Error: expected closing bracket in expression"
         case .expectedPrimaryExpression(let token):
             return "[Line \(token.line)] Error: expected primary expression"
         case .missingSemicolon(let token):
@@ -83,6 +87,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected dot after super"
         case .expectedSuperclassMethodName(let token):
             return "[Line \(token.line)] Error: expected superclass method name"
+        case .missingCloseBracketForSubscriptAccess(let token):
+            return "[Line \(token.line)] Error: expected closing bracket after subscript index"
         }
     }
 }

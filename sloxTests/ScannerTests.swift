@@ -9,7 +9,7 @@ import XCTest
 
 final class ScannerTests: XCTestCase {
     func testScanningOfOneCharacterLexemes() throws {
-        let source = "( ) { } , . - + ; *"
+        let source = "( ) { } [ ] , . - + ; *"
         var scanner = Scanner(source: source)
         let actual = try! scanner.scanTokens()
         let expected: [Token] = [
@@ -17,6 +17,8 @@ final class ScannerTests: XCTestCase {
             Token(type: .rightParen, lexeme: ")", line: 1),
             Token(type: .leftBrace, lexeme: "{", line: 1),
             Token(type: .rightBrace, lexeme: "}", line: 1),
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
             Token(type: .dot, lexeme: ".", line: 1),
             Token(type: .minus, lexeme: "-", line: 1),
