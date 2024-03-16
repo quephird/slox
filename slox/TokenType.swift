@@ -7,16 +7,54 @@
 
 enum TokenType: Equatable {
     // Single-character tokens
-    case leftParen, rightParen, leftBrace, rightBrace, comma, dot, minus, plus, semicolon, slash, star, leftBracket, rightBracket
+    case leftParen
+    case rightParen
+    case leftBrace
+    case rightBrace
+    case comma
+    case dot
+    case minus
+    case plus
+    case semicolon
+    case slash
+    case star
+    case leftBracket
+    case rightBracket
 
     // One of two character tokens
-    case bang, bangEqual, equal, equalEqual, greater, greaterEqual, less, lessEqual
+    case bang
+    case bangEqual
+    case equal
+    case equalEqual
+    case greater
+    case greaterEqual
+    case less
+    case lessEqual
 
     // Literals
-    case identifier, string, number
+    case identifier
+    case string
+    case number
 
     // Keywords
-    case and, `class`, `else`, `false`, fun, `for`, `if`, `nil`, or, `print`, `return`, `super`, this, `true`, `var`, `while`, `break`
+    case and
+    case `class`
+    case `else`
+    case `false`
+    case fun
+    case `for`
+    case `if`
+    case `nil`
+    case or
+    case `print`
+    case `return`
+    case `super`
+    case this
+    case `true`
+    case `var`
+    case `while`
+    case `break`
+    case `continue`
 
     case eof
 }

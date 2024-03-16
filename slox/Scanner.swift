@@ -33,7 +33,8 @@ struct Scanner {
         "true": .true,
         "var": .var,
         "while": .while,
-        "break": .break
+        "break": .break,
+        "continue": .continue,
     ]
 
     init(source: String) {
