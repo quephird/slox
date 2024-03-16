@@ -264,7 +264,6 @@ class Interpreter {
         }
     }
 
-    // for (var i = 1; i <= 3; i = i + 1) { if (i == 2) { continue; } print i; }
     private func handleForStatement(initializerStmt: ResolvedStatement?,
                                     testExpr: ResolvedExpression,
                                     incrementExpr: ResolvedExpression?,
