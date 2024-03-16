@@ -506,4 +506,62 @@ foo.count
         let expected: LoxValue = .number(2)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretForLoopWithBreakStatement() throws {
+        let input = """
+var sum = 0;
+for (var i = 1; i < 10; i = i + 1) {
+    sum = sum + i;
+    if (i == 3) {
+        break;
+    }
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(6)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretWhileLoopWithBreakStatement() throws {
+        let input = """
+var sum = 0;
+var i = 1;
+while (i < 10) {
+    sum = sum + i;
+    if (i == 3) {
+        break;
+    }
+    i = i + 1;
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(6)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretNestedLoopWithBreakStatementInsideInnerLoop() throws {
+        let input = """
+var sum = 0;
+for (var i = 1; i <= 5; i = i + 1) {
+    for (var j = 1; j <= 5; j = j + 1) {
+        sum = sum + i*j;
+        if (j == 2) {
+            break;
+        }
+    }
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(45)
+        XCTAssertEqual(actual, expected)
+    }
 }

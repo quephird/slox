@@ -447,4 +447,22 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveBreakStatementOutsideLoop() throws {
+        // if (true) {
+        //     break;
+        // }
+        let statements: [Statement] = [
+            .if(
+                .literal(.boolean(true)),
+                .break(Token(type: .break, lexeme: "break", line: 2)),
+                nil)
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotBreakOutsideLoop
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }
