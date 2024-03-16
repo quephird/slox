@@ -195,8 +195,6 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
-    // TODO: Can no longer rewrite `for` in terms of `while` in order to support
-    // `continue` statements
     mutating private func parseForStatement() throws -> Statement {
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForForStatement(currentToken)
