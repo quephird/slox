@@ -7,6 +7,7 @@
 
 import Foundation
 
-enum Return: LocalizedError {
+enum JumpType: LocalizedError {
     case `return`(LoxValue)
+    case `break`
 }

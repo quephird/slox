@@ -58,6 +58,8 @@ struct Resolver {
             return try handleReturnStatement(returnToken: returnToken, expr: expr)
         case .while(let conditionExpr, let bodyStmt):
             return try handleWhile(conditionExpr: conditionExpr, bodyStmt: bodyStmt)
+        case .break(let breakToken):
+            return .break(breakToken)
         }
     }
 

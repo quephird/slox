@@ -92,6 +92,8 @@ class Interpreter {
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
             try handleReturnStatement(returnToken: returnToken, expr: expr)
+        case .break(let breakToken):
+            try handleBreakStatement(breakToken: breakToken)
         }
     }
 
@@ -207,7 +209,11 @@ class Interpreter {
             value = try evaluate(expr: expr)
         }
 
-        throw Return.return(value)
+        throw JumpType.return(value)
+    }
+
+    private func handleBreakStatement(breakToken: Token) throws {
+        throw JumpType.break
     }
 
     private func handleVariableDeclaration(name: Token, expr: ResolvedExpression?) throws {
@@ -236,8 +242,13 @@ class Interpreter {
     }
 
     private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
+    outer:
         while try evaluate(expr: expr).isTruthy {
-            try execute(statement: stmt)
+            do {
+                try execute(statement: stmt)
+            } catch JumpType.break {
+                break outer
+            }
         }
     }
 
