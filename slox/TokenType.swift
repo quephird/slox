@@ -16,7 +16,7 @@ enum TokenType: Equatable {
     case identifier, string, number
 
     // Keywords
-    case and, `class`, `else`, `false`, fun, `for`, `if`, `nil`, or, `print`, `return`, `super`, this, `true`, `var`, `while`
+    case and, `class`, `else`, `false`, fun, `for`, `if`, `nil`, or, `print`, `return`, `super`, this, `true`, `var`, `while`, `break`
 
     case eof
 }
