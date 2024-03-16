@@ -23,6 +23,7 @@ struct Resolver {
     private enum LoopType {
         case none
         case `while`
+        case `for`
     }
 
     private var scopeStack: [[String: Bool]] = []
@@ -64,6 +65,11 @@ struct Resolver {
             return try handleReturnStatement(returnToken: returnToken, expr: expr)
         case .while(let conditionExpr, let bodyStmt):
             return try handleWhile(conditionExpr: conditionExpr, bodyStmt: bodyStmt)
+        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+            return try handleFor(initializerStmt: initializerStmt,
+                                 testExpr: testExpr,
+                                 incrementExpr: incrementExpr,
+                                 bodyStmt: bodyStmt)
         case .break(let breakToken):
             return try handleBreak(breakToken: breakToken)
         case .continue(let continueToken):
@@ -256,6 +262,36 @@ struct Resolver {
         let resolvedBodyStmt = try resolve(statement: bodyStmt)
 
         return .while(resolvedConditionExpr, resolvedBodyStmt)
+    }
+
+    mutating private func handleFor(initializerStmt: Statement?,
+                                    testExpr: Expression,
+                                    incrementExpr: Expression?,
+                                    bodyStmt: Statement) throws -> ResolvedStatement {
+        let previousLoopType = currentLoopType
+        currentLoopType = .for
+        defer {
+            currentLoopType = previousLoopType
+        }
+
+        var resolvedInitializerStmt: ResolvedStatement? = nil
+        if let initializerStmt {
+            resolvedInitializerStmt = try resolve(statement: initializerStmt)
+        }
+
+        let resolvedTestExpr = try resolve(expression: testExpr)
+
+        var resolvedIncrementExpr: ResolvedExpression? = nil
+        if let incrementExpr {
+            resolvedIncrementExpr = try resolve(expression: incrementExpr)
+        }
+
+        let resolvedBodyStmt = try resolve(statement: bodyStmt)
+
+        return .for(resolvedInitializerStmt,
+                    resolvedTestExpr,
+                    resolvedIncrementExpr,
+                    resolvedBodyStmt)
     }
 
     // Resolver for expressions

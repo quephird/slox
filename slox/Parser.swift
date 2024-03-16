@@ -195,6 +195,8 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
+    // TODO: Can no longer rewrite `for` in terms of `while` in order to support
+    // `continue` statements
     mutating private func parseForStatement() throws -> Statement {
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForForStatement(currentToken)
@@ -209,9 +211,9 @@ struct Parser {
             initializerStmt = try parseExpressionStatement()
         }
 
-        var conditionExpr: Expression? = nil
+        var testExpr: Expression = .literal(.boolean(true))
         if !currentTokenMatches(type: .semicolon) {
-            conditionExpr = try parseExpression()
+            testExpr = try parseExpression()
         }
         if !currentTokenMatchesAny(types: [.semicolon]) {
             throw ParseError.missingSemicolonAfterForLoopCondition(currentToken)
@@ -225,25 +227,9 @@ struct Parser {
             throw ParseError.missingCloseParenForForStatement(currentToken)
         }
 
-        var forStmt = try parseStatement()
+        var bodyStmt = try parseStatement()
 
-        // Here is where we do desugaring, rewriting a for statement
-        // in terms of a while statement.
-        if let incrementExpr {
-            forStmt = .block([forStmt, .expression(incrementExpr)])
-        }
-
-        if let conditionExpr {
-            forStmt = .while(conditionExpr, forStmt)
-        } else {
-            forStmt = .while(.literal(.boolean(true)), forStmt)
-        }
-
-        if let initializerStmt {
-            forStmt = .block([initializerStmt, forStmt])
-        }
-
-        return forStmt
+        return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
 
     mutating private func parseIfStatement() throws -> Statement {

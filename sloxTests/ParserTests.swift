@@ -373,27 +373,22 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement] = [
-            .block([
+            .for(
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "i", line: 1),
                     .literal(.number(0))),
-                .while(
+                .binary(
+                    .variable(Token(type: .identifier, lexeme: "i", line: 1)),
+                    Token(type: .less, lexeme: "<", line: 1),
+                    .literal(.number(5))),
+                .assignment(
+                    Token(type: .identifier, lexeme: "i", line: 1),
                     .binary(
                         .variable(Token(type: .identifier, lexeme: "i", line: 1)),
-                        Token(type: .less, lexeme: "<", line: 1),
-                        .literal(.number(5))),
-                    .block([
-                        .print(
-                            .variable(Token(type: .identifier, lexeme: "i", line: 2))),
-                        .expression(
-                            .assignment(
-                                Token(type: .identifier, lexeme: "i", line: 1),
-                                .binary(
-                                    .variable(Token(type: .identifier, lexeme: "i", line: 1)),
-                                    Token(type: .plus, lexeme: "+", line: 1),
-                                    .literal(.number(1))))),
-                    ]))
-            ])
+                        Token(type: .plus, lexeme: "+", line: 1),
+                        .literal(.number(1)))),
+                .print(
+                    .variable(Token(type: .identifier, lexeme: "i", line: 2)))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -418,8 +413,10 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement] = [
-            .while(
+            .for(
+                nil,
                 .literal(.boolean(true)),
+                nil,
                 .print(
                     .variable(Token(type: .identifier, lexeme: "i", line: 2))))
         ]

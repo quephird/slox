@@ -83,6 +83,11 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
+        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+            try handleForStatement(initializerStmt: initializerStmt,
+                                   testExpr: testExpr,
+                                   incrementExpr: incrementExpr,
+                                   bodyStmt: bodyStmt)
         case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
             try handleClassDeclaration(nameToken: nameToken,
                                        superclassExpr: superclassExpr,
@@ -255,6 +260,33 @@ class Interpreter {
                 break
             } catch JumpType.continue {
                 continue
+            }
+        }
+    }
+
+    // for (var i = 1; i <= 3; i = i + 1) { if (i == 2) { continue; } print i; }
+    private func handleForStatement(initializerStmt: ResolvedStatement?,
+                                    testExpr: ResolvedExpression,
+                                    incrementExpr: ResolvedExpression?,
+                                    bodyStmt: ResolvedStatement) throws {
+        if let initializerStmt {
+            try execute(statement: initializerStmt)
+        }
+
+        while try evaluate(expr: testExpr).isTruthy {
+            do {
+                try execute(statement: bodyStmt)
+            } catch JumpType.break {
+                break
+            } catch JumpType.continue {
+                if let incrementExpr {
+                    let _ = try evaluate(expr: incrementExpr)
+                }
+                continue
+            }
+
+            if let incrementExpr {
+                let _ = try evaluate(expr: incrementExpr)
             }
         }
     }
