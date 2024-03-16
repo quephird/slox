@@ -56,7 +56,8 @@ struct Parser {
     //                     ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
     //    jumpStmt       → ( "return" expression? ";"
-    //                   | "break" ";" ) ;
+    //                   | "break" ";"
+    //                   | "continue" ";" ) ;
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement {
@@ -178,7 +179,7 @@ struct Parser {
             return try parsePrintStatement()
         }
 
-        if currentToken.type == .return || currentToken.type == .break {
+        if [.return, .break, .continue].contains(currentToken.type) {
             return try parseJumpStatement()
         }
 
@@ -298,6 +299,16 @@ struct Parser {
             }
 
             return .break(breakToken)
+        }
+
+        if currentTokenMatchesAny(types: [.continue]) {
+            let continueToken = previousToken
+
+            if !currentTokenMatchesAny(types: [.semicolon]) {
+                throw ParseError.missingSemicolon(currentToken)
+            }
+
+            return .continue(continueToken)
         }
 
         throw ParseError.unsupportedJumpStatement(currentToken)

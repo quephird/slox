@@ -66,6 +66,8 @@ struct Resolver {
             return try handleWhile(conditionExpr: conditionExpr, bodyStmt: bodyStmt)
         case .break(let breakToken):
             return try handleBreak(breakToken: breakToken)
+        case .continue(let continueToken):
+            return try handleContinue(continueToken: continueToken)
         }
     }
 
@@ -233,6 +235,14 @@ struct Resolver {
         }
 
         return .break(breakToken)
+    }
+
+    mutating private func handleContinue(continueToken: Token) throws -> ResolvedStatement {
+        if currentLoopType == .none {
+            throw ResolverError.cannotContinueOutsideLoop
+        }
+
+        return .continue(continueToken)
     }
 
     mutating private func handleWhile(conditionExpr: Expression, bodyStmt: Statement) throws -> ResolvedStatement {

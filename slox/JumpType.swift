@@ -10,4 +10,5 @@ import Foundation
 enum JumpType: LocalizedError {
     case `return`(LoxValue)
     case `break`
+    case `continue`
 }

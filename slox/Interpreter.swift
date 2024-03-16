@@ -94,6 +94,8 @@ class Interpreter {
             try handleReturnStatement(returnToken: returnToken, expr: expr)
         case .break(let breakToken):
             try handleBreakStatement(breakToken: breakToken)
+        case .continue(let continueToken):
+            try handleContinueStatement(continueToken: continueToken)
         }
     }
 
@@ -216,6 +218,10 @@ class Interpreter {
         throw JumpType.break
     }
 
+    private func handleContinueStatement(continueToken: Token) throws {
+        throw JumpType.continue
+    }
+
     private func handleVariableDeclaration(name: Token, expr: ResolvedExpression?) throws {
         var value: LoxValue = .nil
         if let expr = expr {
@@ -242,12 +248,13 @@ class Interpreter {
     }
 
     private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
-    outer:
         while try evaluate(expr: expr).isTruthy {
             do {
                 try execute(statement: stmt)
             } catch JumpType.break {
-                break outer
+                break
+            } catch JumpType.continue {
+                continue
             }
         }
     }

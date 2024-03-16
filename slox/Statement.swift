@@ -16,4 +16,5 @@ indirect enum Statement: Equatable {
     case `return`(Token, Expression?)
     case `class`(Token, Expression?, [Statement], [Statement])
     case `break`(Token)
+    case `continue`(Token)
 }
