@@ -20,9 +20,15 @@ struct Resolver {
         case subclass
     }
 
+    private enum LoopType {
+        case none
+        case `while`
+    }
+
     private var scopeStack: [[String: Bool]] = []
     private var currentFunctionType: FunctionType = .none
     private var currentClassType: ClassType = .none
+    private var currentLoopType: LoopType = .none
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
@@ -59,7 +65,7 @@ struct Resolver {
         case .while(let conditionExpr, let bodyStmt):
             return try handleWhile(conditionExpr: conditionExpr, bodyStmt: bodyStmt)
         case .break(let breakToken):
-            return .break(breakToken)
+            return try handleBreak(breakToken: breakToken)
         }
     }
 
@@ -221,7 +227,21 @@ struct Resolver {
         return .return(returnToken, nil)
     }
 
+    mutating private func handleBreak(breakToken: Token) throws -> ResolvedStatement {
+        if currentLoopType == .none {
+            throw ResolverError.cannotBreakOutsideLoop
+        }
+
+        return .break(breakToken)
+    }
+
     mutating private func handleWhile(conditionExpr: Expression, bodyStmt: Statement) throws -> ResolvedStatement {
+        let previousLoopType = currentLoopType
+        currentLoopType = .while
+        defer {
+            currentLoopType = previousLoopType
+        }
+
         let resolvedConditionExpr = try resolve(expression: conditionExpr)
         let resolvedBodyStmt = try resolve(statement: bodyStmt)
 

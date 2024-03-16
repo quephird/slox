@@ -18,6 +18,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case classCannotInheritFromItself
     case cannotReferenceSuperOutsideClass
     case cannotReferenceSuperWithoutSubclassing
+    case cannotBreakOutsideLoop
 
     var description: String {
         switch self {
@@ -41,6 +42,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot use `super` from outside a class"
         case .cannotReferenceSuperWithoutSubclassing:
             return "Cannot use `super` without subclassing"
+        case .cannotBreakOutsideLoop:
+            return "Can only `break` from inside a `while` or `for` loop"
         }
     }
 }
