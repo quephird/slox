@@ -183,16 +183,16 @@ struct Parser {
     }
 
     mutating private func parseStatement() throws -> Statement {
-        if currentTokenMatchesAny(types: [.for]) {
-            return try parseForStatement()
+        if let forStmt = try parseForStatement() {
+            return forStmt
         }
 
-        if currentTokenMatchesAny(types: [.if]) {
-            return try parseIfStatement()
+        if let ifStmt = try parseIfStatement() {
+            return ifStmt
         }
 
-        if currentTokenMatchesAny(types: [.print]) {
-            return try parsePrintStatement()
+        if let printStmt = try parsePrintStatement() {
+            return printStmt
         }
 
         if [.return, .break, .continue].contains(currentToken.type) {
@@ -211,7 +211,11 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
-    mutating private func parseForStatement() throws -> Statement {
+    mutating private func parseForStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.for]) else {
+            return nil
+        }
+
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForForStatement(currentToken)
         }
@@ -246,7 +250,11 @@ struct Parser {
         return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
 
-    mutating private func parseIfStatement() throws -> Statement {
+    mutating private func parseIfStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.if]) else {
+            return nil
+        }
+
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForIfStatement(currentToken)
         }
@@ -266,7 +274,11 @@ struct Parser {
         return .if(testExpr, consequentStmt, alternativeStmt)
     }
 
-    mutating private func parsePrintStatement() throws -> Statement {
+    mutating private func parsePrintStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.print]) else {
+            return nil
+        }
+
         let expr = try parseExpression()
         if currentTokenMatchesAny(types: [.semicolon]) {
             return .print(expr)
