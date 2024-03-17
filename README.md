@@ -12,6 +12,7 @@ Checkout the project using git. Then open it up using Xcode and run the project.
 
 So far, the following have been implemented in `slox`:
 
+- Native numeric, boolean, and string types, as well as `nil`
 - Evaluation of expressions, including support for numeric, logical, and equality operators
 - Native `print` statement
 - `if`, `while`, and `for` statements
@@ -24,6 +25,9 @@ So far, the following have been implemented in `slox`:
 - Class-level properties and methods
 - Single inheritance
 - Invoking superclass methods via `super`
+- List literals using square brackets
+- Native functions for lists, `append()` and `deleteAt()`
+- `break` and `continue` for flow control within loops
 
 # Design
 
