@@ -199,8 +199,8 @@ struct Parser {
             return jumpStmt
         }
 
-        if currentTokenMatchesAny(types: [.while]) {
-            return try parseWhileStatement()
+        if let whileStmt = try parseWhileStatement() {
+            return whileStmt
         }
 
         if currentTokenMatchesAny(types: [.leftBrace]) {
@@ -326,7 +326,11 @@ struct Parser {
         return nil
     }
 
-    mutating private func parseWhileStatement() throws -> Statement {
+    mutating private func parseWhileStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.while]) else {
+            return nil
+        }
+
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForWhileStatement(currentToken)
         }
