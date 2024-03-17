@@ -195,8 +195,8 @@ struct Parser {
             return printStmt
         }
 
-        if [.return, .break, .continue].contains(currentToken.type) {
-            return try parseJumpStatement()
+        if let jumpStmt = try parseJumpStatement() {
+            return jumpStmt
         }
 
         if currentTokenMatchesAny(types: [.while]) {
@@ -287,7 +287,7 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    mutating private func parseJumpStatement() throws -> Statement {
+    mutating private func parseJumpStatement() throws -> Statement? {
         if currentTokenMatchesAny(types: [.return]) {
             let returnToken = previousToken
 
@@ -323,7 +323,7 @@ struct Parser {
             return .continue(continueToken)
         }
 
-        throw ParseError.unsupportedJumpStatement(currentToken)
+        return nil
     }
 
     mutating private func parseWhileStatement() throws -> Statement {
