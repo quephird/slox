@@ -46,7 +46,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
         case .cannotBreakOutsideLoop:
             return "Can only `break` from inside a `while` or `for` loop"
         case .cannotContinueOutsideLoop:
-            return "Can only `continue` while inside a loop"
+            return "Can only `continue` from inside a `while` or `for` loop"
         }
     }
 }

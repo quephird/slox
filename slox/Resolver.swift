@@ -22,8 +22,7 @@ struct Resolver {
 
     private enum LoopType {
         case none
-        case `while`
-        case `for`
+        case loop
     }
 
     private var scopeStack: [[String: Bool]] = []
@@ -256,7 +255,7 @@ struct Resolver {
 
     mutating private func handleWhile(conditionExpr: Expression, bodyStmt: Statement) throws -> ResolvedStatement {
         let previousLoopType = currentLoopType
-        currentLoopType = .while
+        currentLoopType = .loop
         defer {
             currentLoopType = previousLoopType
         }
@@ -272,7 +271,7 @@ struct Resolver {
                                     incrementExpr: Expression?,
                                     bodyStmt: Statement) throws -> ResolvedStatement {
         let previousLoopType = currentLoopType
-        currentLoopType = .for
+        currentLoopType = .loop
         defer {
             currentLoopType = previousLoopType
         }
