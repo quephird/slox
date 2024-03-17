@@ -65,17 +65,8 @@ struct Parser {
             return classDecl
         }
 
-        // TODO: Need to figure out how to parse functions
-        // both as standalone declarations with the `fun` keyword`
-        // and as methods in a class.
-        //
-        // We look ahead to see if the next token is an identifer,
-        // and if so we assume this is a function declaration. Otherwise,
-        // if the current token is `fun`, then we have a lambda, and we
-        // will eventually parse it when we hit parsePrimary().
-        if currentTokenMatches(type: .fun) && nextTokenMatches(type: .identifier) {
-            advanceCursor()
-            return try parseFunctionDeclaration()
+        if let funDecl = try parseFunctionDeclaration() {
+            return funDecl
         }
 
         if let varDecl = try parseVariableDeclaration() {
@@ -114,13 +105,13 @@ struct Parser {
         var staticMethodStatements: [Statement] = []
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             // Note that we don't look for/consume a `fun` token before
-            // calling `parseFunctionDeclaration()`. That's a deliberate
-            // design decision by the original author.
+            // calling `parseFunction()`. That's a deliberate design decision
+            // by the original author.
             if currentTokenMatchesAny(types: [.class]) {
-                let staticMethodStatement = try parseFunctionDeclaration()
+                let staticMethodStatement = try parseFunction()
                 staticMethodStatements.append(staticMethodStatement)
             } else {
-                let methodStatement = try parseFunctionDeclaration()
+                let methodStatement = try parseFunction()
                 methodStatements.append(methodStatement)
             }
         }
@@ -132,7 +123,20 @@ struct Parser {
         throw ParseError.missingClosingBrace(previousToken)
     }
 
-    mutating private func parseFunctionDeclaration() throws -> Statement {
+    mutating private func parseFunctionDeclaration() throws -> Statement? {
+        // We look ahead to see if the next token is an identifer,
+        // and if so we assume this is a function declaration. Otherwise,
+        // if the current token is `fun`, then we have a lambda, and we
+        // will eventually parse it when we hit parsePrimary().
+        guard currentTokenMatches(type: .fun), nextTokenMatches(type: .identifier) else {
+            return nil
+        }
+
+        advanceCursor()
+        return try parseFunction()
+    }
+
+    mutating private func parseFunction() throws -> Statement {
         guard case .identifier = currentToken.type else {
             throw ParseError.missingFunctionName(currentToken)
         }
