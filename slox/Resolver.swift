@@ -105,9 +105,12 @@ struct Resolver {
                                                  methods: [Statement],
                                                  staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
+        let previousLoopType = currentLoopType
         currentClassType = .class
+        currentLoopType = .none
         defer {
             currentClassType = previousClassType
+            currentLoopType = previousLoopType
         }
 
         try declareVariable(name: nameToken.lexeme)
@@ -421,10 +424,13 @@ struct Resolver {
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
         let previousFunctionType = currentFunctionType
+        let previousLoopType = currentLoopType
         currentFunctionType = functionType
+        currentLoopType = .none
         defer {
             endScope()
             currentFunctionType = previousFunctionType
+            currentLoopType = previousLoopType
         }
 
         for param in params {

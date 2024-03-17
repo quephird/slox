@@ -279,13 +279,13 @@ class Interpreter {
                 break
             } catch JumpType.continue {
                 if let incrementExpr {
-                    let _ = try evaluate(expr: incrementExpr)
+                    _ = try evaluate(expr: incrementExpr)
                 }
                 continue
             }
 
             if let incrementExpr {
-                let _ = try evaluate(expr: incrementExpr)
+                _ = try evaluate(expr: incrementExpr)
             }
         }
     }
