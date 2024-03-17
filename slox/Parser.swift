@@ -225,7 +225,7 @@ struct Parser {
             throw ParseError.missingCloseParenForForStatement(currentToken)
         }
 
-        var bodyStmt = try parseStatement()
+        let bodyStmt = try parseStatement()
 
         return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
