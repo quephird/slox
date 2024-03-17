@@ -151,10 +151,9 @@ struct Parser {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
         }
 
-        if !currentTokenMatchesAny(types: [.leftBrace]) {
+        guard let functionBody = try parseBlock() else {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
-        let functionBody = try parseBlock()
 
         return .function(functionName, .lambda(parameters, functionBody))
     }
@@ -203,9 +202,8 @@ struct Parser {
             return whileStmt
         }
 
-        if currentTokenMatchesAny(types: [.leftBrace]) {
-            let statements = try parseBlock()
-            return .block(statements)
+        if let blockStmts = try parseBlock() {
+            return .block(blockStmts)
         }
 
         return try parseExpressionStatement()
@@ -280,11 +278,11 @@ struct Parser {
         }
 
         let expr = try parseExpression()
-        if currentTokenMatchesAny(types: [.semicolon]) {
-            return .print(expr)
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
         }
 
-        throw ParseError.missingSemicolon(currentToken)
+        return .print(expr)
     }
 
     mutating private func parseJumpStatement() throws -> Statement? {
@@ -344,7 +342,11 @@ struct Parser {
         return .while(expr, stmt)
     }
 
-    mutating private func parseBlock() throws -> [Statement] {
+    mutating private func parseBlock() throws -> [Statement]? {
+        guard currentTokenMatchesAny(types: [.leftBrace]) else {
+            return nil
+        }
+
         var statements: [Statement] = []
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
@@ -352,11 +354,11 @@ struct Parser {
             statements.append(statement)
         }
 
-        if currentTokenMatchesAny(types: [.rightBrace]) {
-            return statements
+        guard currentTokenMatchesAny(types: [.rightBrace]) else {
+            throw ParseError.missingClosingBrace(previousToken)
         }
 
-        throw ParseError.missingClosingBrace(previousToken)
+        return statements
     }
 
     mutating private func parseExpressionStatement() throws -> Statement {
@@ -620,10 +622,9 @@ struct Parser {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
         }
 
-        if !currentTokenMatchesAny(types: [.leftBrace]) {
+        guard let functionBody = try parseBlock() else {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
-        let functionBody = try parseBlock()
 
         return .lambda(parameters, functionBody)
     }
