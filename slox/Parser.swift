@@ -61,10 +61,14 @@ struct Parser {
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement {
-        if currentTokenMatchesAny(types: [.class]) {
-            return try parseClassDeclaration()
+        if let classDecl = try parseClassDeclaration() {
+            return classDecl
         }
 
+        // TODO: Need to figure out how to parse functions
+        // both as standalone declarations with the `fun` keyword`
+        // and as methods in a class.
+        //
         // We look ahead to see if the next token is an identifer,
         // and if so we assume this is a function declaration. Otherwise,
         // if the current token is `fun`, then we have a lambda, and we
@@ -74,14 +78,18 @@ struct Parser {
             return try parseFunctionDeclaration()
         }
 
-        if currentTokenMatchesAny(types: [.var]) {
-            return try parseVariableDeclaration()
+        if let varDecl = try parseVariableDeclaration() {
+            return varDecl
         }
 
         return try parseStatement()
     }
 
-    mutating private func parseClassDeclaration() throws -> Statement {
+    mutating private func parseClassDeclaration() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.class]) else {
+            return nil
+        }
+
         guard case .identifier = currentToken.type else {
             throw ParseError.missingClassName(currentToken)
         }
@@ -147,7 +155,11 @@ struct Parser {
         return .function(functionName, .lambda(parameters, functionBody))
     }
 
-    mutating private func parseVariableDeclaration() throws -> Statement {
+    mutating private func parseVariableDeclaration() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.var]) else {
+            return nil
+        }
+
         guard case .identifier = currentToken.type else {
             throw ParseError.missingVariableName(currentToken)
         }
@@ -203,8 +215,8 @@ struct Parser {
         var initializerStmt: Statement?
         if currentTokenMatchesAny(types: [.semicolon]) {
             initializerStmt = nil
-        } else if currentTokenMatchesAny(types: [.var]) {
-            initializerStmt = try parseVariableDeclaration()
+        } else if let varDecl = try parseVariableDeclaration() {
+            initializerStmt = varDecl
         } else {
             initializerStmt = try parseExpressionStatement()
         }
