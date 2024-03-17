@@ -24,7 +24,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
 
         do {
             try interpreter.handleBlock(statements: body, environment: newEnvironment)
-        } catch Return.return(let value) {
+        } catch JumpType.return(let value) {
             // This is for when we call `init()` explicitly from an instance
             if isInitializer {
                 return try enclosingEnvironment.getValueAtDepth(name: "this", depth: 0)

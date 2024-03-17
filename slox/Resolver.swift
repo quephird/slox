@@ -20,9 +20,15 @@ struct Resolver {
         case subclass
     }
 
+    private enum LoopType {
+        case none
+        case loop
+    }
+
     private var scopeStack: [[String: Bool]] = []
     private var currentFunctionType: FunctionType = .none
     private var currentClassType: ClassType = .none
+    private var currentLoopType: LoopType = .none
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
@@ -58,6 +64,15 @@ struct Resolver {
             return try handleReturnStatement(returnToken: returnToken, expr: expr)
         case .while(let conditionExpr, let bodyStmt):
             return try handleWhile(conditionExpr: conditionExpr, bodyStmt: bodyStmt)
+        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+            return try handleFor(initializerStmt: initializerStmt,
+                                 testExpr: testExpr,
+                                 incrementExpr: incrementExpr,
+                                 bodyStmt: bodyStmt)
+        case .break(let breakToken):
+            return try handleBreak(breakToken: breakToken)
+        case .continue(let continueToken):
+            return try handleContinue(continueToken: continueToken)
         }
     }
 
@@ -89,9 +104,12 @@ struct Resolver {
                                                  methods: [Statement],
                                                  staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
+        let previousLoopType = currentLoopType
         currentClassType = .class
+        currentLoopType = .none
         defer {
             currentClassType = previousClassType
+            currentLoopType = previousLoopType
         }
 
         try declareVariable(name: nameToken.lexeme)
@@ -219,11 +237,63 @@ struct Resolver {
         return .return(returnToken, nil)
     }
 
+    mutating private func handleBreak(breakToken: Token) throws -> ResolvedStatement {
+        if currentLoopType == .none {
+            throw ResolverError.cannotBreakOutsideLoop
+        }
+
+        return .break(breakToken)
+    }
+
+    mutating private func handleContinue(continueToken: Token) throws -> ResolvedStatement {
+        if currentLoopType == .none {
+            throw ResolverError.cannotContinueOutsideLoop
+        }
+
+        return .continue(continueToken)
+    }
+
     mutating private func handleWhile(conditionExpr: Expression, bodyStmt: Statement) throws -> ResolvedStatement {
+        let previousLoopType = currentLoopType
+        currentLoopType = .loop
+        defer {
+            currentLoopType = previousLoopType
+        }
+
         let resolvedConditionExpr = try resolve(expression: conditionExpr)
         let resolvedBodyStmt = try resolve(statement: bodyStmt)
 
         return .while(resolvedConditionExpr, resolvedBodyStmt)
+    }
+
+    mutating private func handleFor(initializerStmt: Statement?,
+                                    testExpr: Expression,
+                                    incrementExpr: Expression?,
+                                    bodyStmt: Statement) throws -> ResolvedStatement {
+        let previousLoopType = currentLoopType
+        currentLoopType = .loop
+        defer {
+            currentLoopType = previousLoopType
+        }
+
+        var resolvedInitializerStmt: ResolvedStatement? = nil
+        if let initializerStmt {
+            resolvedInitializerStmt = try resolve(statement: initializerStmt)
+        }
+
+        let resolvedTestExpr = try resolve(expression: testExpr)
+
+        var resolvedIncrementExpr: ResolvedExpression? = nil
+        if let incrementExpr {
+            resolvedIncrementExpr = try resolve(expression: incrementExpr)
+        }
+
+        let resolvedBodyStmt = try resolve(statement: bodyStmt)
+
+        return .for(resolvedInitializerStmt,
+                    resolvedTestExpr,
+                    resolvedIncrementExpr,
+                    resolvedBodyStmt)
     }
 
     // Resolver for expressions
@@ -353,10 +423,13 @@ struct Resolver {
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
         let previousFunctionType = currentFunctionType
+        let previousLoopType = currentLoopType
         currentFunctionType = functionType
+        currentLoopType = .none
         defer {
             endScope()
             currentFunctionType = previousFunctionType
+            currentLoopType = previousLoopType
         }
 
         for param in params {

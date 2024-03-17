@@ -447,4 +447,55 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveBreakStatementOutsideLoop() throws {
+        // if (true) {
+        //     break;
+        // }
+        let statements: [Statement] = [
+            .if(
+                .literal(.boolean(true)),
+                .break(Token(type: .break, lexeme: "break", line: 2)),
+                nil)
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotBreakOutsideLoop
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
+    func testResolveBreakStatementFunctionInsideWhileLoop() throws {
+        // while (true) {
+        //     fun foo() {
+        //         break;
+        //     }
+        //     foo();
+        //}
+        let statements: [Statement] = [
+            .while(
+                .literal(.boolean(true)),
+                .block([
+                    .function(
+                        Token(type: .identifier, lexeme: "foo", line: 2),
+                        .lambda(
+                            [],
+                            [
+                                .break(Token(type: .break, lexeme: "break", line: 3))
+                            ])),
+                    .expression(
+                        .call(
+                            .variable(Token(type: .identifier, lexeme: "foo", line: 5)),
+                            Token(type: .rightParen, lexeme: ")", line: 5),
+                            []))
+                ]))
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotBreakOutsideLoop
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }

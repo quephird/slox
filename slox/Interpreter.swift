@@ -83,6 +83,11 @@ class Interpreter {
                             environment: Environment(enclosingEnvironment: environment))
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
+        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+            try handleForStatement(initializerStmt: initializerStmt,
+                                   testExpr: testExpr,
+                                   incrementExpr: incrementExpr,
+                                   bodyStmt: bodyStmt)
         case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
             try handleClassDeclaration(nameToken: nameToken,
                                        superclassExpr: superclassExpr,
@@ -92,6 +97,10 @@ class Interpreter {
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
             try handleReturnStatement(returnToken: returnToken, expr: expr)
+        case .break(let breakToken):
+            try handleBreakStatement(breakToken: breakToken)
+        case .continue(let continueToken):
+            try handleContinueStatement(continueToken: continueToken)
         }
     }
 
@@ -207,7 +216,15 @@ class Interpreter {
             value = try evaluate(expr: expr)
         }
 
-        throw Return.return(value)
+        throw JumpType.return(value)
+    }
+
+    private func handleBreakStatement(breakToken: Token) throws {
+        throw JumpType.break
+    }
+
+    private func handleContinueStatement(continueToken: Token) throws {
+        throw JumpType.continue
     }
 
     private func handleVariableDeclaration(name: Token, expr: ResolvedExpression?) throws {
@@ -237,7 +254,39 @@ class Interpreter {
 
     private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
         while try evaluate(expr: expr).isTruthy {
-            try execute(statement: stmt)
+            do {
+                try execute(statement: stmt)
+            } catch JumpType.break {
+                break
+            } catch JumpType.continue {
+                continue
+            }
+        }
+    }
+
+    private func handleForStatement(initializerStmt: ResolvedStatement?,
+                                    testExpr: ResolvedExpression,
+                                    incrementExpr: ResolvedExpression?,
+                                    bodyStmt: ResolvedStatement) throws {
+        if let initializerStmt {
+            try execute(statement: initializerStmt)
+        }
+
+        while try evaluate(expr: testExpr).isTruthy {
+            do {
+                try execute(statement: bodyStmt)
+            } catch JumpType.break {
+                break
+            } catch JumpType.continue {
+                if let incrementExpr {
+                    _ = try evaluate(expr: incrementExpr)
+                }
+                continue
+            }
+
+            if let incrementExpr {
+                _ = try evaluate(expr: incrementExpr)
+            }
         }
     }
 

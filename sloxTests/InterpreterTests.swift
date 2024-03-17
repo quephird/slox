@@ -506,4 +506,126 @@ foo.count
         let expected: LoxValue = .number(2)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretForLoopWithBreakStatement() throws {
+        let input = """
+var sum = 0;
+for (var i = 1; i < 10; i = i + 1) {
+    sum = sum + i;
+    if (i == 3) {
+        break;
+    }
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(6)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretWhileLoopWithBreakStatement() throws {
+        let input = """
+var sum = 0;
+var i = 1;
+while (i < 10) {
+    sum = sum + i;
+    if (i == 3) {
+        break;
+    }
+    i = i + 1;
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(6)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretNestedLoopWithBreakStatementInsideInnerLoop() throws {
+        let input = """
+var sum = 0;
+for (var i = 1; i <= 5; i = i + 1) {
+    for (var j = 1; j <= 5; j = j + 1) {
+        sum = sum + i*j;
+        if (j == 2) {
+            break;
+        }
+    }
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(45)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretWhileLoopWithContinue() throws {
+        let input = """
+var i = 0;
+var sum = 0;
+while (i < 5) {
+    i = i + 1;
+    if (i == 3) {
+        continue;
+    }
+    print i;
+    sum = sum + i;
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(12)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretForLoopWithContinue() throws {
+        let input = """
+var sum = 0;
+for (var i = 1; i <= 5; i = i + 1) {
+    if (i == 3) {
+        continue;
+    }
+    sum = sum + i;
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(12)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretNestedLoopsWithBreakAndContinue() throws {
+        let input = """
+var sum = 0;
+for (var i = 1; i <= 3; i = i + 1) {
+    if (i == 2) {
+        continue;
+    }
+
+    for (var j = 1; j <= 3; j = j + 1) {
+        if (j == 2) {
+            break;
+        }
+
+        sum = sum + i*j;
+    }
+}
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(4)
+        XCTAssertEqual(actual, expected)
+    }
 }

@@ -45,7 +45,7 @@ struct Parser {
     //                   | forStmt
     //                   | ifStmt
     //                   | printStmt
-    //                   | returnStmt
+    //                   | jumpStmt
     //                   | whileStmt
     //                   | block ;
     //    exprStmt       → expression ";" ;
@@ -55,7 +55,9 @@ struct Parser {
     //    ifStmt         → "if" "(" expression ")" statement
     //                     ( "else" statement )? ;
     //    printStmt      → "print" expression ";" ;
-    //    returnStmt     → "return" expression? ";" ;
+    //    jumpStmt       → ( "return" expression? ";"
+    //                   | "break" ";"
+    //                   | "continue" ";" ) ;
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement {
@@ -177,8 +179,8 @@ struct Parser {
             return try parsePrintStatement()
         }
 
-        if currentTokenMatchesAny(types: [.return]) {
-            return try parseReturnStatement()
+        if [.return, .break, .continue].contains(currentToken.type) {
+            return try parseJumpStatement()
         }
 
         if currentTokenMatchesAny(types: [.while]) {
@@ -207,9 +209,9 @@ struct Parser {
             initializerStmt = try parseExpressionStatement()
         }
 
-        var conditionExpr: Expression? = nil
+        var testExpr: Expression = .literal(.boolean(true))
         if !currentTokenMatches(type: .semicolon) {
-            conditionExpr = try parseExpression()
+            testExpr = try parseExpression()
         }
         if !currentTokenMatchesAny(types: [.semicolon]) {
             throw ParseError.missingSemicolonAfterForLoopCondition(currentToken)
@@ -223,25 +225,9 @@ struct Parser {
             throw ParseError.missingCloseParenForForStatement(currentToken)
         }
 
-        var forStmt = try parseStatement()
+        let bodyStmt = try parseStatement()
 
-        // Here is where we do desugaring, rewriting a for statement
-        // in terms of a while statement.
-        if let incrementExpr {
-            forStmt = .block([forStmt, .expression(incrementExpr)])
-        }
-
-        if let conditionExpr {
-            forStmt = .while(conditionExpr, forStmt)
-        } else {
-            forStmt = .while(.literal(.boolean(true)), forStmt)
-        }
-
-        if let initializerStmt {
-            forStmt = .block([initializerStmt, forStmt])
-        }
-
-        return forStmt
+        return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
 
     mutating private func parseIfStatement() throws -> Statement {
@@ -273,19 +259,43 @@ struct Parser {
         throw ParseError.missingSemicolon(currentToken)
     }
 
-    mutating private func parseReturnStatement() throws -> Statement {
-        let returnToken = previousToken
+    mutating private func parseJumpStatement() throws -> Statement {
+        if currentTokenMatchesAny(types: [.return]) {
+            let returnToken = previousToken
 
-        var expr: Expression? = nil
-        if currentToken.type != .semicolon {
-            expr = try parseExpression()
+            var expr: Expression? = nil
+            if currentToken.type != .semicolon {
+                expr = try parseExpression()
+            }
+
+            if !currentTokenMatchesAny(types: [.semicolon]) {
+                throw ParseError.missingSemicolon(currentToken)
+            }
+
+            return .return(returnToken, expr)
         }
 
-        if !currentTokenMatchesAny(types: [.semicolon]) {
-            throw ParseError.missingSemicolon(currentToken)
+        if currentTokenMatchesAny(types: [.break]) {
+            let breakToken = previousToken
+
+            if !currentTokenMatchesAny(types: [.semicolon]) {
+                throw ParseError.missingSemicolon(currentToken)
+            }
+
+            return .break(breakToken)
         }
 
-        return .return(returnToken, expr)
+        if currentTokenMatchesAny(types: [.continue]) {
+            let continueToken = previousToken
+
+            if !currentTokenMatchesAny(types: [.semicolon]) {
+                throw ParseError.missingSemicolon(currentToken)
+            }
+
+            return .continue(continueToken)
+        }
+
+        throw ParseError.unsupportedJumpStatement(currentToken)
     }
 
     mutating private func parseWhileStatement() throws -> Statement {

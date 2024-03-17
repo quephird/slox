@@ -12,7 +12,10 @@ indirect enum ResolvedStatement: Equatable {
     case variableDeclaration(Token, ResolvedExpression?)
     case block([ResolvedStatement])
     case `while`(ResolvedExpression, ResolvedStatement)
+    case `for`(ResolvedStatement?, ResolvedExpression, ResolvedExpression?, ResolvedStatement)
     case function(Token, ResolvedExpression)
     case `return`(Token, ResolvedExpression?)
     case `class`(Token, ResolvedExpression?, [ResolvedStatement], [ResolvedStatement])
+    case `break`(Token)
+    case `continue`(Token)
 }
