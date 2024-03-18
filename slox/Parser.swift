@@ -544,16 +544,18 @@ struct Parser {
     }
 
     mutating private func parsePrimary() throws -> Expression {
-        if currentTokenMatchesAny(types: [.fun]) {
-            return try parseLambda()
+        if let lambdaExpr = try parseLambda() {
+            return lambdaExpr
         }
 
         if currentTokenMatchesAny(types: [.false]) {
             return .literal(.boolean(false))
         }
+
         if currentTokenMatchesAny(types: [.true]) {
             return .literal(.boolean(true))
         }
+
         if currentTokenMatchesAny(types: [.nil]) {
             return .literal(.nil)
         }
@@ -562,19 +564,15 @@ struct Parser {
             let number = Double(previousToken.lexeme)!
             return .literal(.number(number))
         }
+
         if currentTokenMatchesAny(types: [.string]) {
             assert(previousToken.lexeme.hasPrefix("\"") && previousToken.lexeme.hasSuffix("\""))
             let string = String(previousToken.lexeme.dropFirst().dropLast())
             return .literal(.string(string))
         }
 
-        if currentTokenMatchesAny(types: [.leftParen]) {
-            let expr = try parseExpression()
-            if currentTokenMatchesAny(types: [.rightParen]) {
-                return .grouping(expr)
-            }
-
-            throw ParseError.missingClosingParenthesis(currentToken)
+        if let groupingExpr = try parseGrouping() {
+            return groupingExpr
         }
 
         if currentTokenMatchesAny(types: [.leftBracket]) {
@@ -613,7 +611,25 @@ struct Parser {
         throw ParseError.expectedPrimaryExpression(currentToken)
     }
 
-    mutating private func parseLambda() throws -> Expression {
+    mutating private func parseGrouping() throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.leftParen]) else {
+            return nil
+        }
+
+        let expr = try parseExpression()
+
+        guard currentTokenMatchesAny(types: [.rightParen]) else {
+            throw ParseError.missingClosingParenthesis(currentToken)
+        }
+
+        return .grouping(expr)
+    }
+
+    mutating private func parseLambda() throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.fun]) else {
+            return nil
+        }
+
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
         }
