@@ -116,11 +116,11 @@ struct Parser {
             }
         }
 
-        if currentTokenMatchesAny(types: [.rightBrace]) {
-            return .class(className, superclassExpr, methodStatements, staticMethodStatements)
+        guard currentTokenMatchesAny(types: [.rightBrace]) else {
+            throw ParseError.missingClosingBrace(previousToken)
         }
 
-        throw ParseError.missingClosingBrace(previousToken)
+        return .class(className, superclassExpr, methodStatements, staticMethodStatements)
     }
 
     mutating private func parseFunctionDeclaration() throws -> Statement? {
@@ -131,8 +131,8 @@ struct Parser {
         guard currentTokenMatches(type: .fun), nextTokenMatches(type: .identifier) else {
             return nil
         }
-
         advanceCursor()
+
         return try parseFunction()
     }
 
@@ -174,11 +174,11 @@ struct Parser {
             initializer = try parseExpression()
         }
 
-        if currentTokenMatchesAny(types: [.semicolon]) {
-            return .variableDeclaration(name, initializer);
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
         }
 
-        throw ParseError.missingSemicolon(currentToken)
+        return .variableDeclaration(name, initializer);
     }
 
     mutating private func parseStatement() throws -> Statement {
@@ -278,6 +278,7 @@ struct Parser {
         }
 
         let expr = try parseExpression()
+
         guard currentTokenMatchesAny(types: [.semicolon]) else {
             throw ParseError.missingSemicolon(currentToken)
         }
@@ -286,42 +287,66 @@ struct Parser {
     }
 
     mutating private func parseJumpStatement() throws -> Statement? {
-        if currentTokenMatchesAny(types: [.return]) {
-            let returnToken = previousToken
-
-            var expr: Expression? = nil
-            if currentToken.type != .semicolon {
-                expr = try parseExpression()
-            }
-
-            if !currentTokenMatchesAny(types: [.semicolon]) {
-                throw ParseError.missingSemicolon(currentToken)
-            }
-
-            return .return(returnToken, expr)
+        if let returnStmt = try parseReturnStatement() {
+            return returnStmt
         }
 
-        if currentTokenMatchesAny(types: [.break]) {
-            let breakToken = previousToken
-
-            if !currentTokenMatchesAny(types: [.semicolon]) {
-                throw ParseError.missingSemicolon(currentToken)
-            }
-
-            return .break(breakToken)
+        if let breakStmt = try parseBreakStatement() {
+            return breakStmt
         }
 
-        if currentTokenMatchesAny(types: [.continue]) {
-            let continueToken = previousToken
-
-            if !currentTokenMatchesAny(types: [.semicolon]) {
-                throw ParseError.missingSemicolon(currentToken)
-            }
-
-            return .continue(continueToken)
+        if let continueStmt = try parseContinueStatement() {
+            return continueStmt
         }
 
         return nil
+    }
+
+    mutating private func parseReturnStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.return]) else {
+            return nil
+        }
+
+        let returnToken = previousToken
+
+        var expr: Expression? = nil
+        if currentToken.type != .semicolon {
+            expr = try parseExpression()
+        }
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
+        }
+
+        return .return(returnToken, expr)
+    }
+
+    mutating private func parseBreakStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.break]) else {
+            return nil
+        }
+
+        let breakToken = previousToken
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
+        }
+
+        return .break(breakToken)
+    }
+
+    mutating private func parseContinueStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.continue]) else {
+            return nil
+        }
+
+        let continueToken = previousToken
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
+        }
+
+        return .continue(continueToken)
     }
 
     mutating private func parseWhileStatement() throws -> Statement? {
