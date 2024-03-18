@@ -533,39 +533,70 @@ struct Parser {
         var expr = try parsePrimary()
 
         while true {
-            if currentTokenMatchesAny(types: [.leftParen]) {
-                let args = try parseArguments()
-
-                if !currentTokenMatchesAny(types: [.rightParen]) {
-                    throw ParseError.missingCloseParenAfterArguments(currentToken)
-                }
-
-                expr = .call(expr, previousToken, args)
-            } else if currentTokenMatchesAny(types: [.dot]) {
-                if !currentTokenMatchesAny(types: [.identifier]) {
-                    throw ParseError.missingIdentifierAfterDot(currentToken)
-                }
-
-                expr = .get(expr, previousToken)
-            } else if currentTokenMatchesAny(types: [.leftBracket]) {
-                let indexExpr = try parseLogicOr()
-
-                if !currentTokenMatchesAny(types: [.rightBracket]) {
-                    throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
-                }
-
-                if currentTokenMatchesAny(types: [.equal]) {
-                    let valueExpr = try parseExpression()
-                    expr = .subscriptSet(expr, indexExpr, valueExpr)
-                } else {
-                    expr = .subscriptGet(expr, indexExpr)
-                }
-            } else {
-                break
+            if let callExpr = try parseCall(expr: expr) {
+                expr = callExpr
+                continue
             }
+
+            if let getExpr = try parseGet(expr: expr) {
+                expr = getExpr
+                continue
+            }
+
+            if let subscriptExpr = try parseSubscript(expr: expr) {
+                expr = subscriptExpr
+                continue
+            }
+
+            break
         }
 
         return expr
+    }
+
+    mutating private func parseCall(expr: Expression) throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.leftParen]) else {
+            return nil
+        }
+
+        let args = try parseArguments()
+
+        guard currentTokenMatchesAny(types: [.rightParen]) else {
+            throw ParseError.missingCloseParenAfterArguments(currentToken)
+        }
+
+        return.call(expr, previousToken, args)
+    }
+
+    mutating private func parseGet(expr: Expression) throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.dot]) else {
+            return nil
+        }
+
+        guard currentTokenMatchesAny(types: [.identifier]) else {
+            throw ParseError.missingIdentifierAfterDot(currentToken)
+        }
+
+        return .get(expr, previousToken)
+    }
+
+    mutating private func parseSubscript(expr: Expression) throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.leftBracket]) else {
+            return nil
+        }
+
+        let indexExpr = try parseLogicOr()
+
+        guard currentTokenMatchesAny(types: [.rightBracket]) else {
+            throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
+        }
+
+        if currentTokenMatchesAny(types: [.equal]) {
+            let valueExpr = try parseExpression()
+            return .subscriptSet(expr, indexExpr, valueExpr)
+        }
+
+        return .subscriptGet(expr, indexExpr)
     }
 
     mutating private func parsePrimary() throws -> Expression {
