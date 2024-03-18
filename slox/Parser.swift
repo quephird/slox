@@ -575,29 +575,12 @@ struct Parser {
             return groupingExpr
         }
 
-        if currentTokenMatchesAny(types: [.leftBracket]) {
-            let elements = try parseArguments()
-
-            if currentTokenMatchesAny(types: [.rightBracket]) {
-                return .list(elements)
-            }
-
-            throw ParseError.missingClosingBracket(previousToken)
+        if let listExpr = try parseListExpression() {
+            return listExpr
         }
 
-        if currentTokenMatchesAny(types: [.super]) {
-            let superToken = previousToken
-            if !currentTokenMatchesAny(types: [.dot]) {
-                throw ParseError.missingDotAfterSuper(currentToken)
-            }
-
-            guard case .identifier = currentToken.type else {
-                throw ParseError.expectedSuperclassMethodName(currentToken)
-            }
-            let methodToken = currentToken
-            advanceCursor()
-
-            return .super(superToken, methodToken)
+        if let superExpr = try parseSuperExpression() {
+            return superExpr
         }
 
         if currentTokenMatchesAny(types: [.this]) {
@@ -623,6 +606,39 @@ struct Parser {
         }
 
         return .grouping(expr)
+    }
+
+    mutating private func parseListExpression() throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.leftBracket]) else {
+            return nil
+        }
+
+        let elements = try parseArguments()
+
+        guard currentTokenMatchesAny(types: [.rightBracket]) else {
+            throw ParseError.missingClosingBracket(previousToken)
+        }
+
+        return .list(elements)
+    }
+
+    mutating private func parseSuperExpression() throws -> Expression? {
+        guard currentTokenMatchesAny(types: [.super]) else {
+            return nil
+        }
+
+        let superToken = previousToken
+        if !currentTokenMatchesAny(types: [.dot]) {
+            throw ParseError.missingDotAfterSuper(currentToken)
+        }
+
+        guard case .identifier = currentToken.type else {
+            throw ParseError.expectedSuperclassMethodName(currentToken)
+        }
+        let methodToken = currentToken
+        advanceCursor()
+
+        return .super(superToken, methodToken)
     }
 
     mutating private func parseLambda() throws -> Expression? {
