@@ -81,20 +81,17 @@ struct Parser {
             return nil
         }
 
-        guard case .identifier = currentToken.type else {
+        guard let className = consumeToken(type: .identifier) else {
             throw ParseError.missingClassName(currentToken)
         }
-        let className = currentToken
-        advanceCursor()
 
         var superclassExpr: Expression? = nil
         if currentTokenMatchesAny(types: [.less]) {
-            guard case .identifier = currentToken.type else {
+            guard let superclassName = consumeToken(type: .identifier) else {
                 throw ParseError.missingSuperclassName(currentToken)
             }
 
-            superclassExpr = .variable(currentToken)
-            advanceCursor()
+            superclassExpr = .variable(superclassName)
         }
 
         if !currentTokenMatchesAny(types: [.leftBrace]) {
@@ -137,11 +134,9 @@ struct Parser {
     }
 
     mutating private func parseFunction() throws -> Statement {
-        guard case .identifier = currentToken.type else {
+        guard let functionName = consumeToken(type: .identifier) else {
             throw ParseError.missingFunctionName(currentToken)
         }
-        let functionName = currentToken
-        advanceCursor()
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
@@ -163,11 +158,9 @@ struct Parser {
             return nil
         }
 
-        guard case .identifier = currentToken.type else {
+        guard let varName = consumeToken(type: .identifier) else {
             throw ParseError.missingVariableName(currentToken)
         }
-        let name = currentToken
-        advanceCursor()
 
         var initializer: Expression? = nil
         if currentTokenMatchesAny(types: [.equal]) {
@@ -178,7 +171,7 @@ struct Parser {
             throw ParseError.missingSemicolon(currentToken)
         }
 
-        return .variableDeclaration(name, initializer);
+        return .variableDeclaration(varName, initializer);
     }
 
     mutating private func parseStatement() throws -> Statement {
@@ -688,11 +681,9 @@ struct Parser {
             throw ParseError.missingDotAfterSuper(currentToken)
         }
 
-        guard case .identifier = currentToken.type else {
+        guard let methodToken = consumeToken(type: .identifier) else {
             throw ParseError.expectedSuperclassMethodName(currentToken)
         }
-        let methodToken = currentToken
-        advanceCursor()
 
         return .super(superToken, methodToken)
     }
@@ -726,11 +717,9 @@ struct Parser {
         var parameters: [Token] = []
         if currentToken.type != .rightParen {
             repeat {
-                guard case .identifier = currentToken.type else {
+                guard let newParameter = consumeToken(type: .identifier) else {
                     throw ParseError.missingParameterName(currentToken)
                 }
-                let newParameter = currentToken
-                advanceCursor()
 
                 parameters.append(newParameter)
             } while currentTokenMatchesAny(types: [.comma])
@@ -752,6 +741,15 @@ struct Parser {
     }
 
     // Other utility methods
+    mutating private func consumeToken(type: TokenType) -> Token? {
+        guard currentTokenMatches(type: type) else {
+            return nil
+        }
+
+        advanceCursor()
+        return previousToken
+    }
+
     mutating private func currentTokenMatchesAny(types: [TokenType]) -> Bool {
         for type in types {
             if currentTokenMatches(type: type) {
@@ -782,27 +780,6 @@ struct Parser {
         }
 
         return nextToken.type == type
-    }
-
-    // TODO: Figure out if we actually need this, and if so
-    // how to wire it up.
-    mutating private func synchronize() {
-        advanceCursor()
-
-        while currentToken.type != .eof {
-            if previousToken.type == .semicolon {
-                return
-            }
-
-            switch currentToken.type {
-            case .class, .fun, .var, .for, .if, .while, .print, .return:
-                return
-            default:
-                break
-            }
-
-            advanceCursor()
-        }
     }
 
     // TODO: We need to make sure we don't run out of tokens here
