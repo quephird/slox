@@ -435,6 +435,10 @@ class Interpreter {
                                       args: [ResolvedExpression]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
 
+        if case .instance(let klass as LoxClass) = callee, klass.name == "List" {
+            return try handleListExpression(elements: args)
+        }
+
         let actualCallable: LoxCallable = switch callee {
         case .userDefinedFunction(let userDefinedFunction):
             userDefinedFunction
