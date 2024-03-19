@@ -386,11 +386,11 @@ struct Parser {
         // then we want to return that immediately so it can be evaluated
         // and whose result can be printed in the REPL, and without burdening
         // the user to add a semicolon at the end.
-        if currentToken.type == .eof || currentTokenMatchesAny(types: [.semicolon]) {
-            return .expression(expr)
+        guard currentToken.type == .eof || currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
         }
 
-        throw ParseError.missingSemicolon(currentToken)
+        return .expression(expr)
     }
 
     // The parsing strategy below follows these rules of precedence
