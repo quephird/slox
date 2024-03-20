@@ -8,17 +8,6 @@
 import Foundation
 
 class Interpreter {
-    static let standardLibrary = """
-        class List {
-            append(element) {
-                appendNative(this, element);
-            }
-
-            deleteAt(index) {
-                return deleteAtNative(this, index);
-            }
-        }
-"""
     var environment: Environment = Environment()
 
     init() {
@@ -40,8 +29,6 @@ class Interpreter {
             environment.define(name: String(describing: nativeFunction),
                                value: .nativeFunction(nativeFunction))
         }
-
-        try! interpret(source: Self.standardLibrary)
     }
 
     func interpret(source: String) throws {
@@ -435,10 +422,6 @@ class Interpreter {
                                       args: [ResolvedExpression]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
 
-        if case .instance(let klass as LoxClass) = callee, klass.name == "List" {
-            return try handleListExpression(elements: args)
-        }
-
         let actualCallable: LoxCallable = switch callee {
         case .userDefinedFunction(let userDefinedFunction):
             userDefinedFunction
@@ -446,6 +429,8 @@ class Interpreter {
             nativeFunction
         case .instance(let klass as LoxClass):
             klass
+        case .callable(let callable):
+            callable
         default:
             throw RuntimeError.notACallableObject
         }
@@ -522,12 +507,7 @@ class Interpreter {
             return try evaluate(expr: element)
         }
 
-        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
-            // TODO: Do we need throw an exception here?
-            fatalError()
-        }
-
-        let list = LoxList(elements: elementValues, klass: listClass)
+        let list = LoxList(elements: elementValues)
         return .instance(list)
     }
 

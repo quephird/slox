@@ -13,6 +13,7 @@ enum LoxValue: CustomStringConvertible, Equatable {
     case userDefinedFunction(UserDefinedFunction)
     case nativeFunction(NativeFunction)
     case instance(LoxInstance)
+    case callable(LoxCallable)
 
     var description: String {
         switch self {
@@ -42,6 +43,8 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return string
         case .instance(let instance):
             return "<instance: \(instance.klass.name)>"
+        case .callable:
+            return "<callable>"
         }
     }
 
@@ -72,6 +75,22 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return boolean
         default:
             return true
+        }
+    }
+
+    // NOTA BENE: This equality conformance is only for unit tests
+    static func == (lhs: LoxValue, rhs: LoxValue) -> Bool {
+        switch (lhs, rhs) {
+        case (.string(let lhsString), .string(let rhsString)):
+            return lhsString == rhsString
+        case (.number(let lhsNumber), .number(let rhsNumber)):
+            return lhsNumber == rhsNumber
+        case (.boolean(let lhsBoolean), .boolean(let rhsBoolean)):
+            return lhsBoolean == rhsBoolean
+        case (.nil, .nil):
+            return true
+        default:
+            return false
         }
     }
 }

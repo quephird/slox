@@ -7,21 +7,54 @@
 
 class LoxList: LoxInstance {
     var elements: [LoxValue]
-    var count: Int {
-        return elements.count
+
+    private class AppendImpl: LoxCallable {
+        var arity: Int = 1
+        var listInstance: LoxList
+
+        init(listInstance: LoxList) {
+            self.listInstance = listInstance
+        }
+
+        func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
+            let element = args[0]
+            self.listInstance.elements.append(element)
+            return .nil
+        }
     }
 
-    init(elements: [LoxValue], klass: LoxClass) {
+    private class DeleteAtImpl: LoxCallable {
+        var arity: Int = 1
+        var listInstance: LoxList
+
+        init(listInstance: LoxList) {
+            self.listInstance = listInstance
+        }
+
+        func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
+            guard case .number(let index) = args[0] else {
+                throw RuntimeError.indexMustBeANumber
+            }
+
+            return self.listInstance.elements.remove(at: Int(index))
+        }
+    }
+
+    init(elements: [LoxValue]) {
         self.elements = elements
-        super.init(klass: klass)
+        super.init(klass: nil)
     }
 
     override func get(propertyName: String) throws -> LoxValue {
         switch propertyName {
         case "count":
             return .number(Double(elements.count))
+        case "append":
+            return .callable(AppendImpl(listInstance: self))
+        case "deleteAt":
+            return .callable(DeleteAtImpl(listInstance: self))
         default:
-            return try super.get(propertyName: propertyName)
+            throw RuntimeError.undefinedProperty(propertyName)
         }
     }
 
