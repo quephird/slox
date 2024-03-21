@@ -34,7 +34,6 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingDotAfterSuper(Token)
     case expectedSuperclassMethodName(Token)
     case missingCloseBracketForSubscriptAccess(Token)
-    case unsupportedJumpStatement(Token)
 
     var description: String {
         switch self {
@@ -90,8 +89,6 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected superclass method name"
         case .missingCloseBracketForSubscriptAccess(let token):
             return "[Line \(token.line)] Error: expected closing bracket after subscript index"
-        case .unsupportedJumpStatement(let token):
-            return "[Line \(token.line)] Error: unsupported jump statement"
         }
     }
 }
