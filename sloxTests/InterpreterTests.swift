@@ -20,7 +20,7 @@ final class InterpreterTests: XCTestCase {
         let input = "42"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)!
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -28,7 +28,7 @@ final class InterpreterTests: XCTestCase {
         let input = "(42)"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)!
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -54,7 +54,7 @@ final class InterpreterTests: XCTestCase {
         let input = "21 * 2"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)!
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -88,7 +88,7 @@ final class InterpreterTests: XCTestCase {
         let input = "(-2) * (3 + 4)"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(-14)
+        let expected: LoxValue = .int(-14)
         XCTAssertEqual(actual, expected)
     }
 
@@ -112,7 +112,7 @@ final class InterpreterTests: XCTestCase {
         let input = "var theAnswer = 42; theAnswer"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -120,7 +120,7 @@ final class InterpreterTests: XCTestCase {
         let input = "var theAnswer; theAnswer = 42; theAnswer"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -134,7 +134,7 @@ i
 """
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(3)
+        let expected: LoxValue = .int(3)
         XCTAssertEqual(actual, expected)
     }
 
@@ -149,7 +149,7 @@ theAnswer
 """
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -163,7 +163,7 @@ theAnswer
 """
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -177,7 +177,7 @@ theAnswer
 """
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -191,7 +191,7 @@ add(1, 2)
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(3)
+        let expected: LoxValue = .int(3)
         XCTAssertEqual(actual, expected)
     }
 
@@ -207,7 +207,7 @@ fact(5)
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(120)
+        let expected: LoxValue = .int(120)
         XCTAssertEqual(actual, expected)
     }
 
@@ -216,7 +216,7 @@ fact(5)
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(5)
+        let expected: LoxValue = .int(5)
         XCTAssertEqual(actual, expected)
     }
 
@@ -231,7 +231,7 @@ addTwo(5)
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(7)
+        let expected: LoxValue = .int(7)
         XCTAssertEqual(actual, expected)
     }
 
@@ -326,7 +326,7 @@ me.age
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(55)
+        let expected: LoxValue = .int(55)
         XCTAssertEqual(actual, expected)
     }
 
@@ -360,7 +360,7 @@ Math.add(2, 3)
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(5)
+        let expected: LoxValue = .int(5)
         XCTAssertEqual(actual, expected)
     }
 
@@ -378,7 +378,7 @@ b.getTheAnswer()
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -400,7 +400,7 @@ b.method()
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(42)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -412,7 +412,7 @@ foo[2]
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(3)
+        let expected: LoxValue = .int(3)
         XCTAssertEqual(actual, expected)
     }
 
@@ -425,7 +425,7 @@ foo[2]
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(6)
+        let expected: LoxValue = .int(6)
         XCTAssertEqual(actual, expected)
     }
 
@@ -439,7 +439,7 @@ foo()[1]
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(2)
+        let expected: LoxValue = .int(2)
         XCTAssertEqual(actual, expected)
     }
 
@@ -463,7 +463,7 @@ baz[1][1]
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(4)
+        let expected: LoxValue = .int(4)
         XCTAssertEqual(actual, expected)
     }
 
@@ -475,7 +475,7 @@ quux.count
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(0)
+        let expected: LoxValue = .int(0)
         XCTAssertEqual(actual, expected)
     }
 
@@ -512,7 +512,7 @@ foo.bar()[1]
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(2)
+        let expected: LoxValue = .int(2)
         XCTAssertEqual(actual, expected)
     }
 
@@ -525,7 +525,7 @@ foo.count
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(4)
+        let expected: LoxValue = .int(4)
         XCTAssertEqual(actual, expected)
     }
 
@@ -538,7 +538,7 @@ foo.count
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(2)
+        let expected: LoxValue = .int(2)
         XCTAssertEqual(actual, expected)
     }
 
@@ -556,7 +556,7 @@ sum
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(6)
+        let expected: LoxValue = .int(6)
         XCTAssertEqual(actual, expected)
     }
 
@@ -576,7 +576,7 @@ sum
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(6)
+        let expected: LoxValue = .int(6)
         XCTAssertEqual(actual, expected)
     }
 
@@ -596,7 +596,7 @@ sum
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(45)
+        let expected: LoxValue = .int(45)
         XCTAssertEqual(actual, expected)
     }
 
@@ -617,7 +617,7 @@ sum
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(12)
+        let expected: LoxValue = .int(12)
         XCTAssertEqual(actual, expected)
     }
 
@@ -635,7 +635,7 @@ sum
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(12)
+        let expected: LoxValue = .int(12)
         XCTAssertEqual(actual, expected)
     }
 
@@ -660,7 +660,7 @@ sum
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .number(4)
+        let expected: LoxValue = .int(4)
         XCTAssertEqual(actual, expected)
     }
 }

@@ -25,7 +25,7 @@ final class ParserTests: XCTestCase {
 
     func testParseNumericLiteralExpression() throws {
         let tokens: [Token] = [
-            Token(type: .number, lexeme: "123.456", line: 1),
+            Token(type: .double, lexeme: "123.456", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -33,7 +33,7 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement] = [
-            .expression(.literal(.number(123.456)))
+            .expression(.literal(.double(123.456)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -71,7 +71,7 @@ final class ParserTests: XCTestCase {
     func testParseGroupingExpression() throws {
         let tokens: [Token] = [
             Token(type: .leftParen, lexeme: "(", line: 1),
-            Token(type: .number, lexeme: "42", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
             Token(type: .rightParen, lexeme: ")", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
@@ -80,7 +80,7 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement] = [
-            .expression(.grouping(.literal(.number(42))))
+            .expression(.grouping(.literal(.int(42))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -88,7 +88,7 @@ final class ParserTests: XCTestCase {
     func testParseInvalidGroupingExpression() throws {
         let tokens: [Token] = [
             Token(type: .leftParen, lexeme: "(", line: 1),
-            Token(type: .number, lexeme: "42", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -104,7 +104,7 @@ final class ParserTests: XCTestCase {
     func testParseInvalidExpression() throws {
         let tokens: [Token] = [
             Token(type: .rightParen, lexeme: ")", line: 1),
-            Token(type: .number, lexeme: "42", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
             Token(type: .leftParen, lexeme: "(", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
@@ -139,9 +139,9 @@ final class ParserTests: XCTestCase {
 
     func testParseFactorExpression() throws {
         let tokens: [Token] = [
-            Token(type: .number, lexeme: "21", line: 1),
+            Token(type: .int, lexeme: "21", line: 1),
             Token(type: .star, lexeme: "*", line: 1),
-            Token(type: .number, lexeme: "2", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -151,9 +151,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .binary(
-                    .literal(.number(21)),
+                    .literal(.int(21)),
                     Token(type: .star, lexeme: "*", line: 1),
-                    .literal(.number(2))))
+                    .literal(.int(2))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -181,9 +181,9 @@ final class ParserTests: XCTestCase {
 
     func testParseComparisonExpression() throws {
         let tokens: [Token] = [
-            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
             Token(type: .lessEqual, lexeme: "<=", line: 1),
-            Token(type: .number, lexeme: "2", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -193,9 +193,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .binary(
-                    .literal(.number(1)),
+                    .literal(.int(1)),
                     Token(type: .lessEqual, lexeme: "<=", line: 1),
-                    .literal(.number(2))))
+                    .literal(.int(2))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -286,7 +286,7 @@ final class ParserTests: XCTestCase {
         let tokens: [Token] = [
             Token(type: .identifier, lexeme: "theAnswer", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
-            Token(type: .number, lexeme: "42", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -297,7 +297,7 @@ final class ParserTests: XCTestCase {
             .expression(
                 .assignment(
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
-                    .literal(.number(42))))
+                    .literal(.int(42))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -308,13 +308,13 @@ final class ParserTests: XCTestCase {
         let tokens: [Token] = [
             Token(type: .leftParen, lexeme: "(", line: 1),
             Token(type: .minus, lexeme: "-", line: 1),
-            Token(type: .number, lexeme: "2", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
             Token(type: .rightParen, lexeme: ")", line: 1),
             Token(type: .star, lexeme: "*", line: 1),
             Token(type: .leftParen, lexeme: "(", line: 1),
-            Token(type: .number, lexeme: "3", line: 1),
+            Token(type: .int, lexeme: "3", line: 1),
             Token(type: .plus, lexeme: "+", line: 1),
-            Token(type: .number, lexeme: "4", line: 1),
+            Token(type: .int, lexeme: "4", line: 1),
             Token(type: .rightParen, lexeme: ")", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
@@ -327,12 +327,12 @@ final class ParserTests: XCTestCase {
                 .binary(
                     .grouping(.unary(
                         Token(type: .minus, lexeme: "-", line: 1),
-                        .literal(.number(2)))),
+                        .literal(.int(2)))),
                     Token(type: .star, lexeme: "*", line: 1),
                     .grouping(.binary(
-                        .literal(.number(3)),
+                        .literal(.int(3)),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.number(4))))))
+                        .literal(.int(4))))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -348,19 +348,19 @@ final class ParserTests: XCTestCase {
             Token(type: .var, lexeme: "var", line: 1),
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
-            Token(type: .number, lexeme: "0", line: 1),
+            Token(type: .int, lexeme: "0", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
 
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .less, lexeme: "<", line: 1),
-            Token(type: .number, lexeme: "5", line: 1),
+            Token(type: .int, lexeme: "5", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
 
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .plus, lexeme: "+", line: 1),
-            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
             Token(type: .rightParen, lexeme: ")", line: 1),
 
             Token(type: .print, lexeme: "print", line: 2),
@@ -376,17 +376,17 @@ final class ParserTests: XCTestCase {
             .for(
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "i", line: 1),
-                    .literal(.number(0))),
+                    .literal(.int(0))),
                 .binary(
                     .variable(Token(type: .identifier, lexeme: "i", line: 1)),
                     Token(type: .less, lexeme: "<", line: 1),
-                    .literal(.number(5))),
+                    .literal(.int(5))),
                 .assignment(
                     Token(type: .identifier, lexeme: "i", line: 1),
                     .binary(
                         .variable(Token(type: .identifier, lexeme: "i", line: 1)),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.number(1)))),
+                        .literal(.int(1)))),
                 .print(
                     .variable(Token(type: .identifier, lexeme: "i", line: 2)))),
         ]
@@ -430,19 +430,19 @@ final class ParserTests: XCTestCase {
             Token(type: .var, lexeme: "var", line: 1),
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
-            Token(type: .number, lexeme: "0", line: 1),
+            Token(type: .int, lexeme: "0", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
 
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .less, lexeme: "<", line: 1),
-            Token(type: .number, lexeme: "5", line: 1),
+            Token(type: .int, lexeme: "5", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
 
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
             Token(type: .identifier, lexeme: "i", line: 1),
             Token(type: .plus, lexeme: "+", line: 1),
-            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
 
             Token(type: .print, lexeme: "print", line: 2),
             Token(type: .identifier, lexeme: "i", line: 2),
@@ -586,7 +586,7 @@ final class ParserTests: XCTestCase {
             Token(type: .var, lexeme: "var", line: 1),
             Token(type: .identifier, lexeme: "theAnswer", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
-            Token(type: .number, lexeme: "42", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -596,7 +596,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
-                .literal(.number(42)))
+                .literal(.int(42)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -605,7 +605,7 @@ final class ParserTests: XCTestCase {
         let tokens: [Token] = [
             Token(type: .var, lexeme: "var", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
-            Token(type: .number, lexeme: "42", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -627,13 +627,13 @@ final class ParserTests: XCTestCase {
             Token(type: .var, lexeme: "var", line: 1),
             Token(type: .identifier, lexeme: "the", line: 1),
             Token(type: .equal, lexeme: "=", line: 1),
-            Token(type: .number, lexeme: "2", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
 
             Token(type: .var, lexeme: "var", line: 2),
             Token(type: .identifier, lexeme: "answer", line: 2),
             Token(type: .equal, lexeme: "=", line: 2),
-            Token(type: .number, lexeme: "21", line: 2),
+            Token(type: .int, lexeme: "21", line: 2),
             Token(type: .semicolon, lexeme: ";", line: 2),
 
             Token(type: .print, lexeme: "print", line: 3),
@@ -650,10 +650,10 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "the", line: 1),
-                .literal(.number(2))),
+                .literal(.int(2))),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 2),
-                .literal(.number(21))),
+                .literal(.int(21))),
             .print(
                 .binary(
                     .variable(Token(type: .identifier, lexeme: "the", line: 3)),
@@ -675,7 +675,7 @@ final class ParserTests: XCTestCase {
             Token(type: .var, lexeme: "var", line: 2),
             Token(type: .identifier, lexeme: "theAnswer", line: 2),
             Token(type: .equal, lexeme: "=", line: 2),
-            Token(type: .number, lexeme: "42", line: 2),
+            Token(type: .int, lexeme: "42", line: 2),
             Token(type: .semicolon, lexeme: ";", line: 2),
 
             Token(type: .print, lexeme: "print", line: 3),
@@ -693,7 +693,7 @@ final class ParserTests: XCTestCase {
             .block([
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "theAnswer", line: 2),
-                    .literal(.number(42))),
+                    .literal(.int(42))),
                 .print(
                     .variable(Token(type: .identifier, lexeme: "theAnswer", line: 3))),
             ]),
@@ -708,7 +708,7 @@ final class ParserTests: XCTestCase {
             Token(type: .var, lexeme: "var", line: 2),
             Token(type: .identifier, lexeme: "theAnswer", line: 2),
             Token(type: .equal, lexeme: "=", line: 2),
-            Token(type: .number, lexeme: "42", line: 2),
+            Token(type: .int, lexeme: "42", line: 2),
             Token(type: .semicolon, lexeme: ";", line: 2),
 
             Token(type: .print, lexeme: "print", line: 3),
@@ -737,7 +737,7 @@ final class ParserTests: XCTestCase {
             Token(type: .leftParen, lexeme: "(", line: 1),
             Token(type: .identifier, lexeme: "x", line: 1),
             Token(type: .lessEqual, lexeme: "<=", line: 1),
-            Token(type: .number, lexeme: "5", line: 1),
+            Token(type: .int, lexeme: "5", line: 1),
             Token(type: .rightParen, lexeme: ")", line: 1),
             Token(type: .leftBrace, lexeme: "{", line: 1),
 
@@ -749,7 +749,7 @@ final class ParserTests: XCTestCase {
             Token(type: .equal, lexeme: "=", line: 3),
             Token(type: .identifier, lexeme: "x", line: 3),
             Token(type: .plus, lexeme: "+", line: 3),
-            Token(type: .number, lexeme: "1", line: 3),
+            Token(type: .int, lexeme: "1", line: 3),
             Token(type: .semicolon, lexeme: ";", line: 3),
 
             Token(type: .rightBrace, lexeme: "}", line: 4),
@@ -763,7 +763,7 @@ final class ParserTests: XCTestCase {
                 .binary(
                     .variable(Token(type: .identifier, lexeme: "x", line: 1)),
                     Token(type: .lessEqual, lexeme: "<=", line: 1),
-                    .literal(.number(5))),
+                    .literal(.int(5))),
                 .block([
                     .print(.variable(Token(type: .identifier, lexeme: "x", line: 2))),
                     .expression(
@@ -772,7 +772,7 @@ final class ParserTests: XCTestCase {
                             .binary(
                                 .variable(Token(type: .identifier, lexeme: "x", line: 3)),
                                 Token(type: .plus, lexeme: "+", line: 3),
-                                .literal(.number(1))))),
+                                .literal(.int(1))))),
                 ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -813,7 +813,7 @@ final class ParserTests: XCTestCase {
             Token(type: .leftBrace, lexeme: "{", line: 1),
 
             Token(type: .print, lexeme: "print", line: 2),
-            Token(type: .number, lexeme: "42", line: 2),
+            Token(type: .int, lexeme: "42", line: 2),
             Token(type: .semicolon, lexeme: ";", line: 2),
 
             Token(type: .rightBrace, lexeme: "}", line: 3),
@@ -828,7 +828,7 @@ final class ParserTests: XCTestCase {
                 .lambda(
                     [],
                     [
-                        .print(.literal(.number(42)))
+                        .print(.literal(.int(42)))
                     ])),
         ]
         XCTAssertEqual(actual, expected)
@@ -886,9 +886,9 @@ final class ParserTests: XCTestCase {
         let tokens: [Token] = [
             Token(type: .identifier, lexeme: "add", line: 1),
             Token(type: .leftParen, lexeme: "(", line: 1),
-            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
-            Token(type: .number, lexeme: "2", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
             Token(type: .rightParen, lexeme: ")", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -901,8 +901,8 @@ final class ParserTests: XCTestCase {
                     .variable(Token(type: .identifier, lexeme: "add", line: 1)),
                     Token(type: .rightParen, lexeme: ")", line: 1),
                     [
-                        .literal(.number(1)),
-                        .literal(.number(2)),
+                        .literal(.int(1)),
+                        .literal(.int(2)),
                     ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1174,7 +1174,7 @@ final class ParserTests: XCTestCase {
         // [1, "one", true]
         let tokens: [Token] = [
             Token(type: .leftBracket, lexeme: "[", line: 1),
-            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
             Token(type: .string, lexeme: "\"one\"", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
@@ -1188,7 +1188,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .list([
-                    .literal(.number(1)),
+                    .literal(.int(1)),
                     .literal(.string("one")),
                     .literal(.boolean(true))
                 ]))
@@ -1200,7 +1200,7 @@ final class ParserTests: XCTestCase {
         // [1, "one", true
         let tokens: [Token] = [
             Token(type: .leftBracket, lexeme: "[", line: 1),
-            Token(type: .number, lexeme: "1", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
             Token(type: .string, lexeme: "\"one\"", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
