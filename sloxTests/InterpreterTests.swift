@@ -467,6 +467,18 @@ baz[1][1]
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretCreateAnEmptyList() throws {
+        let input = """
+var quux = [];
+quux.count
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .number(0)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretExpressionWithListSubscriptingMethodInvocationAndPropertyGetting() throws {
         let input = """
 class Foo { }

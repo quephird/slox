@@ -552,7 +552,7 @@ struct Parser {
             return nil
         }
 
-        let args = try parseArguments()
+        let args = try parseArguments(endTokenType: .rightParen)
 
         guard currentTokenMatchesAny(types: [.rightParen]) else {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
@@ -662,7 +662,7 @@ struct Parser {
             return nil
         }
 
-        let elements = try parseArguments()
+        let elements = try parseArguments(endTokenType: .rightBracket)
 
         guard currentTokenMatchesAny(types: [.rightBracket]) else {
             throw ParseError.missingClosingBracket(previousToken)
@@ -728,9 +728,9 @@ struct Parser {
         return parameters
     }
 
-    mutating private func parseArguments() throws -> [Expression] {
+    mutating private func parseArguments(endTokenType: TokenType) throws -> [Expression] {
         var args: [Expression] = []
-        if currentToken.type != .rightParen {
+        if currentToken.type != endTokenType {
             repeat {
                 let newArg = try parseExpression()
                 args.append(newArg)

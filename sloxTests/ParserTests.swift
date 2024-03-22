@@ -1215,4 +1215,22 @@ final class ParserTests: XCTestCase {
             XCTAssertEqual(actualError as! ParseError, expectedError)
         }
     }
+
+    func testParseAnEmptyList() throws {
+        // [ ]
+        let tokens: [Token] = [
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
+            Token(type: .eof, lexeme: "", line: 1)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .list([
+                ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
 }
