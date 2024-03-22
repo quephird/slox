@@ -162,8 +162,10 @@ struct Scanner {
             advanceCursor()
         }
 
+        var tokenType: TokenType = .int
         if nextIndex < source.endIndex,
            source[nextIndex] == "." {
+            tokenType = .double
             advanceCursor()
 
             while nextIndex < source.endIndex,
@@ -172,7 +174,7 @@ struct Scanner {
             }
         }
 
-        addToken(type: .number)
+        addToken(type: tokenType)
     }
 
     mutating private func handleIdentifier() {

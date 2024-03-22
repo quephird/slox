@@ -19,7 +19,7 @@ class LoxList: LoxInstance {
     override func get(propertyName: String) throws -> LoxValue {
         switch propertyName {
         case "count":
-            return .number(Double(elements.count))
+            return .int(elements.count)
         default:
             return try super.get(propertyName: propertyName)
         }

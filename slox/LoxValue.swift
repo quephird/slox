@@ -7,7 +7,8 @@
 
 enum LoxValue: CustomStringConvertible, Equatable {
     case string(String)
-    case number(Double)
+    case double(Double)
+    case int(Int)
     case boolean(Bool)
     case `nil`
     case userDefinedFunction(UserDefinedFunction)
@@ -18,7 +19,9 @@ enum LoxValue: CustomStringConvertible, Equatable {
         switch self {
         case .string(let string):
             return "\"\(string)\""
-        case .number(let number):
+        case .double(let number):
+            return "\(number)"
+        case .int(let number):
             return "\(number)"
         case .boolean(let boolean):
             return "\(boolean)"
@@ -50,8 +53,14 @@ enum LoxValue: CustomStringConvertible, Equatable {
         switch (self, to) {
         case (.nil, .nil):
             return true
-        case (.number(let leftNumber), .number(let rightNumber)):
+        case (.int(let leftNumber), .int(let rightNumber)):
             return leftNumber == rightNumber
+        case (.double(let leftNumber), .double(let rightNumber)):
+            return leftNumber == rightNumber
+        case (.int(let leftNumber), .double(let rightNumber)):
+            return Double(leftNumber) == rightNumber
+        case (.double(let leftNumber), .int(let rightNumber)):
+            return leftNumber == Double(rightNumber)
         case (.string(let leftString), .string(let rightString)):
             return leftString == rightString
         case (.boolean(let leftBoolean), .boolean(let rightBoolean)):

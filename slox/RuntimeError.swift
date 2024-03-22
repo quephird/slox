@@ -24,7 +24,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notALambda
     case couldNotFindAncestorEnvironmentAtDepth(Int)
     case superclassMustBeAClass
-    case indexMustBeANumber
+    case indexMustBeAnInteger
 
     var description: String {
         switch self {
@@ -60,7 +60,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: could not find ancestor environment at depth \(depth)."
         case .superclassMustBeAClass:
             return "Error: superclass must be a class"
-        case .indexMustBeANumber:
+        case .indexMustBeAnInteger:
             return "Error: index must be a number"
         }
     }

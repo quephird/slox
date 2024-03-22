@@ -336,11 +336,14 @@ class Interpreter {
 
         switch oper.type {
         case .minus:
-            guard case .number(let number) = value else {
+            switch value {
+            case .double(let number):
+                return .double(-number)
+            case .int(let number):
+                return .int(-number)
+            default:
                 throw RuntimeError.unaryOperandMustBeNumber
             }
-
-            return .number(-number)
         case .bang:
             return .boolean(!value.isTruthy)
         default:
@@ -354,17 +357,17 @@ class Interpreter {
         let leftValue = try evaluate(expr: leftExpr)
         let rightValue = try evaluate(expr: rightExpr)
 
-        if case .number(let leftNumber) = leftValue,
-           case .number(let rightNumber) = rightValue {
+        switch (leftValue, rightValue) {
+        case (.int(let leftNumber), .int(let rightNumber)):
             switch oper.type {
             case .plus:
-                return .number(leftNumber + rightNumber)
+                return .int(leftNumber + rightNumber)
             case .minus:
-                return .number(leftNumber - rightNumber)
+                return .int(leftNumber - rightNumber)
             case .star:
-                return .number(leftNumber * rightNumber)
+                return .int(leftNumber * rightNumber)
             case .slash:
-                return .number(leftNumber / rightNumber)
+                return .int(leftNumber / rightNumber)
             case .greater:
                 return .boolean(leftNumber > rightNumber)
             case .greaterEqual:
@@ -376,6 +379,73 @@ class Interpreter {
             default:
                 break
             }
+        case (.double(let leftNumber), .double(let rightNumber)):
+            switch oper.type {
+            case .plus:
+                return .double(leftNumber + rightNumber)
+            case .minus:
+                return .double(leftNumber - rightNumber)
+            case .star:
+                return .double(leftNumber * rightNumber)
+            case .slash:
+                return .double(leftNumber / rightNumber)
+            case .greater:
+                return .boolean(leftNumber > rightNumber)
+            case .greaterEqual:
+                return .boolean(leftNumber >= rightNumber)
+            case .less:
+                return .boolean(leftNumber < rightNumber)
+            case .lessEqual:
+                return .boolean(leftNumber <= rightNumber)
+            default:
+                break
+            }
+        case (.int(let leftNumber), .double(let rightNumber)):
+            let leftNumber = Double(leftNumber)
+            switch oper.type {
+            case .plus:
+                return .double(leftNumber + rightNumber)
+            case .minus:
+                return .double(leftNumber - rightNumber)
+            case .star:
+                return .double(leftNumber * rightNumber)
+            case .slash:
+                return .double(leftNumber / rightNumber)
+            case .greater:
+                return .boolean(leftNumber > rightNumber)
+            case .greaterEqual:
+                return .boolean(leftNumber >= rightNumber)
+            case .less:
+                return .boolean(leftNumber < rightNumber)
+            case .lessEqual:
+                return .boolean(leftNumber <= rightNumber)
+            default:
+                break
+            }
+        case (.double(let leftNumber), .int(let rightNumber)):
+            let rightNumber = Double(rightNumber)
+            switch oper.type {
+            case .plus:
+                return .double(leftNumber + rightNumber)
+            case .minus:
+                return .double(leftNumber - rightNumber)
+            case .star:
+                return .double(leftNumber * rightNumber)
+            case .slash:
+                return .double(leftNumber / rightNumber)
+            case .greater:
+                return .boolean(leftNumber > rightNumber)
+            case .greaterEqual:
+                return .boolean(leftNumber >= rightNumber)
+            case .less:
+                return .boolean(leftNumber < rightNumber)
+            case .lessEqual:
+                return .boolean(leftNumber <= rightNumber)
+            default:
+                break
+            }
+        default:
+            break
         }
 
         if case .string(let leftString) = leftValue,
@@ -534,8 +604,8 @@ class Interpreter {
             throw RuntimeError.notAList
         }
 
-        guard case .number(let index) = try evaluate(expr: indexExpr) else {
-            throw RuntimeError.indexMustBeANumber
+        guard case .int(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeAnInteger
         }
 
         return list[Int(index)]
@@ -548,8 +618,8 @@ class Interpreter {
             throw RuntimeError.notAList
         }
 
-        guard case .number(let index) = try evaluate(expr: indexExpr) else {
-            throw RuntimeError.indexMustBeANumber
+        guard case .int(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeAnInteger
         }
 
         let value = try evaluate(expr: valueExpr)
