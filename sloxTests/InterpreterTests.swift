@@ -50,11 +50,27 @@ final class InterpreterTests: XCTestCase {
         }
     }
 
-    func testInterpretNumericBinaryExpression() throws {
+    func testInterpretBinaryExpressionInvolvingIntegers() throws {
         let input = "21 * 2"
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)!
         let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretBinaryExpressionInvolvingDoubles() throws {
+        let input = "21.0 * 2.0"
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)!
+        let expected: LoxValue = .double(42.0)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretBinaryExpressionInvolvingAnIntAndADouble() throws {
+        let input = "21.0 * 2"
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)!
+        let expected: LoxValue = .double(42.0)
         XCTAssertEqual(actual, expected)
     }
 
@@ -414,6 +430,19 @@ foo[2]
         let actual = try interpreter.interpretRepl(source: input)
         let expected: LoxValue = .int(3)
         XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretAccessingElementOfListWithDouble() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo[2.0]
+"""
+
+        let interpreter = Interpreter()
+        let expectedError = RuntimeError.indexMustBeAnInteger
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
     }
 
     func testInterpretMutationOfList() throws {
