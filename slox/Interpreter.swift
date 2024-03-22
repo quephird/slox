@@ -384,13 +384,25 @@ class Interpreter {
             return .string(leftString + rightString)
         }
 
+        if case .instance(let leftList as LoxList) = leftValue,
+           case .instance(let rightList as LoxList) = rightValue,
+           case .plus = oper.type {
+            guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
+                fatalError()
+            }
+
+            let newElements = leftList.elements + rightList.elements
+            let list = LoxList(elements: newElements, klass: listClass)
+            return .instance(list)
+        }
+
         switch oper.type {
         case .bangEqual:
             return .boolean(!leftValue.isEqual(to: rightValue))
         case .equalEqual:
             return .boolean(leftValue.isEqual(to: rightValue))
         case .plus:
-            throw RuntimeError.binaryOperandsMustBeNumbersOrStrings
+            throw RuntimeError.binaryOperandsMustBeNumbersOrStringsOrLists
         case .minus, .star, .slash, .greater, .greaterEqual, .less, .lessEqual:
             throw RuntimeError.binaryOperandsMustBeNumbers
         default:
