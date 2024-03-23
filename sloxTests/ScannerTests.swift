@@ -89,8 +89,8 @@ final class ScannerTests: XCTestCase {
         var scanner = Scanner(source: source)
         let actual = try! scanner.scanTokens()
         let expected: [Token] = [
-            Token(type: .number, lexeme: "123", line: 1),
-            Token(type: .number, lexeme: "456.789", line: 1),
+            Token(type: .int, lexeme: "123", line: 1),
+            Token(type: .double, lexeme: "456.789", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
 

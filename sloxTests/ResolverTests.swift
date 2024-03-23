@@ -31,7 +31,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 1),
-                .literal(.number(42))),
+                .literal(.int(42))),
         ]
 
         var resolver = Resolver()
@@ -39,7 +39,7 @@ final class ResolverTests: XCTestCase {
         let expected: [ResolvedStatement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 1),
-                .literal(.number(42))),
+                .literal(.int(42))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -139,7 +139,7 @@ final class ResolverTests: XCTestCase {
             .block([
                 .return(
                     Token(type: .return, lexeme: "return", line: 1),
-                    .literal(.number(42))),
+                    .literal(.int(42))),
             ])
         ]
 
@@ -288,7 +288,7 @@ final class ResolverTests: XCTestCase {
                             [
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
-                                    .literal(.number(42)))
+                                    .literal(.int(42)))
                             ]))
                 ],
                 [])

@@ -609,9 +609,13 @@ struct Parser {
             return .literal(.nil)
         }
 
-        if currentTokenMatchesAny(types: [.number]) {
+        if currentTokenMatchesAny(types: [.double]) {
             let number = Double(previousToken.lexeme)!
-            return .literal(.number(number))
+            return .literal(.double(number))
+        }
+        if currentTokenMatchesAny(types: [.int]) {
+            let number = Int(previousToken.lexeme)!
+            return .literal(.int(number))
         }
 
         if currentTokenMatchesAny(types: [.string]) {

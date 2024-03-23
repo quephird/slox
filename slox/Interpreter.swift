@@ -336,11 +336,14 @@ class Interpreter {
 
         switch oper.type {
         case .minus:
-            guard case .number(let number) = value else {
+            switch value {
+            case .double(let number):
+                return .double(-number)
+            case .int(let number):
+                return .int(-number)
+            default:
                 throw RuntimeError.unaryOperandMustBeNumber
             }
-
-            return .number(-number)
         case .bang:
             return .boolean(!value.isTruthy)
         default:
@@ -354,17 +357,17 @@ class Interpreter {
         let leftValue = try evaluate(expr: leftExpr)
         let rightValue = try evaluate(expr: rightExpr)
 
-        if case .number(let leftNumber) = leftValue,
-           case .number(let rightNumber) = rightValue {
+        switch (leftValue, rightValue) {
+        case (.int(let leftNumber), .int(let rightNumber)):
             switch oper.type {
             case .plus:
-                return .number(leftNumber + rightNumber)
+                return .int(leftNumber + rightNumber)
             case .minus:
-                return .number(leftNumber - rightNumber)
+                return .int(leftNumber - rightNumber)
             case .star:
-                return .number(leftNumber * rightNumber)
+                return .int(leftNumber * rightNumber)
             case .slash:
-                return .number(leftNumber / rightNumber)
+                return .int(leftNumber / rightNumber)
             case .greater:
                 return .boolean(leftNumber > rightNumber)
             case .greaterEqual:
@@ -376,19 +379,47 @@ class Interpreter {
             default:
                 break
             }
-        }
+        case (.int, .double), (.double, .int), (.double, .double):
+            let leftNumber = try leftValue.convertToRawDouble()
+            let rightNumber = try rightValue.convertToRawDouble()
 
-        if case .string(let leftString) = leftValue,
-           case .string(let rightString) = rightValue,
-           case .plus = oper.type {
-            return .string(leftString + rightString)
-        }
-
-        if case .instance(let leftList as LoxList) = leftValue,
-           case .instance(let rightList as LoxList) = rightValue,
-           case .plus = oper.type {
-            let newElements = leftList.elements + rightList.elements
-            return try makeList(elements: newElements)
+            switch oper.type {
+            case .plus:
+                return .double(leftNumber + rightNumber)
+            case .minus:
+                return .double(leftNumber - rightNumber)
+            case .star:
+                return .double(leftNumber * rightNumber)
+            case .slash:
+                return .double(leftNumber / rightNumber)
+            case .greater:
+                return .boolean(leftNumber > rightNumber)
+            case .greaterEqual:
+                return .boolean(leftNumber >= rightNumber)
+            case .less:
+                return .boolean(leftNumber < rightNumber)
+            case .lessEqual:
+                return .boolean(leftNumber <= rightNumber)
+            default:
+                break
+            }
+        case (.string(let leftString), .string(let rightString)):
+            switch oper.type {
+            case .plus:
+                return .string(leftString + rightString)
+            default:
+                break
+            }
+        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
+            switch oper.type {
+            case .plus:
+                let newElements = leftList.elements + rightList.elements
+                return try makeList(elements: newElements)
+            default:
+                break
+            }
+        default:
+            break
         }
 
         switch oper.type {
@@ -534,8 +565,8 @@ class Interpreter {
             throw RuntimeError.notAList
         }
 
-        guard case .number(let index) = try evaluate(expr: indexExpr) else {
-            throw RuntimeError.indexMustBeANumber
+        guard case .int(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeAnInteger
         }
 
         return list[Int(index)]
@@ -548,8 +579,8 @@ class Interpreter {
             throw RuntimeError.notAList
         }
 
-        guard case .number(let index) = try evaluate(expr: indexExpr) else {
-            throw RuntimeError.indexMustBeANumber
+        guard case .int(let index) = try evaluate(expr: indexExpr) else {
+            throw RuntimeError.indexMustBeAnInteger
         }
 
         let value = try evaluate(expr: valueExpr)

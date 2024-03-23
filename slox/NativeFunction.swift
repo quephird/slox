@@ -26,7 +26,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         switch self {
         case .clock:
-            return .number(Date().timeIntervalSince1970)
+            return .double(Date().timeIntervalSince1970)
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
                 throw RuntimeError.notAList
@@ -41,8 +41,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
                 throw RuntimeError.notAList
             }
 
-            guard case .number(let index) = args[1] else {
-                throw RuntimeError.indexMustBeANumber
+            guard case .int(let index) = args[1] else {
+                throw RuntimeError.indexMustBeAnInteger
             }
 
             return loxList.elements.remove(at: Int(index))

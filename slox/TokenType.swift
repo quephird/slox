@@ -34,7 +34,8 @@ enum TokenType: Equatable {
     // Literals
     case identifier
     case string
-    case number
+    case double
+    case int
 
     // Keywords
     case and
