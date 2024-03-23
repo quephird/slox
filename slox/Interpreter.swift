@@ -387,13 +387,8 @@ class Interpreter {
         if case .instance(let leftList as LoxList) = leftValue,
            case .instance(let rightList as LoxList) = rightValue,
            case .plus = oper.type {
-            guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
-                fatalError()
-            }
-
             let newElements = leftList.elements + rightList.elements
-            let list = LoxList(elements: newElements, klass: listClass)
-            return .instance(list)
+            return try makeList(elements: newElements)
         }
 
         switch oper.type {
@@ -530,13 +525,7 @@ class Interpreter {
             return try evaluate(expr: element)
         }
 
-        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
-            // TODO: Do we need throw an exception here?
-            fatalError()
-        }
-
-        let list = LoxList(elements: elementValues, klass: listClass)
-        return .instance(list)
+        return try makeList(elements: elementValues)
     }
 
     private func handleSubscriptGetExpression(listExpr: ResolvedExpression,
@@ -567,5 +556,14 @@ class Interpreter {
 
         list[Int(index)] = value
         return value
+    }
+
+    private func makeList(elements: [LoxValue]) throws -> LoxValue {
+        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
+            fatalError()
+        }
+
+        let list = LoxList(elements: elements, klass: listClass)
+        return .instance(list)
     }
 }
