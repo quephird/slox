@@ -83,4 +83,26 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return true
         }
     }
+
+    func convertToRawInt() throws -> Int {
+        switch self {
+        case .int(let number):
+            return number
+        case .double(let number):
+            return Int(number)
+        default:
+            throw RuntimeError.notANumber
+        }
+    }
+
+    func convertToRawDouble() throws -> Double {
+        switch self {
+        case .int(let number):
+            return Double(number)
+        case .double(let number):
+            return number
+        default:
+            throw RuntimeError.notANumber
+        }
+    }
 }

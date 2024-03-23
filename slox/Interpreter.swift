@@ -379,7 +379,10 @@ class Interpreter {
             default:
                 break
             }
-        case (.double(let leftNumber), .double(let rightNumber)):
+        case (.int, .double), (.double, .int), (.double, .double):
+            let leftNumber = try leftValue.convertToRawDouble()
+            let rightNumber = try rightValue.convertToRawDouble()
+
             switch oper.type {
             case .plus:
                 return .double(leftNumber + rightNumber)
@@ -400,65 +403,23 @@ class Interpreter {
             default:
                 break
             }
-        case (.int(let leftNumber), .double(let rightNumber)):
-            let leftNumber = Double(leftNumber)
+        case (.string(let leftString), .string(let rightString)):
             switch oper.type {
             case .plus:
-                return .double(leftNumber + rightNumber)
-            case .minus:
-                return .double(leftNumber - rightNumber)
-            case .star:
-                return .double(leftNumber * rightNumber)
-            case .slash:
-                return .double(leftNumber / rightNumber)
-            case .greater:
-                return .boolean(leftNumber > rightNumber)
-            case .greaterEqual:
-                return .boolean(leftNumber >= rightNumber)
-            case .less:
-                return .boolean(leftNumber < rightNumber)
-            case .lessEqual:
-                return .boolean(leftNumber <= rightNumber)
+                return .string(leftString + rightString)
             default:
                 break
             }
-        case (.double(let leftNumber), .int(let rightNumber)):
-            let rightNumber = Double(rightNumber)
+        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
             switch oper.type {
             case .plus:
-                return .double(leftNumber + rightNumber)
-            case .minus:
-                return .double(leftNumber - rightNumber)
-            case .star:
-                return .double(leftNumber * rightNumber)
-            case .slash:
-                return .double(leftNumber / rightNumber)
-            case .greater:
-                return .boolean(leftNumber > rightNumber)
-            case .greaterEqual:
-                return .boolean(leftNumber >= rightNumber)
-            case .less:
-                return .boolean(leftNumber < rightNumber)
-            case .lessEqual:
-                return .boolean(leftNumber <= rightNumber)
+                let newElements = leftList.elements + rightList.elements
+                return try makeList(elements: newElements)
             default:
                 break
             }
         default:
             break
-        }
-
-        if case .string(let leftString) = leftValue,
-           case .string(let rightString) = rightValue,
-           case .plus = oper.type {
-            return .string(leftString + rightString)
-        }
-
-        if case .instance(let leftList as LoxList) = leftValue,
-           case .instance(let rightList as LoxList) = rightValue,
-           case .plus = oper.type {
-            let newElements = leftList.elements + rightList.elements
-            return try makeList(elements: newElements)
         }
 
         switch oper.type {

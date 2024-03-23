@@ -521,12 +521,12 @@ xyzzy
         }
         let actual = list.elements
         let expected: [LoxValue] = [
-            .number(1),
-            .number(2),
-            .number(3),
-            .number(4),
-            .number(5),
-            .number(6),
+            .int(1),
+            .int(2),
+            .int(3),
+            .int(4),
+            .int(5),
+            .int(6),
         ]
         XCTAssertEqual(actual, expected)
     }

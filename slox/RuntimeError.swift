@@ -18,6 +18,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notACallableObject
     case notAnInstance
     case notAList
+    case notANumber
     case onlyInstancesHaveProperties
     case undefinedProperty(String)
     case wrongArity(Int, Int)
@@ -48,6 +49,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected an instance"
         case .notAList:
             return "Error: expected a list"
+        case .notANumber:
+            return "Error: expected a number"
         case .onlyInstancesHaveProperties:
             return "Error: can only get/set properties of instances"
         case .undefinedProperty(let name):
