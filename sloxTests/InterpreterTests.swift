@@ -479,6 +479,29 @@ quux.count
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretAddingTwoLists() throws {
+        let input = """
+var xyzzy = [1, 2, 3] + [4, 5, 6];
+xyzzy
+"""
+
+        let interpreter = Interpreter()
+        guard case .instance(let list as LoxList) = try interpreter.interpretRepl(source: input) else {
+            XCTFail()
+            return
+        }
+        let actual = list.elements
+        let expected: [LoxValue] = [
+            .number(1),
+            .number(2),
+            .number(3),
+            .number(4),
+            .number(5),
+            .number(6),
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretExpressionWithListSubscriptingMethodInvocationAndPropertyGetting() throws {
         let input = """
 class Foo { }

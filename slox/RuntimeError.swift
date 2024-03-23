@@ -11,7 +11,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case unaryOperandMustBeNumber
     case unsupportedUnaryOperator
     case binaryOperandsMustBeNumbers
-    case binaryOperandsMustBeNumbersOrStrings
+    case binaryOperandsMustBeNumbersOrStringsOrLists
     case unsupportedBinaryOperator
     case undefinedVariable(String)
     case notAFunctionDeclaration
@@ -34,8 +34,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: unsupported unary operator"
         case .binaryOperandsMustBeNumbers:
             return "Error: operands must be both numbers"
-        case .binaryOperandsMustBeNumbersOrStrings:
-            return "Error: operands must be either both numbers or both strings"
+        case .binaryOperandsMustBeNumbersOrStringsOrLists:
+            return "Error: operands must be either both numbers, strings, or lists"
         case .unsupportedBinaryOperator:
             return "Error: unsupported binary operator"
         case .undefinedVariable(let name):
