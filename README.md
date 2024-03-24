@@ -4,7 +4,7 @@ I've had the book, "Crafting Interpreters", for a while and went through the fir
 
 # Quick start
 
-Checkout the project using git. Then open it up using Xcode and run the project. That should start up a REPL within Xcode itself in the bottom right of the IDE. You should be able to enter in expressions and see their effects/results in the REPL.
+Checkout the project using git. Then open it up using Xcode and run the project by hitting ⌘-R. That should start up a REPL within Xcode itself, in the bottom right of the IDE. You should be able to enter expressions and see their effects/results in the REPL.
 
 <img src="./images/repl.png" />
 
@@ -20,7 +20,7 @@ So far, the following have been implemented in `slox`:
 - Function declaration and invocation
 - Lambda expressions
 - Class declaration and instantiation
-- Instance properties and methods
+- Instance-level properties and methods
 - Referencing the scoped instance via `this`
 - Class-level properties and methods
 - Single inheritance
@@ -31,16 +31,16 @@ So far, the following have been implemented in `slox`:
 
 # Design
 
-Most of the design of `slox` is very similar to the one in the book. There are four phases involved in the execution of code in `slox`:
+Most of the design of `slox` is fairly similar to the one in the book. There are four phases involved in the execution of code in `slox`:
 
 - scanning for tokens
 - parsing of tokens into statements and expressions
 - resolving of variables from parsed code
 - interpreting of resolved statements 
 
-Both the REPL and file runner instantiate the scanner, parser, resolver, and interpreter in succession, each feeding their results to the next, and eventually printing the output of the interpreter.
+However, unlike how they are implemented in the book, the REPL and file runner instantiate just the interpreter, passing in code to be executed; it is the interpreter that instantiates and runs each of the scanner, parser, resolver in succession, each feeding their results to the next. The interpreter also reads in a small standard library defined in a string; at this point, only a class declaration for a `List` class and some associated methods are defined in it.
 
-Nonetheless, there are a few differences between this implementation and that in the book.
+There are a few other differences between this implementation and that in the book which are described below.
 
 ### Enums instead of class hierarchies
 
