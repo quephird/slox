@@ -28,7 +28,7 @@ class LoxInstance: Equatable {
     /// - Parameter klass: The class this instance belongs to.
     /// Use `nil` if this instance *is* a class; the `klass` property
     /// will then instantiate a metaclass for it on demand.
-    init(klass: LoxClass?) {
+    required init(klass: LoxClass?) {
         self._klass = klass
     }
 

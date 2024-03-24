@@ -11,8 +11,13 @@ class LoxList: LoxInstance {
         return elements.count
     }
 
-    init(elements: [LoxValue], klass: LoxClass) {
+    convenience init(elements: [LoxValue], klass: LoxClass) {
+        self.init(klass: klass)
         self.elements = elements
+    }
+
+    required init(klass: LoxClass?) {
+        self.elements = []
         super.init(klass: klass)
     }
 

@@ -16,13 +16,28 @@ class LoxClass: LoxInstance, LoxCallable {
         return 0
     }
     var methods: [String: UserDefinedFunction]
+    var instanceType: LoxInstance.Type {
+        if self.name == "List" {
+            LoxList.self
+        } else {
+            LoxInstance.self
+        }
+    }
 
-    init(name: String, superclass: LoxClass?, methods: [String: UserDefinedFunction]) {
+    convenience init(name: String, superclass: LoxClass?, methods: [String: UserDefinedFunction]) {
+        self.init(klass: nil)
+
         self.name = name
         self.superclass = superclass
         self.methods = methods
+    }
 
-        super.init(klass: nil)
+    required init(klass: LoxClass?) {
+        self.name = "(anonymous)"
+        self.superclass = nil
+        self.methods = [:]
+
+        super.init(klass: klass)
     }
 
     static func == (lhs: LoxClass, rhs: LoxClass) -> Bool {
@@ -38,7 +53,7 @@ class LoxClass: LoxInstance, LoxCallable {
     }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
-        let newInstance = LoxInstance(klass: self)
+        let newInstance = instanceType.init(klass: self)
 
         if let initializer = methods["init"] {
             let boundInit = initializer.bind(instance: newInstance)
