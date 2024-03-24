@@ -579,6 +579,52 @@ foo.count
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretMappingOverAList() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo.map(fun(n) { return n*n; })
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeList(elements: [
+            .int(1),
+            .int(4),
+            .int(9),
+            .int(16),
+            .int(25),
+        ])
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretFilteringAList() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo.filter(fun(n) { return n<=3; })
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeList(elements: [
+            .int(1),
+            .int(2),
+            .int(3),
+        ])
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretReducingOverAList() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo.reduce(0, fun(acc, n) { return acc+n; })
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(15)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretForLoopWithBreakStatement() throws {
         let input = """
 var sum = 0;
