@@ -20,6 +20,7 @@ enum TokenType: Equatable {
     case star
     case leftBracket
     case rightBracket
+    case modulus
 
     // One of two character tokens
     case bang
