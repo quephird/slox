@@ -40,10 +40,6 @@ class LoxClass: LoxInstance, LoxCallable {
         super.init(klass: klass)
     }
 
-    static func == (lhs: LoxClass, rhs: LoxClass) -> Bool {
-        return lhs === rhs
-    }
-
     func findMethod(name: String) -> UserDefinedFunction? {
         if let method = methods[name] {
             return method

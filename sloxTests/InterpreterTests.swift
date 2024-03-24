@@ -515,19 +515,15 @@ xyzzy
 """
 
         let interpreter = Interpreter()
-        guard case .instance(let list as LoxList) = try interpreter.interpretRepl(source: input) else {
-            XCTFail()
-            return
-        }
-        let actual = list.elements
-        let expected: [LoxValue] = [
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeList(elements: [
             .int(1),
             .int(2),
             .int(3),
             .int(4),
             .int(5),
             .int(6),
-        ]
+        ])
         XCTAssertEqual(actual, expected)
     }
 
@@ -538,12 +534,8 @@ foo
 """
 
         let interpreter = Interpreter()
-        guard case .instance(let list as LoxList) = try interpreter.interpretRepl(source: input) else {
-            XCTFail()
-            return
-        }
-        let actual = list.elements
-        let expected: [LoxValue] = []
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeList(elements: [])
         XCTAssertEqual(actual, expected)
     }
 

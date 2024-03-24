@@ -34,10 +34,6 @@ class LoxList: LoxInstance {
         throw RuntimeError.onlyInstancesHaveProperties
     }
 
-    static func == (lhs: LoxList, rhs: LoxList) -> Bool {
-        return lhs.elements == rhs.elements
-    }
-
     // TODO: Need to think about how to handle invalid indices!!!
     subscript(index: Int) -> LoxValue {
         get {

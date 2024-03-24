@@ -589,7 +589,7 @@ class Interpreter {
         return value
     }
 
-    private func makeList(elements: [LoxValue]) throws -> LoxValue {
+    func makeList(elements: [LoxValue]) throws -> LoxValue {
         guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
             fatalError()
         }
