@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 3/4/24.
 //
 
-class LoxInstance: Equatable {
+class LoxInstance {
     // `klass` is what is used in the interpreter when we need
     // to know the class of a particular instance. Every Lox
     // instance, including Lox classes, need to have a non-nil
@@ -28,7 +28,7 @@ class LoxInstance: Equatable {
     /// - Parameter klass: The class this instance belongs to.
     /// Use `nil` if this instance *is* a class; the `klass` property
     /// will then instantiate a metaclass for it on demand.
-    init(klass: LoxClass?) {
+    required init(klass: LoxClass?) {
         self._klass = klass
     }
 
@@ -47,9 +47,5 @@ class LoxInstance: Equatable {
 
     func set(propertyName: String, propertyValue: LoxValue) throws {
         self.properties[propertyName] = propertyValue
-    }
-
-    static func == (lhs: LoxInstance, rhs: LoxInstance) -> Bool {
-        return lhs === rhs
     }
 }

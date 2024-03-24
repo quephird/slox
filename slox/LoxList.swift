@@ -11,8 +11,13 @@ class LoxList: LoxInstance {
         return elements.count
     }
 
-    init(elements: [LoxValue], klass: LoxClass) {
+    convenience init(elements: [LoxValue], klass: LoxClass) {
+        self.init(klass: klass)
         self.elements = elements
+    }
+
+    required init(klass: LoxClass?) {
+        self.elements = []
         super.init(klass: klass)
     }
 
@@ -27,10 +32,6 @@ class LoxList: LoxInstance {
 
     override func set(propertyName: String, propertyValue: LoxValue) throws {
         throw RuntimeError.onlyInstancesHaveProperties
-    }
-
-    static func == (lhs: LoxList, rhs: LoxList) -> Bool {
-        return lhs.elements == rhs.elements
     }
 
     // TODO: Need to think about how to handle invalid indices!!!

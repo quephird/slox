@@ -66,7 +66,7 @@ enum LoxValue: CustomStringConvertible, Equatable {
         case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
             return leftBoolean == rightBoolean
         case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
-            return leftList == rightList
+            return leftList.elements == rightList.elements
         default:
             return false
         }
@@ -103,6 +103,28 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return number
         default:
             throw RuntimeError.notANumber
+        }
+    }
+
+    // NOTA BENE: This equality conformance is only for unit tests
+    static func == (lhs: LoxValue, rhs: LoxValue) -> Bool {
+        switch (lhs, rhs) {
+        case (.string(let lhsString), .string(let rhsString)):
+            return lhsString == rhsString
+        case (.int(let lhsNumber), .int(let rhsNumber)):
+            return lhsNumber == rhsNumber
+        case (.int, .double), (.double, .int), (.double, .double):
+            let leftNumber = try! lhs.convertToRawDouble()
+            let rightNumber = try! rhs.convertToRawDouble()
+            return leftNumber == rightNumber
+        case (.boolean(let lhsBoolean), .boolean(let rhsBoolean)):
+            return lhsBoolean == rhsBoolean
+        case (.nil, .nil):
+            return true
+        case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
+            return leftList.elements == rightList.elements
+        default:
+            return false
         }
     }
 }
