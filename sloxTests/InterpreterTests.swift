@@ -531,6 +531,22 @@ xyzzy
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretCreatingListFromConstructor() throws {
+        let input = """
+var foo = List();
+foo
+"""
+
+        let interpreter = Interpreter()
+        guard case .instance(let list as LoxList) = try interpreter.interpretRepl(source: input) else {
+            XCTFail()
+            return
+        }
+        let actual = list.elements
+        let expected: [LoxValue] = []
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretExpressionWithListSubscriptingMethodInvocationAndPropertyGetting() throws {
         let input = """
 class Foo { }
