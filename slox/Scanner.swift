@@ -84,6 +84,8 @@ struct Scanner {
             handleSingleCharacterLexeme(type: .star)
         case "%":
             handleSingleCharacterLexeme(type: .modulus)
+        case ":":
+            handleSingleCharacterLexeme(type: .colon)
         case "/":
             handleSlash()
 
