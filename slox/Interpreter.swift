@@ -395,6 +395,8 @@ class Interpreter {
                 return .int(leftNumber * rightNumber)
             case .slash:
                 return .int(leftNumber / rightNumber)
+            case .modulus:
+                return .int(leftNumber % rightNumber)
             case .greater:
                 return .boolean(leftNumber > rightNumber)
             case .greaterEqual:
