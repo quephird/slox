@@ -158,6 +158,27 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseFactorExpressionWithModulusOperator() throws {
+        let tokens: [Token] = [
+            Token(type: .int, lexeme: "5", line: 1),
+            Token(type: .modulus, lexeme: "%", line: 1),
+            Token(type: .int, lexeme: "3", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+        var parser = Parser(tokens: tokens)
+
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .binary(
+                    .literal(.int(5)),
+                    Token(type: .modulus, lexeme: "%", line: 1),
+                    .literal(.int(3))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
     func testParseTermExpression() throws {
         let tokens: [Token] = [
             Token(type: .string, lexeme: "\"forty-\"", line: 1),

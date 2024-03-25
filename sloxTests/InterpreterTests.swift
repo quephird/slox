@@ -74,6 +74,14 @@ final class InterpreterTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretBinaryExpressionInvolvingModulusOperator() throws {
+        let input = "8 % 3"
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)!
+        let expected: LoxValue = .int(2)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretStringlyBinaryExpression() throws {
         let input = "\"forty\" + \"-two\""
         let interpreter = Interpreter()

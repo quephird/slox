@@ -404,7 +404,7 @@ struct Parser {
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     //    term           → factor ( ( "-" | "+" ) factor )* ;
-    //    factor         → unary ( ( "/" | "*" ) unary )* ;
+    //    factor         → unary ( ( "/" | "*" | "%" ) unary )* ;
     //    unary          → ( "!" | "-" ) unary
     //                   | postfix ;
     //    postfix        → primary ( "(" arguments? ")" | "." IDENTIFIER | "[" logicOr "]" )* ;
@@ -503,7 +503,7 @@ struct Parser {
     mutating private func parseFactor() throws -> Expression {
         var expr = try parseUnary()
 
-        while currentTokenMatchesAny(types: [.slash, .star]) {
+        while currentTokenMatchesAny(types: [.slash, .star, .modulus]) {
             let oper = previousToken
             let rightExpr = try parseUnary()
             expr = .binary(expr, oper, rightExpr)
