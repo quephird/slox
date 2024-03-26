@@ -334,6 +334,8 @@ struct Resolver {
             return try handleSubscriptGet(listExpr: listExpr, indexExpr: indexExpr)
         case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
             return try handleSubscriptSet(listExpr: listExpr, indexExpr: indexExpr, valueExpr: valueExpr)
+        case .dictionary(let kvPairs):
+            return try handleDictionary(kvPairs: kvPairs)
         }
     }
 
@@ -486,6 +488,19 @@ struct Resolver {
 
         return .subscriptSet(resolvedListExpr, resolvedIndexExpr, resolvedValueExpr)
     }
+
+    mutating private func handleDictionary(kvPairs: [(Expression, Expression)]) throws -> ResolvedExpression {
+        var resolvedKVPairs: [(ResolvedExpression, ResolvedExpression)] = []
+
+        for (keyExpr, valueExpr) in kvPairs {
+            let resolvedKey = try resolve(expression: keyExpr)
+            let resolvedValue = try resolve(expression: valueExpr)
+            resolvedKVPairs.append((resolvedKey, resolvedValue))
+        }
+
+        return .dictionary(resolvedKVPairs)
+    }
+
 
     // Internal helpers
     mutating private func beginScope() {

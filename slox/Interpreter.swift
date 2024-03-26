@@ -45,6 +45,8 @@ class Interpreter {
                 return result;
             }
         }
+
+        class Dictionary {}
 """
     var environment: Environment = Environment()
 
@@ -350,11 +352,13 @@ class Interpreter {
         case .list(let elements):
             return try handleListExpression(elements: elements)
         case .subscriptGet(let listExpr, let indexExpr):
-            return try handleSubscriptGetExpression(listExpr: listExpr, indexExpr: indexExpr)
+            return try handleSubscriptGetExpression(collectionExpr: listExpr, indexExpr: indexExpr)
         case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
-            return try handleSubscriptSetExpression(listExpr: listExpr,
+            return try handleSubscriptSetExpression(collectionExpr: listExpr,
                                                     indexExpr: indexExpr,
                                                     valueExpr: valueExpr)
+        case .dictionary(let kvPairs):
+            return try handleDictionary(kvExprPairs: kvPairs)
         }
     }
 
@@ -595,34 +599,65 @@ class Interpreter {
         return try makeList(elements: elementValues)
     }
 
-    private func handleSubscriptGetExpression(listExpr: ResolvedExpression,
+    private func handleSubscriptGetExpression(collectionExpr: ResolvedExpression,
                                               indexExpr: ResolvedExpression) throws -> LoxValue {
-        guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
-            throw RuntimeError.notAList
-        }
+        let collection = try evaluate(expr: collectionExpr)
 
-        guard case .int(let index) = try evaluate(expr: indexExpr) else {
-            throw RuntimeError.indexMustBeAnInteger
-        }
+        switch collection {
+        case .instance(let list as LoxList):
+            guard case .int(let index) = try evaluate(expr: indexExpr) else {
+                throw RuntimeError.indexMustBeAnInteger
+            }
 
-        return list[Int(index)]
+            return list[Int(index)]
+        case .instance(let dictionary as LoxDictionary):
+            let key = try evaluate(expr: indexExpr)
+
+            return dictionary[key]
+        default:
+            throw RuntimeError.notAListOrDictionary
+        }
     }
 
-    private func handleSubscriptSetExpression(listExpr: ResolvedExpression,
+    private func handleSubscriptSetExpression(collectionExpr: ResolvedExpression,
                                               indexExpr: ResolvedExpression,
                                               valueExpr: ResolvedExpression) throws -> LoxValue {
-        guard case .instance(let list as LoxList) = try evaluate(expr: listExpr) else {
-            throw RuntimeError.notAList
-        }
-
-        guard case .int(let index) = try evaluate(expr: indexExpr) else {
-            throw RuntimeError.indexMustBeAnInteger
-        }
-
+        let collection = try evaluate(expr: collectionExpr)
         let value = try evaluate(expr: valueExpr)
 
-        list[Int(index)] = value
+        switch collection {
+        case .instance(let list as LoxList):
+            guard case .int(let index) = try evaluate(expr: indexExpr) else {
+                throw RuntimeError.indexMustBeAnInteger
+            }
+
+            list[Int(index)] = value
+        case .instance(let dictionary as LoxDictionary):
+            let key = try evaluate(expr: indexExpr)
+
+            dictionary[key] = value
+        default:
+            throw RuntimeError.notAListOrDictionary
+        }
+
         return value
+    }
+
+    private func handleDictionary(kvExprPairs: [(ResolvedExpression, ResolvedExpression)]) throws -> LoxValue {
+        var kvPairs: [LoxValue: LoxValue] = [:]
+
+        for (keyExpr, valueExpr) in kvExprPairs {
+            let key = try evaluate(expr: keyExpr)
+            let value = try evaluate(expr: valueExpr)
+            kvPairs[key] = value
+        }
+
+        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(name: "Dictionary") else {
+            fatalError()
+        }
+
+        let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
+        return .instance(dictionary)
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {

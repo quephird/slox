@@ -29,7 +29,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .double(Date().timeIntervalSince1970)
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                throw RuntimeError.notAListOrDictionary
             }
 
             let element = args[1]
@@ -38,7 +38,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .nil
         case .deleteAtNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                throw RuntimeError.notAListOrDictionary
             }
 
             guard case .int(let index) = args[1] else {

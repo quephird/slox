@@ -19,6 +19,8 @@ class LoxClass: LoxInstance, LoxCallable {
     var instanceType: LoxInstance.Type {
         if self.name == "List" {
             LoxList.self
+        } else if self.name == "Dictionary" {
+            LoxDictionary.self
         } else {
             LoxInstance.self
         }
