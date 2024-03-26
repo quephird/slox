@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/23/24.
 //
 
-enum LoxValue: CustomStringConvertible, Equatable {
+enum LoxValue: CustomStringConvertible, Equatable, Hashable {
     case string(String)
     case double(Double)
     case int(Int)
@@ -40,6 +40,17 @@ enum LoxValue: CustomStringConvertible, Equatable {
                     string.append(", ")
                 }
                 string.append("\(element)")
+            }
+            string.append("]")
+            return string
+        case .instance(let list as LoxDictionary):
+            var string = "["
+            for (i, kvPair) in list.kvPairs.enumerated() {
+                if i > 0 {
+                    string.append(", ")
+                }
+                let (key, value) = kvPair
+                string.append("\(key): \(value)")
             }
             string.append("]")
             return string
@@ -125,6 +136,37 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return leftList.elements == rightList.elements
         default:
             return false
+        }
+    }
+
+    // TODO: Check with Becca if this is even remotely sensible
+    func hash(into hasher: inout Hasher) {
+        switch self {
+        case .string(let string):
+            hasher.combine("string")
+            hasher.combine(string)
+        case .double(let double):
+            hasher.combine("double")
+            hasher.combine(double)
+        case .int(let int):
+            hasher.combine("int")
+            hasher.combine(int)
+        case .boolean(let boolean):
+            hasher.combine("boolean")
+            hasher.combine(boolean)
+        case .nil:
+            hasher.combine("nil")
+        case .userDefinedFunction(let userDefinedFunction):
+            hasher.combine("userDefinedFunction")
+            hasher.combine(userDefinedFunction.name)
+            hasher.combine(userDefinedFunction.params)
+        case .nativeFunction(let nativeFunction):
+            hasher.combine("nativeFunction")
+            hasher.combine(nativeFunction.hashValue)
+        case .instance(let instance):
+            hasher.combine("instance")
+            hasher.combine(instance.klass.name)
+            hasher.combine(instance.properties)
         }
     }
 }
