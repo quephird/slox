@@ -8,50 +8,6 @@
 import Foundation
 
 class Interpreter {
-    static let standardLibrary = """
-        class List {
-            append(element) {
-                appendNative(this, element);
-            }
-
-            deleteAt(index) {
-                return deleteAtNative(this, index);
-            }
-
-            map(fn) {
-                var result = [];
-                for (var i = 0; i < this.count; i = i + 1) {
-                    var newElement = fn(this[i]);
-                    result.append(newElement);
-                }
-                return result;
-            }
-
-            filter(fn) {
-                var result = [];
-                for (var i = 0; i < this.count; i = i + 1) {
-                    if (fn(this[i])) {
-                        result.append(this[i]);
-                    }
-                }
-                return result;
-            }
-
-            reduce(initial, fn) {
-                var result = initial;
-                for (var i = 0; i < this.count; i = i + 1) {
-                    result = fn(result, this[i]);
-                }
-                return result;
-            }
-        }
-
-        class Dictionary {
-            removeValue(key) {
-                return removeValueNative(this, key);
-            }
-        }
-"""
     var environment: Environment = Environment()
 
     init() {
@@ -74,7 +30,7 @@ class Interpreter {
                                value: .nativeFunction(nativeFunction))
         }
 
-        try! interpret(source: Self.standardLibrary)
+        try! interpret(source: standardLibrary)
     }
 
     func interpret(source: String) throws {
