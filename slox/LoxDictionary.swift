@@ -20,6 +20,8 @@ class LoxDictionary: LoxInstance {
 
     override func get(propertyName: String) throws -> LoxValue {
         switch propertyName {
+        case "count":
+            return .int(self.kvPairs.count)
         default:
             return try super.get(propertyName: propertyName)
         }
@@ -29,7 +31,6 @@ class LoxDictionary: LoxInstance {
         throw RuntimeError.onlyInstancesHaveProperties
     }
 
-    // TODO: Need to think about how to handle invalid indices!!!
     subscript(key: LoxValue) -> LoxValue {
         get {
             return kvPairs[key] ?? .nil

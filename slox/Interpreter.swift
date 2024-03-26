@@ -46,7 +46,11 @@ class Interpreter {
             }
         }
 
-        class Dictionary {}
+        class Dictionary {
+            removeValue(key) {
+                return removeValueNative(this, key);
+            }
+        }
 """
     var environment: Environment = Environment()
 
