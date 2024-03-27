@@ -21,6 +21,7 @@ enum TokenType: Equatable {
     case leftBracket
     case rightBracket
     case modulus
+    case colon
 
     // One of two character tokens
     case bang
