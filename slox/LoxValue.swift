@@ -45,12 +45,16 @@ enum LoxValue: CustomStringConvertible, Equatable, Hashable {
             return string
         case .instance(let list as LoxDictionary):
             var string = "["
-            for (i, kvPair) in list.kvPairs.enumerated() {
-                if i > 0 {
-                    string.append(", ")
+            if list.kvPairs.isEmpty {
+                string.append(":")
+            } else {
+                for (i, kvPair) in list.kvPairs.enumerated() {
+                    if i > 0 {
+                        string.append(", ")
+                    }
+                    let (key, value) = kvPair
+                    string.append("\(key): \(value)")
                 }
-                let (key, value) = kvPair
-                string.append("\(key): \(value)")
             }
             string.append("]")
             return string
