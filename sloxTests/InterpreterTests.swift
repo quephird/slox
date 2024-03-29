@@ -428,6 +428,27 @@ b.method()
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretAccessingComputedPropertyOfClass() throws {
+        let input = """
+class Circle {
+    init(radius) {
+        this.radius = radius;
+    }
+
+    area {
+        return 3.14159 * this.radius * this.radius;
+    }
+}
+var c = Circle(4);
+c.area
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .double(50.26544)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretAccessingElementOfList() throws {
         let input = """
 var foo = [1, 2, 3, 4, 5];

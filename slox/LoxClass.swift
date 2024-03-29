@@ -10,7 +10,7 @@ class LoxClass: LoxInstance, LoxCallable {
     var superclass: LoxClass?
     var arity: Int {
         if let initializer = methods["init"] {
-            return initializer.params.count
+            return initializer.arity
         }
 
         return 0

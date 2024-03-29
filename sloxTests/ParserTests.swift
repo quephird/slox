@@ -1191,6 +1191,70 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseClassWithComputedProperty() throws {
+        // class Circle {
+        //     area {
+        //         return 3.14159 * this.radius * this.radius;
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "Circle", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .identifier, lexeme: "area", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .return, lexeme: "return", line: 3),
+            Token(type: .double, lexeme: "3.14159", line: 3),
+            Token(type: .star, lexeme: "*", line: 3),
+            Token(type: .this, lexeme: "this", line: 3),
+            Token(type: .dot, lexeme: ".", line: 3),
+            Token(type: .identifier, lexeme: "radius", line: 3),
+            Token(type: .star, lexeme: "*", line: 3),
+            Token(type: .this, lexeme: "this", line: 3),
+            Token(type: .dot, lexeme: ".", line: 3),
+            Token(type: .identifier, lexeme: "radius", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .rightBrace, lexeme: "}", line: 5),
+            Token(type: .eof, lexeme: "", line: 5),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .class(
+                Token(type: .identifier, lexeme: "Circle", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "area", line: 2),
+                        .lambda(
+                            nil,
+                            [
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 3),
+                                    .binary(
+                                        .binary(
+                                            .literal(.double(3.14159)),
+                                            Token(type: .star, lexeme: "*", line: 3),
+                                            .get(
+                                                .this(Token(type: .this, lexeme: "this", line: 3)),
+                                                Token(type: .identifier, lexeme: "radius", line: 3))),
+                                        Token(type: .star, lexeme: "*", line: 3),
+                                        .get(
+                                            .this(Token(type: .this, lexeme: "this", line: 3)),
+                                            Token(type: .identifier, lexeme: "radius", line: 3)))),
+                            ]))
+                ],
+                [])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
     func testParseListOfValues() throws {
         // [1, "one", true]
         let tokens: [Token] = [

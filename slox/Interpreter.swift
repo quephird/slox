@@ -532,7 +532,14 @@ class Interpreter {
             throw RuntimeError.onlyInstancesHaveProperties
         }
 
-        return try instance.get(propertyName: propertyNameToken.lexeme)
+        let property = try instance.get(propertyName: propertyNameToken.lexeme)
+
+        if case .userDefinedFunction(let userDefinedFunction) = property,
+           userDefinedFunction.isComputedProperty {
+            return try userDefinedFunction.call(interpreter: self, args: [])
+        }
+
+        return property
     }
 
     private func handleSetExpression(instanceExpr: ResolvedExpression,
@@ -552,7 +559,7 @@ class Interpreter {
         return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
     }
 
-    private func handleLambdaExpression(params: [Token], statements: [ResolvedStatement]) throws -> LoxValue {
+    private func handleLambdaExpression(params: [Token]?, statements: [ResolvedStatement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
         let function = UserDefinedFunction(name: "lambda",

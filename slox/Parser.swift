@@ -138,12 +138,12 @@ struct Parser {
             throw ParseError.missingFunctionName(currentToken)
         }
 
-        if !currentTokenMatchesAny(types: [.leftParen]) {
-            throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
-        }
-        let parameters = try parseParameters()
-        if !currentTokenMatchesAny(types: [.rightParen]) {
-            throw ParseError.missingCloseParenAfterArguments(currentToken)
+        var parameters: [Token]? = nil
+        if currentTokenMatchesAny(types: [.leftParen]) {
+            parameters = try parseParameters()
+            if !currentTokenMatchesAny(types: [.rightParen]) {
+                throw ParseError.missingCloseParenAfterArguments(currentToken)
+            }
         }
 
         guard let functionBody = try parseBlock() else {
