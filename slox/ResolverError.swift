@@ -20,6 +20,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case cannotReferenceSuperWithoutSubclassing
     case cannotBreakOutsideLoop
     case cannotContinueOutsideLoop
+    case functionsMustHaveAParameterList
 
     var description: String {
         switch self {
@@ -47,6 +48,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Can only `break` from inside a `while` or `for` loop"
         case .cannotContinueOutsideLoop:
             return "Can only `continue` from inside a `while` or `for` loop"
+        case .functionsMustHaveAParameterList:
+            return "Functions must have a parameter list"
         }
     }
 }

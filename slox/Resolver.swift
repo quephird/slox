@@ -437,6 +437,8 @@ struct Resolver {
                 try declareVariable(name: param.lexeme)
                 defineVariable(name: param.lexeme)
             }
+        } else if currentClassType == .none {
+            throw ResolverError.functionsMustHaveAParameterList
         }
 
         let resolvedStatements = try statements.map { statement in

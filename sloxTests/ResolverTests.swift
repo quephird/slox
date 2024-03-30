@@ -94,6 +94,29 @@ final class ResolverTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testResolveFunctionDeclarationWithoutParameterList() throws {
+        // fun answer {
+        //     return 42;
+        // }
+        let statements: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "answer", line: 1),
+                .lambda(
+                    nil,
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .literal(.int(42)))
+                    ])),
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.functionsMustHaveAParameterList
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
     func testResolveVariableExpressionInDeeplyNestedBlock() throws {
         // var becca; {{{ becca = "awesome"; }}}
         let statements: [Statement] = [
