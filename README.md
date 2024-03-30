@@ -28,6 +28,7 @@ So far, the following have been implemented in `slox`:
 - List literals using square brackets
 - Native functions for lists, `append()` and `deleteAt()`
 - `break` and `continue` for flow control within loops
+- Computed properties (inside classes, not at the top-level)
 
 # Design
 
@@ -38,7 +39,7 @@ Most of the design of `slox` is fairly similar to the one in the book. There are
 - resolving of variables from parsed code
 - interpreting of resolved statements 
 
-However, unlike how they are implemented in the book, the REPL and file runner instantiate just the interpreter, passing in code to be executed; it is the interpreter that instantiates and runs each of the scanner, parser, resolver in succession, each feeding their results to the next. The interpreter also reads in a small standard library defined in a string; at this point, only a class declaration for a `List` class and some associated methods are defined in it.
+However, unlike how they are implemented in the book, the REPL and file runner instantiate just the interpreter, passing in code to be executed; it is the interpreter that instantiates and runs the scanner, parser, resolver in succession, each feeding their results to the next. The interpreter also reads in a small standard library defined in a string; at this point, only a class declaration for a `List` class and some associated methods are defined in it.
 
 There are a few other differences between this implementation and that in the book which are described below.
 
