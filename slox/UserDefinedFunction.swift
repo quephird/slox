@@ -7,19 +7,28 @@
 
 struct UserDefinedFunction: LoxCallable, Equatable {
     var name: String
-    var params: [Token]
-    var arity: Int {
-        return params.count
-    }
+    var params: [Token]?
     var enclosingEnvironment: Environment
     var body: [ResolvedStatement]
     var isInitializer: Bool
+    var arity: Int {
+        if let params {
+            return params.count
+        } else {
+            return 0
+        }
+    }
+    var isComputedProperty: Bool {
+        return params == nil
+    }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         let newEnvironment = Environment(enclosingEnvironment: enclosingEnvironment)
 
-        for (i, arg) in args.enumerated() {
-            newEnvironment.define(name: params[i].lexeme, value: arg)
+        if let params {
+            for (i, arg) in args.enumerated() {
+                newEnvironment.define(name: params[i].lexeme, value: arg)
+            }
         }
 
         do {

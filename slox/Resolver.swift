@@ -418,7 +418,7 @@ struct Resolver {
         return .logical(resolvedLeftExpr, operToken, resolvedRightExpr)
     }
 
-    mutating private func handleLambda(params: [Token],
+    mutating private func handleLambda(params: [Token]?,
                                        statements: [Statement],
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
@@ -432,9 +432,13 @@ struct Resolver {
             currentLoopType = previousLoopType
         }
 
-        for param in params {
-            try declareVariable(name: param.lexeme)
-            defineVariable(name: param.lexeme)
+        if let params {
+            for param in params {
+                try declareVariable(name: param.lexeme)
+                defineVariable(name: param.lexeme)
+            }
+        } else if currentClassType == .none {
+            throw ResolverError.functionsMustHaveAParameterList
         }
 
         let resolvedStatements = try statements.map { statement in
