@@ -666,13 +666,6 @@ struct Parser {
             return nil
         }
 
-        // [ ]
-        // [ :]
-        // [ "a"]
-        // [ "a" : 1]
-        // [ "a", "b"]
-        // [ "a" : 1, "b" : 2]
-
         if currentTokenMatchesAny(types: [.rightBracket]) {
             return .list([])
         }
