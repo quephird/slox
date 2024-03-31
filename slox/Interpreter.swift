@@ -628,4 +628,13 @@ class Interpreter {
         let list = LoxList(elements: elements, klass: listClass)
         return .instance(list)
     }
+
+    func makeDictionary(kvPairs: [LoxValue: LoxValue]) throws -> LoxValue {
+        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(name: "Dictionary") else {
+            fatalError()
+        }
+
+        let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
+        return .instance(dictionary)
+    }
 }

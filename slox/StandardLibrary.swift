@@ -55,5 +55,14 @@ class Dictionary {
     removeValue(key) {
         return removeValueNative(this, key);
     }
+
+    merge(other) {
+        var otherKeys = other.keys;
+        for (var i = 0; i < otherKeys.count; i = i + 1) {
+            var otherKey = otherKeys[i];
+            var otherValue = other[otherKey];
+            this[otherKey] = otherValue;
+        }
+    }
 }
 """
