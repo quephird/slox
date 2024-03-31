@@ -12,6 +12,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case appendNative
     case deleteAtNative
     case removeValueNative
+    case keysNative
+    case valuesNative
 
     var arity: Int {
         switch self {
@@ -23,6 +25,10 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return 2
         case .removeValueNative:
             return 2
+        case .keysNative:
+            return 1
+        case .valuesNative:
+            return 1
         }
     }
 
@@ -57,6 +63,22 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             let key = args[1]
 
             return loxDictionary.kvPairs.removeValue(forKey: key) ?? .nil
+        case .keysNative:
+            guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
+                throw RuntimeError.notAListOrDictionary
+            }
+
+            let keys = Array(loxDictionary.kvPairs.keys)
+
+            return try! interpreter.makeList(elements: keys)
+        case .valuesNative:
+            guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
+                throw RuntimeError.notAListOrDictionary
+            }
+
+            let values = Array(loxDictionary.kvPairs.values)
+
+            return try! interpreter.makeList(elements: values)
         }
     }
 }

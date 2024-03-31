@@ -44,6 +44,14 @@ class List {
 }
 
 class Dictionary {
+    keys {
+        return keysNative(this);
+    }
+
+    values {
+        return valuesNative(this);
+    }
+
     removeValue(key) {
         return removeValueNative(this, key);
     }
