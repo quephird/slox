@@ -38,7 +38,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .double(Date().timeIntervalSince1970)
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAListOrDictionary
+                throw RuntimeError.notAList
             }
 
             let element = args[1]
@@ -47,7 +47,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .nil
         case .deleteAtNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAListOrDictionary
+                throw RuntimeError.notAList
             }
 
             guard case .int(let index) = args[1] else {
@@ -57,7 +57,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return loxList.elements.remove(at: Int(index))
         case .removeValueNative:
             guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
-                throw RuntimeError.notAListOrDictionary
+                throw RuntimeError.notADictionary
             }
 
             let key = args[1]
@@ -65,7 +65,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return loxDictionary.kvPairs.removeValue(forKey: key) ?? .nil
         case .keysNative:
             guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
-                throw RuntimeError.notAListOrDictionary
+                throw RuntimeError.notADictionary
             }
 
             let keys = Array(loxDictionary.kvPairs.keys)
@@ -73,7 +73,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return try! interpreter.makeList(elements: keys)
         case .valuesNative:
             guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
-                throw RuntimeError.notAListOrDictionary
+                throw RuntimeError.notADictionary
             }
 
             let values = Array(loxDictionary.kvPairs.values)

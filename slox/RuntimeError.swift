@@ -17,6 +17,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notAFunctionDeclaration
     case notACallableObject
     case notAnInstance
+    case notAList
+    case notADictionary
     case notAListOrDictionary
     case notANumber
     case onlyInstancesHaveProperties
@@ -47,6 +49,10 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected a callable object"
         case .notAnInstance:
             return "Error: expected an instance"
+        case .notAList:
+            return "Error: expected a list"
+        case .notADictionary:
+            return "Error: expected a dictionary"
         case .notAListOrDictionary:
             return "Error: expected a list or dictionary"
         case .notANumber:
