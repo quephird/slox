@@ -29,6 +29,9 @@ So far, the following have been implemented in `slox`:
 - Native functions for lists, `append()` and `deleteAt()`
 - `break` and `continue` for flow control within loops
 - Computed properties (inside classes, not at the top-level)
+- Dictionary literals using square brackets and colons
+- Native properties for dictionaries, `keys` and `values`
+- Native functions for dictionaries, `merge()` and `removeValue()`
 
 # Design
 
