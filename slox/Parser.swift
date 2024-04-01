@@ -432,6 +432,8 @@ struct Parser {
                 return .assignment(name, valueExpr)
             } else if case .get(let instanceExpr, let propertyNameToken) = expr {
                 return .set(instanceExpr, propertyNameToken, valueExpr)
+            } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
+                return .subscriptSet(listExpr, indexExpr, valueExpr)
             }
 
             throw ParseError.invalidAssignmentTarget(equalToken)
@@ -582,11 +584,6 @@ struct Parser {
 
         guard currentTokenMatchesAny(types: [.rightBracket]) else {
             throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
-        }
-
-        if currentTokenMatchesAny(types: [.equal]) {
-            let valueExpr = try parseExpression()
-            return .subscriptSet(expr, indexExpr, valueExpr)
         }
 
         return .subscriptGet(expr, indexExpr)
