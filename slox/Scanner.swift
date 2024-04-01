@@ -74,14 +74,8 @@ struct Scanner {
             handleSingleCharacterLexeme(type: .comma)
         case ".":
             handleSingleCharacterLexeme(type: .dot)
-        case "-":
-            handleSingleCharacterLexeme(type: .minus)
-        case "+":
-            handleSingleCharacterLexeme(type: .plus)
         case ";":
             handleSingleCharacterLexeme(type: .semicolon)
-        case "*":
-            handleSingleCharacterLexeme(type: .star)
         case "%":
             handleSingleCharacterLexeme(type: .modulus)
         case ":":
@@ -98,6 +92,12 @@ struct Scanner {
             handleOneOrTwoCharacterLexeme(oneCharLexeme: .less, twoCharLexeme: .lessEqual)
         case ">":
             handleOneOrTwoCharacterLexeme(oneCharLexeme: .greater, twoCharLexeme: .greaterEqual)
+        case "-":
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .minus, twoCharLexeme: .minusEqual)
+        case "+":
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .plus, twoCharLexeme: .plusEqual)
+        case "*":
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .star, twoCharLexeme: .starEqual)
 
         // Whitespace
         case " ", "\r", "\t":
@@ -133,7 +133,7 @@ struct Scanner {
                 advanceCursor()
             }
         } else {
-            addToken(type: .slash)
+            handleOneOrTwoCharacterLexeme(oneCharLexeme: .slash, twoCharLexeme: .slashEqual)
         }
     }
 

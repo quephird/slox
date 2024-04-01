@@ -13,17 +13,13 @@ enum TokenType: Equatable {
     case rightBrace
     case comma
     case dot
-    case minus
-    case plus
     case semicolon
-    case slash
-    case star
     case leftBracket
     case rightBracket
     case modulus
     case colon
 
-    // One of two character tokens
+    // One or two character tokens
     case bang
     case bangEqual
     case equal
@@ -32,6 +28,14 @@ enum TokenType: Equatable {
     case greaterEqual
     case less
     case lessEqual
+    case minus
+    case minusEqual
+    case plus
+    case plusEqual
+    case slash
+    case slashEqual
+    case star
+    case starEqual
 
     // Literals
     case identifier
