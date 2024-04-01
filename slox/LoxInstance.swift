@@ -5,8 +5,6 @@
 //  Created by Danielle Kefford on 3/4/24.
 //
 
-import Foundation
-
 class LoxInstance {
     // `klass` is what is used in the interpreter when we need
     // to know the class of a particular instance. Every Lox
@@ -26,14 +24,12 @@ class LoxInstance {
         return _klass!
     }
     var properties: [String: LoxValue] = [:]
-    var objectId: UUID
 
     /// - Parameter klass: The class this instance belongs to.
     /// Use `nil` if this instance *is* a class; the `klass` property
     /// will then instantiate a metaclass for it on demand.
     required init(klass: LoxClass?) {
         self._klass = klass
-        self.objectId = UUID()
     }
 
     func get(propertyName: String) throws -> LoxValue {

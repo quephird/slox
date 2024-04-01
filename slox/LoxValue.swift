@@ -144,7 +144,7 @@ enum LoxValue: CustomStringConvertible, Equatable, Hashable {
         case (.instance(let leftDict as LoxDictionary), .instance(let rightDict as LoxDictionary)):
             return leftDict.kvPairs == rightDict.kvPairs
         case (.instance(let leftInstance), .instance(let rightInstance)):
-            return leftInstance.objectId == rightInstance.objectId
+            return leftInstance === rightInstance
         default:
             return false
         }
@@ -170,7 +170,7 @@ enum LoxValue: CustomStringConvertible, Equatable, Hashable {
         case .nativeFunction(let nativeFunction):
             hasher.combine(nativeFunction)
         case .instance(let instance):
-            hasher.combine(instance.objectId)
+            hasher.combine(ObjectIdentifier(instance))
         }
     }
 }
