@@ -397,7 +397,7 @@ struct Parser {
     // in _ascending_ order:
     //
     //    expression     → assignment ;
-    //    assignment     → ( call "." )? IDENTIFIER "=" assignment
+    //    assignment     → ( call "." )? IDENTIFIER ( "=" | "+=" | "-=" | "*=" | "/=" ) assignment
     //                   | logicOr ;
     //    logicOr        → logicAnd ( "or" logicAnd )* ;
     //    logicAnd       → equality ( "and" equality )* ;
@@ -424,22 +424,42 @@ struct Parser {
     mutating private func parseAssignment() throws -> Expression {
         let expr = try parseLogicOr()
 
-        if currentTokenMatchesAny(types: [.equal]) {
-            let equalToken = previousToken
-            let valueExpr = try parseAssignment()
-
-            if case .variable(let name) = expr {
-                return .assignment(name, valueExpr)
-            } else if case .get(let instanceExpr, let propertyNameToken) = expr {
-                return .set(instanceExpr, propertyNameToken, valueExpr)
-            } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
-                return .subscriptSet(listExpr, indexExpr, valueExpr)
-            }
-
-            throw ParseError.invalidAssignmentTarget(equalToken)
+        guard currentTokenMatchesAny(types: [.equal, .plusEqual, .minusEqual, .starEqual, .slashEqual]) else {
+            return expr
         }
 
-        return expr
+        let assignmentOperToken = previousToken
+        let newAssignmentOperToken: Token? = switch assignmentOperToken.type {
+        case .plusEqual:
+            Token(type: .plus, lexeme: "+", line: previousToken.line)
+        case .minusEqual:
+            Token(type: .minus, lexeme: "-", line: previousToken.line)
+        case .starEqual:
+            Token(type: .star, lexeme: "*", line: previousToken.line)
+        case .slashEqual:
+            Token(type: .slash, lexeme: "/", line: previousToken.line)
+        case .equal:
+            nil
+        default:
+            fatalError()
+        }
+
+        let valueExpr = try parseAssignment()
+        let newValueExpr = if let newAssignmentOperToken {
+            Expression.binary(expr, newAssignmentOperToken, valueExpr)
+        } else {
+            valueExpr
+        }
+
+        if case .variable(let name) = expr {
+            return .assignment(name, newValueExpr)
+        } else if case .get(let instanceExpr, let propertyNameToken) = expr {
+            return .set(instanceExpr, propertyNameToken, newValueExpr)
+        } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
+            return .subscriptSet(listExpr, indexExpr, newValueExpr)
+        }
+
+        throw ParseError.invalidAssignmentTarget(assignmentOperToken)
     }
 
     mutating private func parseLogicOr() throws -> Expression {
