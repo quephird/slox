@@ -5,6 +5,8 @@
 //  Created by Danielle Kefford on 2/29/24.
 //
 
+import Foundation
+
 struct UserDefinedFunction: LoxCallable, Equatable {
     var name: String
     var params: [Token]?
@@ -20,6 +22,20 @@ struct UserDefinedFunction: LoxCallable, Equatable {
     }
     var isComputedProperty: Bool {
         return params == nil
+    }
+    var objectId: UUID
+
+    init(name: String,
+         params: [Token]?,
+         enclosingEnvironment: Environment,
+         body: [ResolvedStatement],
+         isInitializer: Bool) {
+        self.name = name
+        self.params = params
+        self.enclosingEnvironment = enclosingEnvironment
+        self.body = body
+        self.isInitializer = isInitializer
+        self.objectId = UUID()
     }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {

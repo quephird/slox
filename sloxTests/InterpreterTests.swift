@@ -775,4 +775,62 @@ sum
         let expected: LoxValue = .int(4)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretGettingKeysFromDictionary() throws {
+        let input = """
+var foo = ["a": 1, "b": 2, "c": 3];
+foo.keys
+"""
+
+        let interpreter = Interpreter()
+        guard case .instance(let list as LoxList) = try interpreter.interpretRepl(source: input) else {
+            XCTFail()
+            return
+        }
+        let actualSet = Set(list.elements)
+        let expectedSet = [
+            .string("a"),
+            .string("b"),
+            .string("c"),
+        ] as Set<LoxValue>
+        XCTAssertEqual(actualSet, expectedSet)
+    }
+
+    func testInterpretGettingValuesFromDictionary() throws {
+        let input = """
+var foo = ["a": 1, "b": 2, "c": 3];
+foo.values
+"""
+
+        let interpreter = Interpreter()
+        guard case .instance(let list as LoxList) = try interpreter.interpretRepl(source: input) else {
+            XCTFail()
+            return
+        }
+        let actualSet = Set(list.elements)
+        let expectedSet = [
+            .int(1),
+            .int(2),
+            .int(3),
+        ] as Set<LoxValue>
+        XCTAssertEqual(actualSet, expectedSet)
+    }
+
+    func testInterpretMergingTwoDictionaries() throws {
+        let input = """
+var foo = ["a": 1, "b": 1];
+var bar = ["b": 2, "c": 3];
+foo.merge(bar);
+foo
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeDictionary(kvPairs: [
+            .string("a"): .int(1),
+            .string("b"): .int(2),
+            .string("c"): .int(3),
+        ])
+        XCTAssertEqual(actual, expected)
+    }
 }

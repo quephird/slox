@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/23/24.
 //
 
-enum LoxValue: CustomStringConvertible, Equatable {
+enum LoxValue: CustomStringConvertible, Equatable, Hashable {
     case string(String)
     case double(Double)
     case int(Int)
@@ -40,6 +40,21 @@ enum LoxValue: CustomStringConvertible, Equatable {
                     string.append(", ")
                 }
                 string.append("\(element)")
+            }
+            string.append("]")
+            return string
+        case .instance(let list as LoxDictionary):
+            var string = "["
+            if list.kvPairs.isEmpty {
+                string.append(":")
+            } else {
+                for (i, kvPair) in list.kvPairs.enumerated() {
+                    if i > 0 {
+                        string.append(", ")
+                    }
+                    let (key, value) = kvPair
+                    string.append("\(key): \(value)")
+                }
             }
             string.append("]")
             return string
@@ -106,7 +121,6 @@ enum LoxValue: CustomStringConvertible, Equatable {
         }
     }
 
-    // NOTA BENE: This equality conformance is only for unit tests
     static func == (lhs: LoxValue, rhs: LoxValue) -> Bool {
         switch (lhs, rhs) {
         case (.string(let lhsString), .string(let rhsString)):
@@ -121,10 +135,42 @@ enum LoxValue: CustomStringConvertible, Equatable {
             return lhsBoolean == rhsBoolean
         case (.nil, .nil):
             return true
+        case (.userDefinedFunction(let leftFunc), .userDefinedFunction(let rightFunc)):
+            return leftFunc.objectId == rightFunc.objectId
+        case (.nativeFunction(let leftFunc), .nativeFunction(let rightFunc)):
+            return leftFunc == rightFunc
         case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
             return leftList.elements == rightList.elements
+        case (.instance(let leftDict as LoxDictionary), .instance(let rightDict as LoxDictionary)):
+            return leftDict.kvPairs == rightDict.kvPairs
+        case (.instance(let leftInstance), .instance(let rightInstance)):
+            return leftInstance === rightInstance
         default:
             return false
+        }
+    }
+
+    // TODO: Check with Becca if this is even remotely sensible
+    // especially with the function and instance cases, as they
+    // don't make much sense as candidates for keys
+    func hash(into hasher: inout Hasher) {
+        switch self {
+        case .string(let string):
+            hasher.combine(string)
+        case .double(let double):
+            hasher.combine(double)
+        case .int(let int):
+            hasher.combine(int)
+        case .boolean(let boolean):
+            hasher.combine(boolean)
+        case .nil:
+            break
+        case .userDefinedFunction(let userDefinedFunction):
+            hasher.combine(userDefinedFunction.objectId)
+        case .nativeFunction(let nativeFunction):
+            hasher.combine(nativeFunction)
+        case .instance(let instance):
+            hasher.combine(ObjectIdentifier(instance))
         }
     }
 }

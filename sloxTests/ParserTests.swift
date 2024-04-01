@@ -1318,4 +1318,76 @@ final class ParserTests: XCTestCase {
         ]
         XCTAssertEqual(actual, expected)
     }
+
+    func testParseAnEmptyDictionary() throws {
+        // [:]
+        let tokens: [Token] = [
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .colon, lexeme: ":", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
+            Token(type: .eof, lexeme: "", line: 1)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .dictionary([]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseADictionaryWithOneKeyValuePair() throws {
+        // ["a": 1]
+        let tokens: [Token] = [
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .string, lexeme: "\"a\"", line: 1),
+            Token(type: .colon, lexeme: ":", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
+            Token(type: .eof, lexeme: "", line: 1)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .dictionary([
+                    (.literal(.string("a")), .literal(.int(1))),
+                ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseADictionaryWithMultipleValuePairs() throws {
+        // ["a": 1, "b": 2, "c": 3]
+        let tokens: [Token] = [
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .string, lexeme: "\"a\"", line: 1),
+            Token(type: .colon, lexeme: ":", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .string, lexeme: "\"b\"", line: 1),
+            Token(type: .colon, lexeme: ":", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .string, lexeme: "\"c\"", line: 1),
+            Token(type: .colon, lexeme: ":", line: 1),
+            Token(type: .int, lexeme: "3", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
+            Token(type: .eof, lexeme: "", line: 1)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .dictionary([
+                    (.literal(.string("a")), .literal(.int(1))),
+                    (.literal(.string("b")), .literal(.int(2))),
+                    (.literal(.string("c")), .literal(.int(3))),
+                ]))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
 }

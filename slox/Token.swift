@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/22/24.
 //
 
-struct Token: CustomStringConvertible, Equatable {
+struct Token: CustomStringConvertible, Equatable, Hashable {
     let type: TokenType
     let lexeme: String
     let line: Int

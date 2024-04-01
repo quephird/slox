@@ -410,7 +410,7 @@ struct Parser {
     //    postfix        → primary ( "(" arguments? ")" | "." IDENTIFIER | "[" logicOr "]" )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                   | "(" expression ")"
-    //                   | "[" arguments? "]"
+    //                   | "[" ( arguments? | kvPairs? ) "]"
     //                   | "this"
     //                   | IDENTIFIER
     //                   | lambda
@@ -628,8 +628,8 @@ struct Parser {
             return groupingExpr
         }
 
-        if let listExpr = try parseListExpression() {
-            return listExpr
+        if let collectionExpr = try parseCollectionExpression() {
+            return collectionExpr
         }
 
         if let superExpr = try parseSuperExpression() {
@@ -661,17 +661,27 @@ struct Parser {
         return .grouping(expr)
     }
 
-    mutating private func parseListExpression() throws -> Expression? {
+    mutating private func parseCollectionExpression() throws -> Expression? {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
 
-        let elements = try parseArguments(endTokenType: .rightBracket)
-
-        guard currentTokenMatchesAny(types: [.rightBracket]) else {
-            throw ParseError.missingClosingBracket(previousToken)
+        if currentTokenMatchesAny(types: [.rightBracket]) {
+            return .list([])
         }
 
+        if currentTokenMatchesAny(types: [.colon]) && currentTokenMatchesAny(types: [.rightBracket]) {
+            return .dictionary([])
+        }
+
+        let firstExpr = try parseExpression()
+
+        if currentTokenMatchesAny(types: [.colon]) {
+            let kvPairs = try parseKeyValuePairs(firstKeyExpr: firstExpr)
+            return .dictionary(kvPairs)
+        }
+
+        let elements = try parseExpressionList(firstExpr: firstExpr)
         return .list(elements)
     }
 
@@ -716,6 +726,7 @@ struct Parser {
     //
     //    parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
     //    arguments      → expression ( "," expression )* ;
+    //    kvPairs        → ( expression ":" expression ) ( expression ":" expression )* ;
     //
     mutating private func parseParameters() throws -> [Token] {
         var parameters: [Token] = []
@@ -730,6 +741,41 @@ struct Parser {
         }
 
         return parameters
+    }
+
+    mutating private func parseExpressionList(firstExpr: Expression) throws -> [Expression] {
+        var exprs: [Expression] = [firstExpr]
+
+        while currentTokenMatchesAny(types: [.comma]) {
+            let expr = try parseExpression()
+            exprs.append(expr)
+        }
+
+        guard currentTokenMatchesAny(types: [.rightBracket]) else {
+            throw ParseError.missingClosingBracket(previousToken)
+        }
+
+        return exprs
+    }
+
+
+    mutating private func parseKeyValuePairs(firstKeyExpr: Expression) throws -> [(Expression, Expression)] {
+        let firstValueExpr = try parseExpression()
+
+        var kvPairs = [(firstKeyExpr, firstValueExpr)]
+
+        while currentTokenMatchesAny(types: [.comma]) {
+            let keyExpr = try parseExpression()
+            _ = consumeToken(type: .colon)
+            let valExpr = try parseExpression()
+            kvPairs.append((keyExpr, valExpr))
+        }
+
+        guard currentTokenMatchesAny(types: [.rightBracket]) else {
+            throw ParseError.missingClosingBracket(previousToken)
+        }
+
+        return kvPairs
     }
 
     mutating private func parseArguments(endTokenType: TokenType) throws -> [Expression] {
