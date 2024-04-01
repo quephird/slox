@@ -148,6 +148,19 @@ final class InterpreterTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretUsageOfCompoundAssignmentOperator() throws {
+        let input = """
+var foo = 2;
+foo += 40;
+foo
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretWhileStatementWithMutationOfVariable() throws {
         let input = """
 var i = 0;
@@ -284,6 +297,21 @@ person.name
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
         let expected: LoxValue = .string("Danielle")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretAssignmentOfNewValueToIinstanceProperty() throws {
+        let input = """
+class Universe {}
+var universe = Universe();
+universe.answer = 21;
+universe.answer *= 2;
+universe.answer
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 
@@ -484,6 +512,34 @@ foo[2]
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
         let expected: LoxValue = .int(6)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretMutationOfListViaCompoundAssignmentOperator() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo[2] += 39;
+foo[2]
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretMutationOfListAsClassProperty() throws {
+        let input = """
+class Foo {}
+var foo = Foo();
+foo.bar = [1, 2, 3];
+foo.bar[1] += 40;
+foo.bar[1]
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
         XCTAssertEqual(actual, expected)
     }
 

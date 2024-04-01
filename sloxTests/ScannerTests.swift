@@ -9,7 +9,7 @@ import XCTest
 
 final class ScannerTests: XCTestCase {
     func testScanningOfOneCharacterLexemes() throws {
-        let source = "( ) { } [ ] , . - + ; * %"
+        let source = "( ) { } [ ] , . ; %"
         var scanner = Scanner(source: source)
         let actual = try! scanner.scanTokens()
         let expected: [Token] = [
@@ -21,10 +21,7 @@ final class ScannerTests: XCTestCase {
             Token(type: .rightBracket, lexeme: "]", line: 1),
             Token(type: .comma, lexeme: ",", line: 1),
             Token(type: .dot, lexeme: ".", line: 1),
-            Token(type: .minus, lexeme: "-", line: 1),
-            Token(type: .plus, lexeme: "+", line: 1),
             Token(type: .semicolon, lexeme: ";", line: 1),
-            Token(type: .star, lexeme: "*", line: 1),
             Token(type: .modulus, lexeme: "%", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
@@ -33,7 +30,7 @@ final class ScannerTests: XCTestCase {
     }
 
     func testScanningOfOneOrTwoCharacterLexemes() throws {
-        let source = "! != = == < <= > >="
+        let source = "! != = == < <= > >= + += - -= * *="
         var scanner = Scanner(source: source)
         let actual = try! scanner.scanTokens()
         let expected: [Token] = [
@@ -45,6 +42,12 @@ final class ScannerTests: XCTestCase {
             Token(type: .lessEqual, lexeme: "<=", line: 1),
             Token(type: .greater, lexeme: ">", line: 1),
             Token(type: .greaterEqual, lexeme: ">=", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .plusEqual, lexeme: "+=", line: 1),
+            Token(type: .minus, lexeme: "-", line: 1),
+            Token(type: .minusEqual, lexeme: "-=", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .starEqual, lexeme: "*=", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
 
@@ -52,11 +55,12 @@ final class ScannerTests: XCTestCase {
     }
 
     func testScanningOfSlashAndComment() throws {
-        let source = "/ // This should not be lexed"
+        let source = "/ /= // This should not be lexed"
         var scanner = Scanner(source: source)
         let actual = try! scanner.scanTokens()
         let expected: [Token] = [
             Token(type: .slash, lexeme: "/", line: 1),
+            Token(type: .slashEqual, lexeme: "/=", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
 

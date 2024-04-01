@@ -323,6 +323,30 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseCompoundAssignmentExpression() throws {
+        // foo += 42;
+        let tokens: [Token] = [
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .plusEqual, lexeme: "+=", line: 1),
+            Token(type: .int, lexeme: "42", line: 1),
+            Token(type: .semicolon, lexeme: ";", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .assignment(
+                    Token(type: .identifier, lexeme: "foo", line: 1),
+                    .binary(
+                        .variable(Token(type: .identifier, lexeme: "foo", line: 1)),
+                        Token(type: .plus, lexeme: "+", line: 1),
+                        .literal(.int(42)))))
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
     func testParseComplexExpression() throws {
         // (-2) * (3 + 4);
 
