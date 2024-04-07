@@ -141,8 +141,11 @@ class Interpreter {
             }
 
             let isInitializer = nameToken.lexeme == "init"
+            let parameterList = paramTokens.map { paramTokens in
+                ParameterList(normalParameters: paramTokens)
+            }
             let methodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                 params: paramTokens,
+                                                 parameterList: parameterList,
                                                  enclosingEnvironment: environment,
                                                  body: methodBody,
                                                  isInitializer: isInitializer)
@@ -159,8 +162,11 @@ class Interpreter {
                 throw RuntimeError.notALambda
             }
 
+            let parameterList = paramTokens.map { paramTokens in
+                ParameterList(normalParameters: paramTokens)
+            }
             let staticMethodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                       params: paramTokens,
+                                                       parameterList: parameterList,
                                                        enclosingEnvironment: environment,
                                                        body: methodBody,
                                                        isInitializer: false)
@@ -186,13 +192,16 @@ class Interpreter {
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
-        guard case .lambda(let params, let body) = lambda else {
+        guard case .lambda(let paramTokens, let body) = lambda else {
             throw RuntimeError.notALambda
         }
 
         let environmentWhenDeclared = self.environment
+        let parameterList = paramTokens.map { paramTokens in
+            ParameterList(normalParameters: paramTokens)
+        }
         let function = UserDefinedFunction(name: name.lexeme,
-                                           params: params,
+                                           parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
                                            body: body,
                                            isInitializer: false)
@@ -477,9 +486,10 @@ class Interpreter {
             throw RuntimeError.notACallableObject
         }
 
-        guard args.count == actualCallable.arity else {
-            throw RuntimeError.wrongArity(actualCallable.arity, args.count)
+        guard let parameterList = actualCallable.parameterList else {
+            fatalError()
         }
+        try parameterList.checkArity(argCount: args.count)
 
         var argValues: [LoxValue] = []
         for arg in args {
@@ -526,8 +536,11 @@ class Interpreter {
     private func handleLambdaExpression(params: [Token]?, statements: [ResolvedStatement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
+        let parameterList = params.map { paramTokens in
+            ParameterList(normalParameters: paramTokens)
+        }
         let function = UserDefinedFunction(name: "lambda",
-                                           params: params,
+                                           parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
                                            body: statements,
                                            isInitializer: false)

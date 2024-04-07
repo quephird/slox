@@ -15,21 +15,27 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case keysNative
     case valuesNative
 
-    var arity: Int {
-        switch self {
+    var parameterList: ParameterList? {
+        let normalParameters: [String] = switch self {
         case .clock:
-            return 0
+            []
         case .appendNative:
-            return 2
+            ["this", "element"]
         case .deleteAtNative:
-            return 2
+            ["this", "index"]
         case .removeValueNative:
-            return 2
+            ["this", "index"]
         case .keysNative:
-            return 1
+            ["this"]
         case .valuesNative:
-            return 1
+            ["this"]
         }
+
+        return ParameterList(
+            normalParameters: normalParameters.map { paramName in
+                Token(type: .identifier, lexeme: paramName, line: 0)
+            }
+        )
     }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
