@@ -52,10 +52,10 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
-                    [
+                    ParameterList(normalParameters: [
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
-                    ],
+                    ]),
                     [
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
@@ -74,10 +74,10 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
-                    [
+                    ParameterList(normalParameters: [
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
-                    ],
+                    ]),
                     [
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
@@ -234,7 +234,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
                         .lambda(
-                            [],
+                            ParameterList(normalParameters: []),
                             [
                                 .print(
                                     .get(
@@ -255,7 +255,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
                         .lambda(
-                            [],
+                            ParameterList(normalParameters: []),
                             [
                                 .print(
                                     .get(
@@ -278,7 +278,7 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
                 .lambda(
-                    [],
+                    ParameterList(normalParameters: []),
                     [
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
@@ -307,7 +307,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
                         .lambda(
-                            [],
+                            ParameterList(normalParameters: []),
                             [
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
@@ -339,10 +339,10 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
                         .lambda(
-                            [
+                            ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
-                            ],
+                            ]),
                             [
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
@@ -365,10 +365,10 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
                         .lambda(
-                            [
+                            ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
-                            ],
+                            ]),
                             [
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
@@ -401,7 +401,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
                         .lambda(
-                            [],
+                            ParameterList(normalParameters: []),
                             [
                                 .expression(
                                     .set(
@@ -449,7 +449,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "someMethod", line: 2),
                         .lambda(
-                            [],
+                            ParameterList(normalParameters: []),
                             [
                                 .expression(
                                     .call(
@@ -503,7 +503,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "foo", line: 2),
                         .lambda(
-                            [],
+                            ParameterList(normalParameters: []),
                             [
                                 .break(Token(type: .break, lexeme: "break", line: 3))
                             ])),

@@ -14,7 +14,7 @@ indirect enum Expression: Equatable {
     case assignment(Token, Expression)
     case logical(Expression, Token, Expression)
     case call(Expression, Token, [Expression])
-    case lambda([Token]?, [Statement])
+    case lambda(ParameterList?, [Statement])
     case get(Expression, Token)
     case set(Expression, Token, Expression)
     case this(Token)

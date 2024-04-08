@@ -180,14 +180,14 @@ struct Resolver {
     mutating private func handleFunctionDeclaration(nameToken: Token,
                                                     lambdaExpr: Expression,
                                                     functionType: FunctionType) throws -> ResolvedStatement {
-        guard case .lambda(let paramTokens, let statements) = lambdaExpr else {
+        guard case .lambda(let parameterList, let statements) = lambdaExpr else {
             throw ResolverError.notAFunction
         }
 
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
-        let resolvedLambda = try handleLambda(params: paramTokens,
+        let resolvedLambda = try handleLambda(parameterList: parameterList,
                                               statements: statements,
                                               functionType: functionType)
 
@@ -324,8 +324,8 @@ struct Resolver {
             return .grouping(resolvedExpr)
         case .logical(let leftExpr, let operToken, let rightExpr):
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
-        case .lambda(let params, let statements):
-            return try handleLambda(params: params, statements: statements, functionType: .lambda)
+        case .lambda(let parameterList, let statements):
+            return try handleLambda(parameterList: parameterList, statements: statements, functionType: .lambda)
         case .super(let superToken, let methodToken):
             return try handleSuper(superToken: superToken, methodToken: methodToken)
         case .list(let elements):
@@ -420,7 +420,7 @@ struct Resolver {
         return .logical(resolvedLeftExpr, operToken, resolvedRightExpr)
     }
 
-    mutating private func handleLambda(params: [Token]?,
+    mutating private func handleLambda(parameterList: ParameterList?,
                                        statements: [Statement],
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
@@ -434,8 +434,8 @@ struct Resolver {
             currentLoopType = previousLoopType
         }
 
-        if let params {
-            for param in params {
+        if let parameterList {
+            for param in parameterList.normalParameters {
                 try declareVariable(name: param.lexeme)
                 defineVariable(name: param.lexeme)
             }
@@ -447,7 +447,7 @@ struct Resolver {
             try resolve(statement: statement)
         }
 
-        return .lambda(params, resolvedStatements)
+        return .lambda(parameterList, resolvedStatements)
     }
 
     mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> ResolvedExpression {

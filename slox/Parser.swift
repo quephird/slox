@@ -138,9 +138,9 @@ struct Parser {
             throw ParseError.missingFunctionName(currentToken)
         }
 
-        var parameters: [Token]? = nil
+        var parameterList: ParameterList? = nil
         if currentTokenMatchesAny(types: [.leftParen]) {
-            parameters = try parseParameters()
+            parameterList = try parseParameters()
             if !currentTokenMatchesAny(types: [.rightParen]) {
                 throw ParseError.missingCloseParenAfterArguments(currentToken)
             }
@@ -150,7 +150,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
 
-        return .function(functionName, .lambda(parameters, functionBody))
+        return .function(functionName, .lambda(parameterList, functionBody))
     }
 
     mutating private func parseVariableDeclaration() throws -> Statement? {
@@ -745,7 +745,7 @@ struct Parser {
     //    arguments      → expression ( "," expression )* ;
     //    kvPairs        → ( expression ":" expression ) ( expression ":" expression )* ;
     //
-    mutating private func parseParameters() throws -> [Token] {
+    mutating private func parseParameters() throws -> ParameterList {
         var parameters: [Token] = []
         if currentToken.type != .rightParen {
             repeat {
@@ -757,7 +757,8 @@ struct Parser {
             } while currentTokenMatchesAny(types: [.comma])
         }
 
-        return parameters
+        let parameterList = ParameterList(normalParameters: parameters)
+        return parameterList
     }
 
     mutating private func parseExpressionList(firstExpr: Expression) throws -> [Expression] {
