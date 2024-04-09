@@ -439,6 +439,11 @@ struct Resolver {
                 try declareVariable(name: param.lexeme)
                 defineVariable(name: param.lexeme)
             }
+
+            if let variadicParameter = parameterList.variadicParameter {
+                try declareVariable(name: variadicParameter.lexeme)
+                defineVariable(name: variadicParameter.lexeme)
+            }
         } else if currentClassType == .none {
             throw ResolverError.functionsMustHaveAParameterList
         }

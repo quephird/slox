@@ -746,18 +746,32 @@ struct Parser {
     //    kvPairs        → ( expression ":" expression ) ( expression ":" expression )* ;
     //
     mutating private func parseParameters() throws -> ParameterList {
-        var parameters: [Token] = []
+        var normalParameters: [Token] = []
+        var variadicParameter: Token? = nil
         if currentToken.type != .rightParen {
             repeat {
+                if currentTokenMatchesAny(types: [.star]) {
+                    guard let newParameter = consumeToken(type: .identifier) else {
+                        throw ParseError.missingParameterName(currentToken)
+                    }
+                    variadicParameter = newParameter
+
+                    guard currentTokenMatches(type: .rightParen) else {
+                        throw ParseError.onlyOneTrailingVariadicParameterAllowed(currentToken)
+                    }
+
+                    break
+                }
+
                 guard let newParameter = consumeToken(type: .identifier) else {
                     throw ParseError.missingParameterName(currentToken)
                 }
 
-                parameters.append(newParameter)
+                normalParameters.append(newParameter)
             } while currentTokenMatchesAny(types: [.comma])
         }
 
-        let parameterList = ParameterList(normalParameters: parameters)
+        let parameterList = ParameterList(normalParameters: normalParameters, variadicParameter: variadicParameter)
         return parameterList
     }
 
