@@ -136,13 +136,13 @@ class Interpreter {
                 throw RuntimeError.notAFunctionDeclaration
             }
 
-            guard case .lambda(let paramTokens, let methodBody) = lambdaExpr else {
+            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
                 throw RuntimeError.notALambda
             }
 
             let isInitializer = nameToken.lexeme == "init"
             let methodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                 params: paramTokens,
+                                                 parameterList: parameterList,
                                                  enclosingEnvironment: environment,
                                                  body: methodBody,
                                                  isInitializer: isInitializer)
@@ -155,12 +155,12 @@ class Interpreter {
                 throw RuntimeError.notAFunctionDeclaration
             }
 
-            guard case .lambda(let paramTokens, let methodBody) = lambdaExpr else {
+            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
                 throw RuntimeError.notALambda
             }
 
             let staticMethodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                       params: paramTokens,
+                                                       parameterList: parameterList,
                                                        enclosingEnvironment: environment,
                                                        body: methodBody,
                                                        isInitializer: false)
@@ -186,13 +186,13 @@ class Interpreter {
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
-        guard case .lambda(let params, let body) = lambda else {
+        guard case .lambda(let parameterList, let body) = lambda else {
             throw RuntimeError.notALambda
         }
 
         let environmentWhenDeclared = self.environment
         let function = UserDefinedFunction(name: name.lexeme,
-                                           params: params,
+                                           parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
                                            body: body,
                                            isInitializer: false)
@@ -305,8 +305,8 @@ class Interpreter {
                                            valueExpr: valueExpr)
         case .this(let thisToken, let depth):
             return try handleThis(thisToken: thisToken, depth: depth)
-        case .lambda(let params, let statements):
-            return try handleLambdaExpression(params: params, statements: statements)
+        case .lambda(let parameterList, let statements):
+            return try handleLambdaExpression(parameterList: parameterList, statements: statements)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
         case .list(let elements):
@@ -477,9 +477,10 @@ class Interpreter {
             throw RuntimeError.notACallableObject
         }
 
-        guard args.count == actualCallable.arity else {
-            throw RuntimeError.wrongArity(actualCallable.arity, args.count)
+        guard let parameterList = actualCallable.parameterList else {
+            fatalError()
         }
+        try parameterList.checkArity(argCount: args.count)
 
         var argValues: [LoxValue] = []
         for arg in args {
@@ -523,11 +524,11 @@ class Interpreter {
         return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
     }
 
-    private func handleLambdaExpression(params: [Token]?, statements: [ResolvedStatement]) throws -> LoxValue {
+    private func handleLambdaExpression(parameterList: ParameterList?, statements: [ResolvedStatement]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
         let function = UserDefinedFunction(name: "lambda",
-                                           params: params,
+                                           parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
                                            body: statements,
                                            isInitializer: false)

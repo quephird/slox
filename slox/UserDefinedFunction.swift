@@ -9,29 +9,23 @@ import Foundation
 
 struct UserDefinedFunction: LoxCallable, Equatable {
     var name: String
-    var params: [Token]?
     var enclosingEnvironment: Environment
     var body: [ResolvedStatement]
     var isInitializer: Bool
-    var arity: Int {
-        if let params {
-            return params.count
-        } else {
-            return 0
-        }
-    }
-    var isComputedProperty: Bool {
-        return params == nil
-    }
     var objectId: UUID
+    var parameterList: ParameterList? = nil
+
+    var isComputedProperty: Bool {
+        return parameterList == nil
+    }
 
     init(name: String,
-         params: [Token]?,
+         parameterList: ParameterList?,
          enclosingEnvironment: Environment,
          body: [ResolvedStatement],
          isInitializer: Bool) {
         self.name = name
-        self.params = params
+        self.parameterList = parameterList
         self.enclosingEnvironment = enclosingEnvironment
         self.body = body
         self.isInitializer = isInitializer
@@ -41,9 +35,10 @@ struct UserDefinedFunction: LoxCallable, Equatable {
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         let newEnvironment = Environment(enclosingEnvironment: enclosingEnvironment)
 
-        if let params {
+        if let parameterList {
             for (i, arg) in args.enumerated() {
-                newEnvironment.define(name: params[i].lexeme, value: arg)
+                let paramName = parameterList.normalParameters[i]
+                newEnvironment.define(name: paramName.lexeme, value: arg)
             }
         }
 
@@ -73,7 +68,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
         let newEnvironment = Environment(enclosingEnvironment: enclosingEnvironment)
         newEnvironment.define(name: "this", value: .instance(instance))
         return UserDefinedFunction(name: name,
-                                   params: params,
+                                   parameterList: parameterList,
                                    enclosingEnvironment: newEnvironment,
                                    body: body,
                                    isInitializer: isInitializer)

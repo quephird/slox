@@ -8,14 +8,8 @@
 class LoxClass: LoxInstance, LoxCallable {
     var name: String
     var superclass: LoxClass?
-    var arity: Int {
-        if let initializer = methods["init"] {
-            return initializer.arity
-        }
-
-        return 0
-    }
     var methods: [String: UserDefinedFunction]
+
     var instanceType: LoxInstance.Type {
         if self.name == "List" {
             LoxList.self
@@ -24,6 +18,14 @@ class LoxClass: LoxInstance, LoxCallable {
         } else {
             LoxInstance.self
         }
+    }
+
+    var parameterList: ParameterList? {
+        if let initializer = methods["init"] {
+            return initializer.parameterList
+        }
+
+        return ParameterList(normalParameters: [])
     }
 
     convenience init(name: String, superclass: LoxClass?, methods: [String: UserDefinedFunction]) {

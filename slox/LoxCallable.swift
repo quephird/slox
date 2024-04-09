@@ -6,6 +6,6 @@
 //
 
 protocol LoxCallable {
-    var arity: Int { get }
+    var parameterList: ParameterList? { get }
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue
 }
