@@ -15,6 +15,8 @@ struct ParameterList: Equatable {
             guard argCount >= normalParameterCount else {
                 throw RuntimeError.wrongArity(normalParameterCount, argCount)
             }
+
+            return
         }
 
         guard argCount == normalParameterCount else {
