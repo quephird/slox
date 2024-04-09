@@ -286,6 +286,20 @@ a
         }
     }
 
+    func testInterpretVariadicFunction() throws {
+        let input = """
+fun avg(*nums) {
+    return nums.reduce(0, fun(acc, num) { return acc+num; })/nums.count;
+}
+avg(1, 2, 3, 4, 5)
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(3)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretClassDeclarationAndInstantiation() throws {
         let input = """
 class Person {}
