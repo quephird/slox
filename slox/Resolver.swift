@@ -25,10 +25,17 @@ struct Resolver {
         case loop
     }
 
+    private enum ArgumentListType {
+        case none
+        case functionCall
+        case listInitializer
+    }
+
     private var scopeStack: [[String: Bool]] = []
     private var currentFunctionType: FunctionType = .none
     private var currentClassType: ClassType = .none
     private var currentLoopType: LoopType = .none
+    private var currentArgumentListType: ArgumentListType = .none
 
     // Main point of entry
     mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
@@ -375,6 +382,12 @@ struct Resolver {
     mutating private func handleCall(calleeExpr: Expression,
                                      rightParenToken: Token,
                                      args: [Expression]) throws -> ResolvedExpression {
+        let previousArgumentListType = currentArgumentListType
+        currentArgumentListType = .functionCall
+        defer {
+            currentArgumentListType = previousArgumentListType
+        }
+
         let resolvedCalleeExpr = try resolve(expression: calleeExpr)
 
         let resolvedArgs = try args.map { arg in
@@ -472,6 +485,12 @@ struct Resolver {
     }
 
     mutating private func handleList(elements: [Expression]) throws -> ResolvedExpression {
+        let previousArgumentListType = currentArgumentListType
+        currentArgumentListType = .listInitializer
+        defer {
+            currentArgumentListType = previousArgumentListType
+        }
+
         let resolvedElements = try elements.map { element in
             return try resolve(expression: element)
         }
@@ -497,6 +516,10 @@ struct Resolver {
     }
 
     mutating private func handleSplat(listExpr: Expression) throws -> ResolvedExpression {
+        if currentArgumentListType == .none {
+            throw ResolverError.cannotUseSplatOperatorOutOfContext
+        }
+
         let resolvedListExpr = try resolve(expression: listExpr)
 
         return .splat(resolvedListExpr)

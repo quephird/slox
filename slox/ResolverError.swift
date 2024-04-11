@@ -21,6 +21,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case cannotBreakOutsideLoop
     case cannotContinueOutsideLoop
     case functionsMustHaveAParameterList
+    case cannotUseSplatOperatorOutOfContext
 
     var description: String {
         switch self {
@@ -50,6 +51,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Can only `continue` from inside a `while` or `for` loop"
         case .functionsMustHaveAParameterList:
             return "Functions must have a parameter list"
+        case .cannotUseSplatOperatorOutOfContext:
+            return "Cannot use splat operator in this context"
         }
     }
 }
