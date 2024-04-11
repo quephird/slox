@@ -23,6 +23,7 @@ indirect enum ResolvedExpression: Equatable {
     case subscriptGet(ResolvedExpression, ResolvedExpression)
     case subscriptSet(ResolvedExpression, ResolvedExpression, ResolvedExpression)
     case dictionary([(ResolvedExpression, ResolvedExpression)])
+    case splat(ResolvedExpression)
 
     static func == (lhs: ResolvedExpression, rhs: ResolvedExpression) -> Bool {
         switch (lhs, rhs) {

@@ -317,6 +317,8 @@ class Interpreter {
             return try handleSubscriptSetExpression(collectionExpr: listExpr,
                                                     indexExpr: indexExpr,
                                                     valueExpr: valueExpr)
+        case .splat(let listExpr):
+            return try handleSplatExpression(listExpr: listExpr)
         case .dictionary(let kvPairs):
             return try handleDictionary(kvExprPairs: kvPairs)
         }
@@ -477,16 +479,23 @@ class Interpreter {
             throw RuntimeError.notACallableObject
         }
 
+        var argValues: [LoxValue] = []
+        for arg in args {
+            if case .splat = arg {
+                guard case .instance(let list as LoxList) = try evaluate(expr: arg) else {
+                    throw RuntimeError.notAList
+                }
+                argValues.append(contentsOf: list.elements)
+            } else {
+                let argValue = try evaluate(expr: arg)
+                argValues.append(argValue)
+            }
+        }
+
         guard let parameterList = actualCallable.parameterList else {
             fatalError()
         }
-        try parameterList.checkArity(argCount: args.count)
-
-        var argValues: [LoxValue] = []
-        for arg in args {
-            let argValue = try evaluate(expr: arg)
-            argValues.append(argValue)
-        }
+        try parameterList.checkArity(argCount: argValues.count)
 
         return try actualCallable.call(interpreter: self, args: argValues)
     }
@@ -602,6 +611,10 @@ class Interpreter {
         }
 
         return value
+    }
+
+    private func handleSplatExpression(listExpr: ResolvedExpression) throws -> LoxValue {
+        return try evaluate(expr: listExpr)
     }
 
     private func handleDictionary(kvExprPairs: [(ResolvedExpression, ResolvedExpression)]) throws -> LoxValue {

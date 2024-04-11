@@ -334,6 +334,8 @@ struct Resolver {
             return try handleSubscriptGet(listExpr: listExpr, indexExpr: indexExpr)
         case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
             return try handleSubscriptSet(listExpr: listExpr, indexExpr: indexExpr, valueExpr: valueExpr)
+        case .splat(let listExpr):
+            return try handleSplat(listExpr: listExpr)
         case .dictionary(let kvPairs):
             return try handleDictionary(kvPairs: kvPairs)
         }
@@ -492,6 +494,12 @@ struct Resolver {
         let resolvedValueExpr = try resolve(expression: valueExpr)
 
         return .subscriptSet(resolvedListExpr, resolvedIndexExpr, resolvedValueExpr)
+    }
+
+    mutating private func handleSplat(listExpr: Expression) throws -> ResolvedExpression {
+        let resolvedListExpr = try resolve(expression: listExpr)
+
+        return .splat(resolvedListExpr)
     }
 
     mutating private func handleDictionary(kvPairs: [(Expression, Expression)]) throws -> ResolvedExpression {
