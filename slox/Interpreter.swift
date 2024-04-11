@@ -562,8 +562,17 @@ class Interpreter {
     }
 
     private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
-        let elementValues = try elements.map { element in
-            return try evaluate(expr: element)
+        var elementValues: [LoxValue] = []
+        for element in elements {
+            if case .splat = element {
+                guard case .instance(let list as LoxList) = try evaluate(expr: element) else {
+                    throw RuntimeError.notAList
+                }
+                elementValues.append(contentsOf: list.elements)
+            } else {
+                let elementValue = try evaluate(expr: element)
+                elementValues.append(elementValue)
+            }
         }
 
         return try makeList(elements: elementValues)
