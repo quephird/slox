@@ -926,6 +926,117 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseVariadicFunction() throws {
+        // fun foo(a, *b) {
+        //     return b;
+        // }
+        let tokens: [Token] = [
+            Token(type: .fun, lexeme: "fun", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "a", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .identifier, lexeme: "b", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .return, lexeme: "return", line: 2),
+            Token(type: .identifier, lexeme: "b", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .function(
+                Token(type: .identifier, lexeme: "foo", line: 1),
+                .lambda(
+                    ParameterList(
+                        normalParameters: [
+                            Token(type: .identifier, lexeme: "a", line: 1),
+                        ],
+                        variadicParameter: Token(type: .identifier, lexeme: "b", line: 1)),
+                    [
+                        .return(
+                            Token(type: .return, lexeme: "return", line: 2),
+                            .variable(Token(type: .identifier, lexeme: "b", line: 2)))
+                    ])
+            )
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseFunctionWithTwoVariadicParameters() throws {
+        // fun foo(a, *b, *c) {
+        //     return a;
+        // }
+        let tokens: [Token] = [
+            Token(type: .fun, lexeme: "fun", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "a", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .identifier, lexeme: "b", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .identifier, lexeme: "c", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .return, lexeme: "return", line: 2),
+            Token(type: .identifier, lexeme: "a", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .comma, lexeme: ",", line: 1)
+        let expectedError = ParseError.onlyOneTrailingVariadicParameterAllowed(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
+    func testParseFunctionWithOneMoreRegularParameterFollowingVariadicParameter() throws {
+        // fun foo(a, *b, c) {
+        //     return a;
+        // }
+        let tokens: [Token] = [
+            Token(type: .fun, lexeme: "fun", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "a", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .identifier, lexeme: "b", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .identifier, lexeme: "c", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .return, lexeme: "return", line: 2),
+            Token(type: .identifier, lexeme: "a", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .comma, lexeme: ",", line: 1)
+        let expectedError = ParseError.onlyOneTrailingVariadicParameterAllowed(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
     func testParseFunctionCall() throws {
         // add(1, 2)
         let tokens: [Token] = [

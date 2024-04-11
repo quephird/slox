@@ -36,9 +36,15 @@ struct UserDefinedFunction: LoxCallable, Equatable {
         let newEnvironment = Environment(enclosingEnvironment: enclosingEnvironment)
 
         if let parameterList {
-            for (i, arg) in args.enumerated() {
-                let paramName = parameterList.normalParameters[i]
-                newEnvironment.define(name: paramName.lexeme, value: arg)
+            for (i, parameter) in parameterList.normalParameters.enumerated() {
+                let arg = args[i]
+                newEnvironment.define(name: parameter.lexeme, value: arg)
+            }
+
+            if let variadicParameter = parameterList.variadicParameter {
+                let varArgs = Array(args[parameterList.normalParameters.count...])
+                let varArgsList = try interpreter.makeList(elements: varArgs)
+                newEnvironment.define(name: variadicParameter.lexeme, value: varArgsList)
             }
         }
 
