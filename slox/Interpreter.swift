@@ -317,6 +317,8 @@ class Interpreter {
             return try handleSubscriptSetExpression(collectionExpr: listExpr,
                                                     indexExpr: indexExpr,
                                                     valueExpr: valueExpr)
+        case .splat(let listExpr):
+            return try handleSplatExpression(listExpr: listExpr)
         case .dictionary(let kvPairs):
             return try handleDictionary(kvExprPairs: kvPairs)
         }
@@ -477,16 +479,12 @@ class Interpreter {
             throw RuntimeError.notACallableObject
         }
 
+        let argValues = try evaluateAndFlatten(exprs: args)
+
         guard let parameterList = actualCallable.parameterList else {
             fatalError()
         }
-        try parameterList.checkArity(argCount: args.count)
-
-        var argValues: [LoxValue] = []
-        for arg in args {
-            let argValue = try evaluate(expr: arg)
-            argValues.append(argValue)
-        }
+        try parameterList.checkArity(argCount: argValues.count)
 
         return try actualCallable.call(interpreter: self, args: argValues)
     }
@@ -553,9 +551,7 @@ class Interpreter {
     }
 
     private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
-        let elementValues = try elements.map { element in
-            return try evaluate(expr: element)
-        }
+        let elementValues = try evaluateAndFlatten(exprs: elements)
 
         return try makeList(elements: elementValues)
     }
@@ -604,6 +600,10 @@ class Interpreter {
         return value
     }
 
+    private func handleSplatExpression(listExpr: ResolvedExpression) throws -> LoxValue {
+        return try evaluate(expr: listExpr)
+    }
+
     private func handleDictionary(kvExprPairs: [(ResolvedExpression, ResolvedExpression)]) throws -> LoxValue {
         var kvPairs: [LoxValue: LoxValue] = [:]
 
@@ -619,6 +619,23 @@ class Interpreter {
 
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
         return .instance(dictionary)
+    }
+
+    // Utility functions
+    private func evaluateAndFlatten(exprs: [ResolvedExpression]) throws -> [LoxValue] {
+        let values = try exprs.flatMap { expr in
+            if case .splat = expr {
+                guard case .instance(let list as LoxList) = try evaluate(expr: expr) else {
+                    throw RuntimeError.notAList
+                }
+                return list.elements
+            } else {
+                let elementValue = try evaluate(expr: expr)
+                return [elementValue]
+            }
+        }
+
+        return values
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {

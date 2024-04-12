@@ -405,7 +405,7 @@ struct Parser {
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     //    term           → factor ( ( "-" | "+" ) factor )* ;
     //    factor         → unary ( ( "/" | "*" | "%" ) unary )* ;
-    //    unary          → ( "!" | "-" ) unary
+    //    unary          → ( "!" | "-" | "*" ) unary
     //                   | postfix ;
     //    postfix        → primary ( "(" arguments? ")" | "." IDENTIFIER | "[" logicOr "]" )* ;
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
@@ -539,6 +539,11 @@ struct Parser {
             let oper = previousToken
             let expr = try parseUnary()
             return .unary(oper, expr)
+        }
+
+        if currentTokenMatchesAny(types: [.star]) {
+            let expr = try parseUnary()
+            return .splat(expr)
         }
 
         return try parsePostfix()
