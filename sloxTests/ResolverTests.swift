@@ -521,4 +521,23 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveTopLevelExpressionWithSplatOperator() throws {
+        // *[1, 2, 3]
+        let statements: [Statement] = [
+            .expression(
+                .splat(
+                    .list([
+                        .literal(.int(1)),
+                        .literal(.int(2)),
+                        .literal(.int(3)),
+                    ])))
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.cannotUseSplatOperatorOutOfContext
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }

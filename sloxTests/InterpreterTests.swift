@@ -300,6 +300,37 @@ avg(1, 2, 3, 4, 5)
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretSplattingIntoAnArgumentList() throws {
+        let input =  """
+var foo = [1, 2, 3];
+fun sum(a, b, c) {
+    return a+b+c;
+}
+sum(*foo)
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(6)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSplattingWorksProperlyWithArityChecker() throws {
+        let input =  """
+fun sum(a, b, c) {
+    return a+b+c;
+}
+var foo = [1, 2, 3];
+sum(*foo, 4, 5)
+"""
+
+        let interpreter = Interpreter()
+        let expectedError = RuntimeError.wrongArity(3, 5)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
     func testInterpretClassDeclarationAndInstantiation() throws {
         let input = """
 class Person {}
@@ -721,6 +752,25 @@ foo.reduce(0, fun(acc, n) { return acc+n; })
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
         let expected: LoxValue = .int(15)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSplattingAListIntoAnotherList() throws {
+        let input = """
+var foo = [1, 2, 3];
+[*foo, 4, 5, 6]
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeList(elements: [
+            .int(1),
+            .int(2),
+            .int(3),
+            .int(4),
+            .int(5),
+            .int(6),
+        ])
         XCTAssertEqual(actual, expected)
     }
 

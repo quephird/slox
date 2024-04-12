@@ -1064,6 +1064,41 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseFunctionCallWithSplattedArgument() throws {
+        // add(*[1, 2, 3])
+        let tokens: [Token] = [
+            Token(type: .identifier, lexeme: "add", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .leftBracket, lexeme: "[", line: 1),
+            Token(type: .int, lexeme: "1", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
+            Token(type: .comma, lexeme: ",", line: 1),
+            Token(type: .int, lexeme: "3", line: 1),
+            Token(type: .rightBracket, lexeme: "]", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .expression(
+                .call(
+                    .variable(Token(type: .identifier, lexeme: "add", line: 1)),
+                    Token(type: .rightParen, lexeme: ")", line: 1),
+                    [
+                        .splat(
+                            .list([
+                                .literal(.int(1)),
+                                .literal(.int(2)),
+                                .literal(.int(3)),
+                            ]))
+                    ])),
+        ]
+    }
+
     func testParseLambdaExpression() throws {
         // fun (a, b) { return a + b; }
         let tokens: [Token] = [
