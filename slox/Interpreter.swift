@@ -479,18 +479,7 @@ class Interpreter {
             throw RuntimeError.notACallableObject
         }
 
-        var argValues: [LoxValue] = []
-        for arg in args {
-            if case .splat = arg {
-                guard case .instance(let list as LoxList) = try evaluate(expr: arg) else {
-                    throw RuntimeError.notAList
-                }
-                argValues.append(contentsOf: list.elements)
-            } else {
-                let argValue = try evaluate(expr: arg)
-                argValues.append(argValue)
-            }
-        }
+        let argValues = try evaluateAndFlatten(exprs: args)
 
         guard let parameterList = actualCallable.parameterList else {
             fatalError()
@@ -562,18 +551,7 @@ class Interpreter {
     }
 
     private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
-        var elementValues: [LoxValue] = []
-        for element in elements {
-            if case .splat = element {
-                guard case .instance(let list as LoxList) = try evaluate(expr: element) else {
-                    throw RuntimeError.notAList
-                }
-                elementValues.append(contentsOf: list.elements)
-            } else {
-                let elementValue = try evaluate(expr: element)
-                elementValues.append(elementValue)
-            }
-        }
+        let elementValues = try evaluateAndFlatten(exprs: elements)
 
         return try makeList(elements: elementValues)
     }
@@ -641,6 +619,23 @@ class Interpreter {
 
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
         return .instance(dictionary)
+    }
+
+    // Utility functions
+    private func evaluateAndFlatten(exprs: [ResolvedExpression]) throws -> [LoxValue] {
+        let values = try exprs.flatMap { expr in
+            if case .splat = expr {
+                guard case .instance(let list as LoxList) = try evaluate(expr: expr) else {
+                    throw RuntimeError.notAList
+                }
+                return list.elements
+            } else {
+                let elementValue = try evaluate(expr: expr)
+                return [elementValue]
+            }
+        }
+
+        return values
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {
