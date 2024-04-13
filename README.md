@@ -12,23 +12,198 @@ Checkout the project using git. Then open it up using Xcode and run the project 
 
 So far, the following have been implemented in `slox`:
 
-- Native numeric, boolean, and string types, as well as `nil`
-- Evaluation of expressions, including support for numeric, logical, and equality operators
-- Native `print` statement
-- `if`, `while`, and `for` statements
-- Variable declaration and assignment
-- Function declaration and invocation
-- Lambda expressions
-- Class declaration and instantiation
-- Instance-level properties and methods
-- Referencing the scoped instance via `this`
-- Class-level properties and methods
-- Single inheritance
-- Invoking superclass methods via `super`
+#### Types
+
+There are four scalar types, int, double, boolean, and string, as well as `nil`
+
+#### Expressions
+
+Evaluation of expressions, including support for numeric, logical, and equality operators
+
+#### Variables 
+
+Variables are declared with the `var` keyword, and can be immediately assigned
+
+```
+var answer = 42;
+```
+
+#### `print`
+
+Lox has a builtin `print` statement which, for the time being, takes a single expression.
+
+```
+print "Hello, world!";
+```
+
+#### Flow control
+
+There are three types of flow control statements in Lox: `if`, `while`, and `for` statements.
+
+```
+if (x == 42) {
+    print "YES!";
+} else {
+    print "nope";
+}
+
+var i = 0;
+while (i < 3) {
+    print i;
+    i = i + 1;
+}
+
+for (var i = 0; i < 3; i = i + 1) {
+    print i;
+}
+```
+
+Additionally, users can use `break` and `continue` in `while` or `for` loops
+
+```
+var sum = 0;
+for (var i = 1; i < 5; i = i + 1) {
+    if (i == 3) {
+        continue;
+    }
+}
+print sum;
+
+var i = 0;
+while (true) {
+    print i;
+    if (i > 2) {
+        break;
+    }
+    i = i + 1;
+}
+```
+
+#### Functions 
+
+Functions are declared with a preceding `fun` keyword, and invoked using parentheses:
+
+```
+fun add(a, b) {
+    return a + b;
+}
+
+add(1, 2)
+``` 
+
+You can also create and invoke nameless functions or lambda expressions:
+
+```
+fun (a, b) { return a + b; }(1, 2)
+```
+
+#### Classes
+
+As with many other programming languages, classes in Lox are declared with a preceding `class` keyword, with the class body contained between two braces, and instantiated with parentheses like functions.
+
+```
+class Person {}
+var me = Person();
+```
+
+Properties can be created dynamically _after_ class instantiation:
+
+```
+class Person {}
+var me = Person();
+me.name = "Danielle";
+me.name
+```
+
+Classes can have methods, which do _not_ require the `fun` keyword, and can refer to instance properties via `this`:
+
+```
+class Person {
+    greet() {
+        print "My name is " + this.name;
+    }
+}
+var me = Person();
+me.name = "Danielle";
+me.greet();
+```
+
+Classes can be declared with an `init` method to set properties upon instantiation.
+
+```
+class Person {
+    init(name) {
+        this.name = name
+    }
+}
+var me = Person("Danielle");
+me.name
+```
+
+Classes can also have static methods, which are denoted as such with the `class` keyword:
+
+```
+class Math {
+    class add(a, b) {
+        return a + b;
+    }
+}
+Math.add(1, 2)
+```
+
+You can also define computed properties in classes, which look just like functions but do not have an argument list:
+
+```
+class Circle {
+    init(radius) {
+        this.radius = radius;
+    }
+
+    area {
+        return 3.14159 * this.radius * this.radius;
+    }
+}
+var c = Circle(4);
+c.area
+```
+
+This implementation of Lox supports classes with single inheritance, and you can invoke superclass methods via `super`. You can also override methods on a superclass:
+
+```
+class BankAccount {
+    init(amount) {
+        this.balance = amount;
+    }
+    
+    withdraw(amount) {
+        if (this.balance >= amount) {
+            this.balance -= amount;
+            return;
+        }
+        
+        print "Insufficient funds!";
+    }
+}
+
+class SavingsAccount < BankAccount {
+    init(amount) {
+        super.init(amount);
+    }
+
+    withdraw(amount) {
+        if ((this.balance - amount) > 100) {
+            this.balance -= amount;
+            return;
+        }
+
+        print "Insufficient funds!";
+    }
+}
+```
+
 - List literals using square brackets
 - Native functions for lists, `append()` and `deleteAt()`
-- `break` and `continue` for flow control within loops
-- Computed properties (inside classes, not at the top-level)
+
 - Dictionary literals using square brackets and colons
 - Native properties for dictionaries, `keys` and `values`
 - Native functions for dictionaries, `merge()` and `removeValue()`
