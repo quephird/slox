@@ -418,7 +418,7 @@ struct Resolver {
     }
 
     mutating private func handleThis(thisToken: Token) throws -> ResolvedExpression {
-        guard case .class = currentClassType else {
+        guard currentClassType != .none else {
             throw ResolverError.cannotReferenceThisOutsideClass
         }
 

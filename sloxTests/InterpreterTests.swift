@@ -395,6 +395,34 @@ me.greeting()
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretMethodInSubclassWithThisReferenceResolves() throws {
+        let input = """
+class A {
+    init(foo) {
+        this.foo = foo;
+    }
+}
+
+class B < A {
+    init(foo) {
+        super.init(foo);
+    }
+
+    getFoo() {
+        return this.foo;
+    }
+}
+
+var b = B(42);
+b.getFoo()
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretInstancePropertyHasNotYetBeenSet() throws {
         let input = """
 class Person {}
