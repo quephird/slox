@@ -24,11 +24,15 @@ Next, run this command:
 productbuild --root /tmp/slox.dst / slox.pkg
 ```
 
-That will create a package at the root of the project directory which you can then double-click on to start the installer. Click through all the steps, and the binary should be installed successfully. You should then be able to start the REPL by entering `slox` in your terminal.
+That will create a package at the root of the project directory which you can then double-click on to start the installer. Click through all the steps, and the binary should be installed successfully.
+
+# Usage
+
+Once you have installed the executable, you should then be able to start the REPL by entering `slox` in your terminal. Alternatively, you can first edit a file with Lox code, say `foo.lox`, and then run it in the command line by typing `slox foo.lox`.
 
 # Features
 
-So far, the following have been implemented in `slox`:
+This implementation of Lox has quite a few features that the canonical language does not include. So far, the following have been implemented:
 
 ### Types
 
@@ -56,6 +60,16 @@ Subexpressions can also be grouped together using parentheses:
 (-2) * (3 + 4)
 ```
 
+### Statements
+
+In slox, statements do not produce a value and instead when executed have some effect on the environment. Multiple statements can be submitted in the REPL in sequence, and need to be separated by semicolons. When running in the REPL, if the last statement in an expression statement, then the value of that associated expression is printed.
+
+Lox also has a builtin `print` statement which, for the time being, takes a single expression:
+
+```
+print "Hello, world!";
+```
+
 ### Variables
 
 Variables are declared with the `var` keyword, and assigned with the `=` operator:
@@ -78,17 +92,9 @@ var x = 21;
 x *= 2;
 ```
 
-### `print`
-
-Lox has a builtin `print` statement which, for the time being, takes a single expression.
-
-```
-print "Hello, world!";
-```
-
 ### Flow control
 
-There are three types of flow control statements in Lox: `if` blocks:
+There are three types of flow control statements in slox: `if` blocks:
 
 ```
 if (x == 42) {
@@ -143,7 +149,7 @@ print sum;
 
 ### Collections
 
-Currently, there are two collection types supported in Lox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
+Currently, there are two collection types supported in slox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
 
 ```
 var foo = [1, 2, 3];
@@ -156,9 +162,25 @@ foo.deleteAt(2);
 foo;                   // Prints [1, 2, 4]
 ```
 
-Lists also have `map`, `filter`, and `reduce` methods on them:
+Lists also have some methods found typically in functional programming languages, such as `map`:
 
 ```
+var foo = [1, 2, 3, 4, 5];
+foo.map(fun(n) { return n*n; })                // Prints [1, 4, 9, 16, 25]
+```
+
+... and `filter`:
+
+```
+var foo = [1, 2, 3, 4, 5];
+foo.filter(fun(n) { return n<=3; })            // Prints [1, 2, 3]
+```
+
+... and finally `reduce`:
+
+```
+var foo = [1, 2, 3, 4, 5];
+foo.reduce(0, fun(acc, n) { return acc+n; })   // Prints 15
 ```
 
 Dictionary literals are also created with square brackets, but also use the color character to delimit keys from values. Likewise, dictionaries also have some built-in properties and methods:
@@ -225,7 +247,7 @@ sum(*nums).            // Prints 6
 
 ### Classes
 
-As with many other programming languages, classes in Lox are declared with a preceding `class` keyword, with the class body contained between two braces, and instantiated with parentheses like functions.
+As with many other programming languages, classes in slox are declared with a preceding `class` keyword, with the class body contained between two braces, and instantiated with parentheses like functions.
 
 ```
 class Person {}
@@ -334,16 +356,14 @@ sa.withdraw(100);
 
 # Design
 
-Most of the design of `slox` is fairly similar to the one in the book. There are four phases involved in the execution of code in `slox`:
+Most of the design of slox is fairly similar to the one in the book. There are four phases involved in the execution of code in slox:
 
 - scanning for tokens
 - parsing of tokens into statements and expressions
 - resolving of variables from parsed code
 - interpreting of resolved statements 
 
-However, unlike how they are implemented in the book, the REPL and file runner instantiate just the interpreter, passing in code to be executed; it is the interpreter that instantiates and runs the scanner, parser, resolver in succession, each feeding their results to the next. The interpreter also reads in a small standard library defined in a string; at this point, only a class declaration for a `List` class and some associated methods are defined in it.
-
-There are a few other differences between this implementation and that in the book which are described below.
+However, unlike how they are implemented in the book, the REPL and file runner instantiate just the interpreter, passing in code to be executed; it is the interpreter that instantiates and runs the scanner, parser, resolver in succession, each feeding their results to the next. There are a few other differences between this implementation and that in the book which are described below.
 
 ### Enums instead of class hierarchies
 
@@ -368,6 +388,10 @@ I also decided to create specialized error enums, one for each phase of processi
 ### Native functions
 
 Instead of maintaining set of native functions in `Interpreter`'s constructor, they reside inside the `NativeFunction` enum. When the interpreter is constructed, it defines each of the native functions enumerated in `NativeFunction`. That keeps the responsibility of `Interpreter` clean and focused.
+
+### Standard library
+
+The interpreter also reads in a small standard library defined in a string. At this point, there are two class declarations for `List` and `Dictionary` classes and some associated methods are defined in each. The hope is that in the future, more things can be added here.
 
 # Unit testing
 
