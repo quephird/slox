@@ -50,7 +50,7 @@ Additionally, `nil` indicates the lack of a value.
 There are several types of operators supported in the construction of expressions:
 
 * arithmetic: `+`, `-`, `*`, `/`, and `%`
-* logical: `and`, and `or`
+* logical: `!`, `and`, and `or`
 * equality: `==` and `!=`
 * comparison: `>`, `>=`, `<`, and `<=`
 
@@ -147,60 +147,6 @@ for (var i = 1; i < 5; i = i + 1) {
 print sum;
 ```
 
-### Collections
-
-Currently, there are two collection types supported in slox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
-
-```
-var foo = [1, 2, 3];
-foo.count;             // Prints 3
-
-foo.append(4);
-foo;                   // Prints [1, 2, 3, 4]
-
-foo.deleteAt(2);
-foo;                   // Prints [1, 2, 4]
-```
-
-Lists also have some methods found typically in functional programming languages, such as `map`:
-
-```
-var foo = [1, 2, 3, 4, 5];
-foo.map(fun(n) { return n*n; })                // Prints [1, 4, 9, 16, 25]
-```
-
-... and `filter`:
-
-```
-var foo = [1, 2, 3, 4, 5];
-foo.filter(fun(n) { return n<=3; })            // Prints [1, 2, 3]
-```
-
-... and finally `reduce`:
-
-```
-var foo = [1, 2, 3, 4, 5];
-foo.reduce(0, fun(acc, n) { return acc+n; })   // Prints 15
-```
-
-Dictionary literals are also created with square brackets, but also use the color character to delimit keys from values. Likewise, dictionaries also have some built-in properties and methods:
-
-```
-var bar = ["a": 1, "b": 2];
-bar.count              // Prints 2
-
-bar["b"] = 3;
-bar;                   // Prints ["a": 1, "b": 3]
-
-bar.keys;              // Prints ["a", "b"]
-bar.values;            // Prints ["1", "3"]
-
-bar.merge(["b": 2, "c": 3])
-bar;                   // Prints ["a": 1, "b": 2, "c": 3]
-
-bar.removeValue("a")   // Prints 1
-```
-
 ### Functions
 
 Functions are declared with a preceding `fun` keyword, require an explicit `return` statement to return a value, and are invoked using parentheses:
@@ -235,8 +181,8 @@ You can also splat a list value, again with an asterisk, into either a function 
 fun sum(a, b, c) {
     return a + b + c;
 }
-var nums = [1, 2, 3]
-sum(*nums).            // Prints 6
+var nums = [1, 2, 3];
+sum(*nums)             // Prints 6
 ```
 
 ... or a list literal:
@@ -353,6 +299,70 @@ print ba.balance;
 var sa = SavingsAccount(199);
 sa.withdraw(100);
 ```
+
+### Collections
+
+Currently, there are two collection types supported in slox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
+
+```
+var foo = [1, 2, 3];
+foo.count;             // Prints 3
+
+foo.append(4);
+foo;                   // Prints [1, 2, 3, 4]
+
+foo.deleteAt(2);
+foo;                   // Prints [1, 2, 4]
+```
+
+Lists also have some methods found typically in functional programming languages, such as `map`:
+
+```
+var foo = [1, 2, 3, 4, 5];
+foo.map(fun(n) { return n*n; })                // Prints [1, 4, 9, 16, 25]
+```
+
+... and `filter`:
+
+```
+var foo = [1, 2, 3, 4, 5];
+foo.filter(fun(n) { return n<=3; })            // Prints [1, 2, 3]
+```
+
+... and finally `reduce`:
+
+```
+var foo = [1, 2, 3, 4, 5];
+foo.reduce(0, fun(acc, n) { return acc+n; })   // Prints 15
+```
+
+Dictionary literals are also created with square brackets, but also use the colon character to delimit keys from values. Likewise, dictionaries also have some built-in properties and methods:
+
+```
+var bar = ["a": 1, "b": 2];
+bar.count              // Prints 2
+
+bar["b"] = 3;
+bar;                   // Prints ["a": 1, "b": 3]
+
+bar.keys;              // Prints ["a", "b"]
+bar.values;            // Prints ["1", "3"]
+
+bar.merge(["b": 2, "c": 3])
+bar;                   // Prints ["a": 1, "b": 2, "c": 3]
+
+bar.removeValue("a")   // Prints 1
+```
+
+Note that both lists and dictionaries currently behave like class instances when assigned to variables. That is, such variables have a _reference_ to a `List` or `Dictionary` instance
+
+```
+var foo = [1, 2, 3];
+var bar = foo;
+foo.append(4);
+bar                    // Prints [1, 2, 3, 4]
+```
+There currently is no 
 
 # Design
 
