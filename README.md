@@ -12,15 +12,15 @@ Checkout the project using git. Then open it up using Xcode and run the project 
 
 So far, the following have been implemented in `slox`:
 
-#### Types
+### Types
 
 There are four scalar types, int, double, boolean, and string, as well as `nil`
 
-#### Expressions
+### Expressions
 
 Evaluation of expressions, including support for numeric, logical, and equality operators
 
-#### Variables 
+### Variables
 
 Variables are declared with the `var` keyword, and can be immediately assigned
 
@@ -28,7 +28,7 @@ Variables are declared with the `var` keyword, and can be immediately assigned
 var answer = 42;
 ```
 
-#### `print`
+### `print`
 
 Lox has a builtin `print` statement which, for the time being, takes a single expression.
 
@@ -36,7 +36,7 @@ Lox has a builtin `print` statement which, for the time being, takes a single ex
 print "Hello, world!";
 ```
 
-#### Flow control
+### Flow control
 
 There are three types of flow control statements in Lox: `if`, `while`, and `for` statements.
 
@@ -79,7 +79,7 @@ while (true) {
 }
 ```
 
-#### Functions 
+### Functions
 
 Functions are declared with a preceding `fun` keyword, and invoked using parentheses:
 
@@ -97,7 +97,7 @@ You can also create and invoke nameless functions or lambda expressions:
 fun (a, b) { return a + b; }(1, 2)
 ```
 
-#### Classes
+### Classes
 
 As with many other programming languages, classes in Lox are declared with a preceding `class` keyword, with the class body contained between two braces, and instantiated with parentheses like functions.
 
@@ -112,7 +112,6 @@ Properties can be created dynamically _after_ class instantiation:
 class Person {}
 var me = Person();
 me.name = "Danielle";
-me.name
 ```
 
 Classes can have methods, which do _not_ require the `fun` keyword, and can refer to instance properties via `this`:
@@ -137,7 +136,6 @@ class Person {
     }
 }
 var me = Person("Danielle");
-me.name
 ```
 
 Classes can also have static methods, which are denoted as such with the `class` keyword:
@@ -167,7 +165,7 @@ var c = Circle(4);
 c.area
 ```
 
-This implementation of Lox supports classes with single inheritance, and you can invoke superclass methods via `super`. You can also override methods on a superclass:
+This implementation of Lox supports single inheritance, using the `<` operator to denote subclassing. You can also invoke superclass methods via `super`, and override methods on a superclass:
 
 ```
 class BankAccount {
@@ -199,14 +197,47 @@ class SavingsAccount < BankAccount {
         print "Insufficient funds!";
     }
 }
+
+var ba = BankAccount(199);
+ba.withdraw(100);
+print ba.balance;
+
+var sa = SavingsAccount(199);
+sa.withdraw(100);
 ```
 
-- List literals using square brackets
-- Native functions for lists, `append()` and `deleteAt()`
+### Collections
 
-- Dictionary literals using square brackets and colons
-- Native properties for dictionaries, `keys` and `values`
-- Native functions for dictionaries, `merge()` and `removeValue()`
+Currently, there are two collection types supported in Lox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
+
+```
+var foo = [1, 2, 3];
+foo.count;             // Prints 3
+
+foo.append(4);
+foo;                   // Prints [1, 2, 3, 4]
+
+foo.deleteAt(2);
+foo;                   // Prints [1, 2, 4]
+```
+
+Dictionary literals are also created with square brackets, but also use the color character to delimit keys from values. Likewise, dictionaries also have some built-in properties and methods:
+
+```
+var bar = ["a": 1, "b": 2];
+bar.count              // Prints 2
+
+bar["b"] = 3;
+bar;                   // Prints ["a": 1, "b": 3]
+
+bar.keys;              // Prints ["a", "b"]
+bar.values;            // Prints ["1", "3"]
+
+bar.merge(["b": 2, "c": 3])
+bar;                   // Prints ["a": 1, "b": 2, "c": 3]
+
+bar.removeValue("a")   // Prints 1
+```
 
 # Design
 
