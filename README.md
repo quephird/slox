@@ -32,18 +32,50 @@ So far, the following have been implemented in `slox`:
 
 ### Types
 
-There are four scalar types, int, double, boolean, and string, as well as `nil`
+There are four scalar types
+
+* int
+* double
+* boolean, whose two possible values are `true` and `false`
+* string
+
+Additionally, `nil` indicates the lack of a value.
 
 ### Expressions
 
-Evaluation of expressions, including support for numeric, logical, and equality operators
+There are several types of operators supported in the construction of expressions:
+
+* arithmetic: `+`, `-`, `*`, `/`, and `%`
+* logical: `and`, and `or`
+* equality: `==` and `!=`
+* comparison: `>`, `>=`, `<`, and `<=`
+
+Subexpressions can also be grouped together using parentheses:
+
+```
+(-2) * (3 + 4)
+```
 
 ### Variables
 
-Variables are declared with the `var` keyword, and can be immediately assigned
+Variables are declared with the `var` keyword, and assigned with the `=` operator:
+
+```
+var answer;
+answer = 42;
+```
+
+... or they can be declared and assigned in one fell swoop:
 
 ```
 var answer = 42;
+```
+
+There are also four so-called compound assignment operators, `+=`, `-=`, `*=`, and `/=`, which add, subtract, multiply, and divide, respectively, the variable on the left hand side by the value on the right hand side:
+
+```
+var x = 21;
+x *= 2;
 ```
 
 ### `print`
@@ -56,7 +88,7 @@ print "Hello, world!";
 
 ### Flow control
 
-There are three types of flow control statements in Lox: `if`, `while`, and `for` statements.
+There are three types of flow control statements in Lox: `if` blocks:
 
 ```
 if (x == 42) {
@@ -64,19 +96,40 @@ if (x == 42) {
 } else {
     print "nope";
 }
+```
 
+... `while` loops:
+
+```
 var i = 0;
 while (i < 3) {
     print i;
     i = i + 1;
 }
+```
 
+... and `for` loops
+
+```
 for (var i = 0; i < 3; i = i + 1) {
     print i;
 }
 ```
 
-Additionally, users can use `break` and `continue` in `while` or `for` loops
+Additionally, users can `break` out of a loop:
+
+```
+var i = 0;
+while (true) {
+    print i;
+    if (i > 2) {
+        break;
+    }
+    i = i + 1;
+}
+```
+
+... or `continue` onto another iteration of a loop:
 
 ```
 var sum = 0;
@@ -86,15 +139,6 @@ for (var i = 1; i < 5; i = i + 1) {
     }
 }
 print sum;
-
-var i = 0;
-while (true) {
-    print i;
-    if (i > 2) {
-        break;
-    }
-    i = i + 1;
-}
 ```
 
 ### Collections
@@ -137,7 +181,7 @@ bar.removeValue("a")   // Prints 1
 
 ### Functions
 
-Functions are declared with a preceding `fun` keyword, and invoked using parentheses:
+Functions are declared with a preceding `fun` keyword, require an explicit `return` statement to return a value, and are invoked using parentheses:
 
 ```
 fun add(a, b) {
