@@ -97,6 +97,44 @@ while (true) {
 }
 ```
 
+### Collections
+
+Currently, there are two collection types supported in Lox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
+
+```
+var foo = [1, 2, 3];
+foo.count;             // Prints 3
+
+foo.append(4);
+foo;                   // Prints [1, 2, 3, 4]
+
+foo.deleteAt(2);
+foo;                   // Prints [1, 2, 4]
+```
+
+Lists also have `map`, `filter`, and `reduce` methods on them:
+
+```
+```
+
+Dictionary literals are also created with square brackets, but also use the color character to delimit keys from values. Likewise, dictionaries also have some built-in properties and methods:
+
+```
+var bar = ["a": 1, "b": 2];
+bar.count              // Prints 2
+
+bar["b"] = 3;
+bar;                   // Prints ["a": 1, "b": 3]
+
+bar.keys;              // Prints ["a", "b"]
+bar.values;            // Prints ["1", "3"]
+
+bar.merge(["b": 2, "c": 3])
+bar;                   // Prints ["a": 1, "b": 2, "c": 3]
+
+bar.removeValue("a")   // Prints 1
+```
+
 ### Functions
 
 Functions are declared with a preceding `fun` keyword, and invoked using parentheses:
@@ -113,6 +151,32 @@ You can also create and invoke nameless functions or lambda expressions:
 
 ```
 fun (a, b) { return a + b; }(1, 2)
+```
+
+Functions can also take a _single trailing_ variadic parameter, designated with a preceding asterisk. Inside the body of such a function, the parameter is handled like a list:
+
+```
+fun sum(*nums) {
+    return nums.reduce(0, fun(acc, num) { return acc + num; });
+}
+sum(1, 2, 3);          // Prints 6
+sum(1, 2, 3, 4, 5);    // Prints 15
+```
+
+You can also splat a list value, again with an asterisk, into either a function parameter list:
+
+```
+fun sum(a, b, c) {
+    return a + b + c;
+}
+var nums = [1, 2, 3]
+sum(*nums).            // Prints 6
+```
+
+... or a list literal:
+
+```
+[*nums, 4, 5, 6]       // Prints [1, 2, 3, 4, 5, 6]
 ```
 
 ### Classes
@@ -222,39 +286,6 @@ print ba.balance;
 
 var sa = SavingsAccount(199);
 sa.withdraw(100);
-```
-
-### Collections
-
-Currently, there are two collection types supported in Lox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:
-
-```
-var foo = [1, 2, 3];
-foo.count;             // Prints 3
-
-foo.append(4);
-foo;                   // Prints [1, 2, 3, 4]
-
-foo.deleteAt(2);
-foo;                   // Prints [1, 2, 4]
-```
-
-Dictionary literals are also created with square brackets, but also use the color character to delimit keys from values. Likewise, dictionaries also have some built-in properties and methods:
-
-```
-var bar = ["a": 1, "b": 2];
-bar.count              // Prints 2
-
-bar["b"] = 3;
-bar;                   // Prints ["a": 1, "b": 3]
-
-bar.keys;              // Prints ["a", "b"]
-bar.values;            // Prints ["1", "3"]
-
-bar.merge(["b": 2, "c": 3])
-bar;                   // Prints ["a": 1, "b": 2, "c": 3]
-
-bar.removeValue("a")   // Prints 1
 ```
 
 # Design
