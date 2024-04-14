@@ -297,7 +297,7 @@ class Math {
 Math.add(1, 2)
 ```
 
-You can also define computed properties in classes, which look just like functions but do not have an argument list:
+You can also define computed properties in classes, which look just like functions but do not have an argument list nor parentheses:
 
 ```
 class Circle {
@@ -313,7 +313,7 @@ var c = Circle(4);
 c.area
 ```
 
-This implementation of Lox supports single inheritance, using the `<` operator to denote subclassing. You can also invoke superclass methods via `super`, and override methods on a superclass:
+slox supports single inheritance, using the `<` operator to denote subclassing. You can also invoke superclass methods via `super`, and override methods on a superclass:
 
 ```
 class BankAccount {
