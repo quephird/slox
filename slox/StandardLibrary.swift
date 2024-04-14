@@ -7,6 +7,10 @@
 
 let standardLibrary = """
 class List {
+    clone() {
+        return this + [];
+    }
+
     append(element) {
         appendNative(this, element);
     }
@@ -44,6 +48,12 @@ class List {
 }
 
 class Dictionary {
+    clone() {
+        var newDict = [:];
+        newDict.merge(this);
+        return newDict;
+    }
+
     keys {
         return keysNative(this);
     }

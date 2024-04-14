@@ -802,6 +802,23 @@ var foo = [1, 2, 3];
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretCloningAListCreatesSeparateCopy() throws {
+        let input = """
+var foo = [1, 2];
+var bar = foo.clone();
+foo.append(3);
+bar
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeList(elements: [
+            .int(1),
+            .int(2),
+        ])
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretForLoopWithBreakStatement() throws {
         let input = """
 var sum = 0;
@@ -978,6 +995,23 @@ foo
             .string("a"): .int(1),
             .string("b"): .int(2),
             .string("c"): .int(3),
+        ])
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretCloningADictionaryCreatesSeparateCopy() throws {
+        let input = """
+var foo = ["a": 1, "b": 2];
+var bar = foo.clone();
+foo["c"] = 3;
+bar
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected = try interpreter.makeDictionary(kvPairs: [
+            .string("a"): .int(1),
+            .string("b"): .int(2),
         ])
         XCTAssertEqual(actual, expected)
     }
