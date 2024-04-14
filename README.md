@@ -8,6 +8,24 @@ Checkout the project using git. Then open it up using Xcode and run the project 
 
 <img src="./images/repl.png" />
 
+# Building and installing
+
+At the top of the project directory, type the following in your terminal:
+
+```
+xcodebuild install
+```
+
+That will create a directory structure in `/tmp/slox.dst` that mimics the actual target directory, in this case `/usr/local/bin`, where the command line executable will ultimately be installed.
+
+Next, run this command:
+
+```
+productbuild --root /tmp/slox.dst / slox.pkg
+```
+
+That will create a package at the root of the project directory which you can then double-click on to start the installer. Click through all the steps, and the binary should be installed successfully. You should then be able to start the REPL by entering `slox` in your terminal.
+
 # Features
 
 So far, the following have been implemented in `slox`:
