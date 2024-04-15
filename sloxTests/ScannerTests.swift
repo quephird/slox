@@ -102,6 +102,15 @@ final class ScannerTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testScanningOfEmojiNumbersResultsInError() throws {
+        let source = "1️⃣"
+        var scanner = Scanner(source: source)
+        let expectedError = ScanError.unexpectedCharacter(1)
+        XCTAssertThrowsError(try scanner.scanTokens()) { actualError in
+            XCTAssertEqual(actualError as! ScanError, expectedError)
+        }
+    }
+
     func testScanningOfKeywords() throws {
         let source = "and class else false for fun if nil or print return super this true var while break continue"
         var scanner = Scanner(source: source)
