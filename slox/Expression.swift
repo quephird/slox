@@ -71,6 +71,8 @@ indirect enum Expression: Equatable {
             }
 
             return true
+        case (.splat(let lhsList), .splat(let rhsList)):
+            return lhsList == rhsList
         default:
             return false
         }

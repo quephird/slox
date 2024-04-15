@@ -1094,9 +1094,10 @@ final class ParserTests: XCTestCase {
                                 .literal(.int(1)),
                                 .literal(.int(2)),
                                 .literal(.int(3)),
-                            ]))
+                            ])),
                     ])),
         ]
+        XCTAssertEqual(actual, expected)
     }
 
     func testParseLambdaExpression() throws {
