@@ -159,7 +159,7 @@ fun add(a, b) {
 add(1, 2)
 ``` 
 
-You can also create and invoke nameless functions or lambda expressions:
+You can also create and invoke nameless functions or lambda expressions, which can also be invoked using parentheses:
 
 ```
 fun (a, b) { return a + b; }(1, 2)
@@ -182,7 +182,7 @@ var me = Person();
 me.name = "Danielle";
 ```
 
-Classes can have methods, which do _not_ require the `fun` keyword, and can refer to instance properties via `this`:
+Classes can have methods, which do _not_ require the `fun` keyword (this is by design by the original author), and can refer to instance properties via `this`:
 
 ```
 class Person {
@@ -377,7 +377,7 @@ sum(*nums)             // Prints 6
 
 # Design
 
-Most of the design of slox is fairly similar to the one in the book. There are four phases involved in the execution of code in slox:
+Most of the design of slox is fairly similar to the one in the book. There are four phases involved in the execution of code in this implementation:
 
 - scanning for tokens
 - parsing of tokens into statements and expressions
@@ -396,13 +396,13 @@ Also, I was able to take advantage of the Swift compiler to ensure that when pro
 
 Another choice that I made was to have the resolver consume a set of `Statement`s and `Expression`s and produce a set of `ResolvedStatement`s and `ResolvedExpression`s, some of which possess scope depths for variables. I didn't like having the resolver interact with the interpreter, namely mutating state there, and instead preferred a more functional like approach. This way, the resolver can hand the interpreter the AST, from which it can read the depth values directly from the relevant expression nodes.
 
-Moreover, the Java implementation of the interpreter used a `Map` using the object identity of expression instance as the key. I would have needed to have my `Expresion` enum conform to `Hashable`, and that just seemed weird to me when only two of the cases ever need to used as keys in such a dictionary.
+Moreover, the Java implementation of the interpreter used a `Map` using the object identity of expression instance as the key. I would have needed to have my `Expression` enum conform to `Hashable`, and that just seemed weird to me when only two of the cases ever need to used as keys in such a dictionary.
 
 This _does_ invite the possibility of maintenance burden as new statement and expression types are introduced, but at the moment I feel like that risk is minimal, and have clear separation between the resolver and interpreter.
 
 ### Error handling
 
-Error handling is done a little differently too. I thought it was a little weird for `Lox` to both kick off processing and then also receive calls from multiple places in the program, as how was implemented in the book. So, instead any of the methods in `Scanner`, `Parser`, `Resolver`, and `Interpreter` can simply throw an error, which then bubbles out to the outermost calling method in `Lox`, and there it is handled. It just seemed easier to understand the system that way.
+Error handling is done a little differently too. I thought it was a little weird for the main `Lox` class to both kick off processing and then also receive calls from multiple places in the program, as how was implemented in the book. So, instead any of the methods in `Scanner`, `Parser`, `Resolver`, and `Interpreter` can simply throw an error, which then bubbles out to the outermost calling method in `Lox`, and there it is handled. It just seemed easier to understand the system that way.
 
 I also decided to create specialized error enums, one for each phase of processing pipeline, rather than one generalized error class/struct. This gives me a lot more flexibility in the future. Perhaps I may want to catch specific errors and have `slox` do something different for each case; this would be a lot harder to do with just one class/struct.
 
