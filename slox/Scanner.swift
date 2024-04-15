@@ -209,6 +209,6 @@ struct Scanner {
 
 extension Character {
     var isLoxDigit: Bool {
-        ("0"..."9").contains(self)
+        return self.isASCII && self.isNumber
     }
 }
