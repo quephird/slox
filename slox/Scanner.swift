@@ -11,9 +11,6 @@ struct Scanner {
 
     private var startIndex: String.Index
     private var currentIndex: String.Index
-    private var nextIndex: String.Index {
-        return source.index(after: currentIndex)
-    }
     private var line = 1
 
     let keywords: [String: TokenType] = [
@@ -55,70 +52,99 @@ struct Scanner {
         return tokens
     }
 
-    mutating private func scanToken() throws {
-        switch source[currentIndex] {
-        // One character lexemes
-        case "(":
-            handleSingleCharacterLexeme(type: .leftParen)
-        case ")":
-            handleSingleCharacterLexeme(type: .rightParen)
-        case "{":
-            handleSingleCharacterLexeme(type: .leftBrace)
-        case "}":
-            handleSingleCharacterLexeme(type: .rightBrace)
-        case "[":
-            handleSingleCharacterLexeme(type: .leftBracket)
-        case "]":
-            handleSingleCharacterLexeme(type: .rightBracket)
-        case ",":
-            handleSingleCharacterLexeme(type: .comma)
-        case ".":
-            handleSingleCharacterLexeme(type: .dot)
-        case ";":
-            handleSingleCharacterLexeme(type: .semicolon)
-        case "%":
-            handleSingleCharacterLexeme(type: .modulus)
-        case ":":
-            handleSingleCharacterLexeme(type: .colon)
-        case "/":
-            handleSlash()
+    private var scannedToken: String {
+        String(source[startIndex..<currentIndex])
+    }
 
-        // Lexemes that can be one or two characters
-        case "!":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .bang, twoCharLexeme: .bangEqual)
-        case "=":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .equal, twoCharLexeme: .equalEqual)
-        case "<":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .less, twoCharLexeme: .lessEqual)
-        case ">":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .greater, twoCharLexeme: .greaterEqual)
-        case "-":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .minus, twoCharLexeme: .minusEqual)
-        case "+":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .plus, twoCharLexeme: .plusEqual)
-        case "*":
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .star, twoCharLexeme: .starEqual)
-
-        // Whitespace
-        case " ", "\r", "\t":
-            break
-        case "\n":
-            line += 1
-
-        case "\"":
-            try handleString()
-
-        case "0"..."9":
-            handleNumber()
-
-        case "a"..."z", "A"..."Z":
-            handleIdentifier()
-
-        default:
-            throw ScanError.unexpectedCharacter(line)
+    mutating private func tryScan(where predicate: (Character) -> Bool) -> Bool {
+        guard currentIndex < source.endIndex && predicate(source[currentIndex]) else {
+            return false
         }
 
-        advanceCursor()
+        currentIndex = source.index(after: currentIndex)
+        return true
+    }
+
+    mutating private func tryNotScan(_ char: Character) -> Bool {
+        tryScan(where: { actualChar in
+            actualChar != char
+        })
+    }
+
+    mutating private func tryScan(_ chars: Character...) -> Bool {
+        tryScan(where: chars.contains(_:))
+    }
+
+    mutating private func tryScan<Value>(_ charTable: KeyValuePairs<Character, Value>) -> Value? {
+        for (char, value) in charTable {
+            if tryScan(char) {
+                return value
+            }
+        }
+        return nil
+    }
+
+    private func repeatedly(_ tryScanFn: () -> Bool) {
+        var scanned: Bool
+        repeat {
+            scanned = tryScanFn()
+        } while scanned
+    }
+
+    mutating private func scanToken() throws {
+        if let type = tryScan([
+            "(": TokenType.leftParen,
+            ")": .rightParen,
+            "{": .leftBrace,
+            "}": .rightBrace,
+            "[": .leftBracket,
+            "]": .rightBracket,
+            ",": .comma,
+            ".": .dot,
+            ";": .semicolon,
+            "%": .modulus,
+            ":": .colon,
+        ]) {
+            return handleSingleCharacterLexeme(type: type)
+        }
+
+        if let (oneCharType, twoCharType) = tryScan([
+            "!": (TokenType.bang, TokenType.bangEqual),
+            "=": (.equal, .equalEqual),
+            "<": (.less, .lessEqual),
+            ">": (.greater, .greaterEqual),
+            "-": (.minus, .minusEqual),
+            "+": (.plus, .plusEqual),
+            "*": (.star, .starEqual),
+        ]) {
+            return handleOneOrTwoCharacterLexeme(oneCharType: oneCharType, twoCharType: twoCharType)
+        }
+
+        if tryScan("/") {
+            return handleSlash()
+        }
+
+        if tryScan(" ", "\r", "\t") {
+            return
+        }
+        if tryScan("\n") {
+            line += 1
+            return
+        }
+
+        if tryScan("\"") {
+            return try handleString()
+        }
+
+        if tryScan(where: \.isLoxDigit) {
+            return handleNumber()
+        }
+
+        if tryScan(where: { $0.isLetter || $0 == "_" }) {
+            return handleIdentifier()
+        }
+
+        throw ScanError.unexpectedCharacter(line)
     }
 
     mutating private func handleSingleCharacterLexeme(type: TokenType) {
@@ -126,34 +152,25 @@ struct Scanner {
     }
 
     mutating private func handleSlash() {
-        if nextIndex < source.endIndex,
-           source[nextIndex] == "/" {
-            while nextIndex < source.endIndex,
-                  source[nextIndex] != "\n" {
-                advanceCursor()
-            }
+        if tryScan("/") {
+            repeatedly { tryNotScan("\n") }
         } else {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .slash, twoCharLexeme: .slashEqual)
+            handleOneOrTwoCharacterLexeme(oneCharType: .slash, twoCharType: .slashEqual)
         }
     }
 
-    mutating private func handleOneOrTwoCharacterLexeme(oneCharLexeme: TokenType, twoCharLexeme: TokenType) {
-        if nextIndex < source.endIndex, source[nextIndex] == "=" {
-            advanceCursor()
-            addToken(type: twoCharLexeme)
+    mutating private func handleOneOrTwoCharacterLexeme(oneCharType: TokenType, twoCharType: TokenType) {
+        if tryScan("=") {
+            addToken(type: twoCharType)
         } else {
-            addToken(type: oneCharLexeme)
+            addToken(type: oneCharType)
         }
     }
 
     mutating private func handleString() throws {
-        advanceCursor()
-        while currentIndex < source.endIndex,
-              source[currentIndex] != "\"" {
-            advanceCursor()
-        }
+        repeatedly { tryNotScan("\"") }
 
-        if currentIndex == source.endIndex {
+        guard tryScan("\"") else {
             throw ScanError.unterminatedString(line)
         }
 
@@ -161,48 +178,37 @@ struct Scanner {
     }
 
     mutating private func handleNumber() {
-        while nextIndex < source.endIndex,
-              source[nextIndex].isNumber {
-            advanceCursor()
-        }
+        repeatedly { tryScan(where: \.isLoxDigit) }
 
         var tokenType: TokenType = .int
-        if nextIndex < source.endIndex,
-           source[nextIndex] == "." {
+        if tryScan(".") {
             tokenType = .double
-            advanceCursor()
 
-            while nextIndex < source.endIndex,
-                  source[nextIndex].isNumber {
-                advanceCursor()
-            }
+            repeatedly { tryScan(where: \.isLoxDigit) }
         }
 
         addToken(type: tokenType)
     }
 
     mutating private func handleIdentifier() {
-        while nextIndex < source.endIndex &&
-                (source[nextIndex].isLetter ||
-                 source[nextIndex].isNumber ||
-                 source[nextIndex] == "_") {
-            advanceCursor()
-        }
+        repeatedly { tryScan(where: { $0.isLetter || $0.isNumber || $0 == "_" }) }
 
-        if let type = keywords[String(source[startIndex...currentIndex])] {
+        if let type = keywords[scannedToken] {
             addToken(type: type)
         } else {
             addToken(type: .identifier)
         }
     }
 
-    mutating private func advanceCursor() {
-        currentIndex = source.index(after: currentIndex)
-    }
-
     mutating private func addToken(type: TokenType) {
-        let text = String(source[startIndex...currentIndex])
+        let text = scannedToken
         let newToken = Token(type: type, lexeme: text, line: line)
         tokens.append(newToken)
+    }
+}
+
+extension Character {
+    var isLoxDigit: Bool {
+        ("0"..."9").contains(self)
     }
 }
