@@ -52,7 +52,7 @@ struct Scanner {
         return tokens
     }
 
-    var scannedToken: String {
+    private var scannedToken: String {
         String(source[startIndex..<currentIndex])
     }
 
@@ -91,68 +91,44 @@ struct Scanner {
     }
 
     mutating private func scanToken() throws {
-        // One character lexemes
-        if tryScan("(") {
-            handleSingleCharacterLexeme(type: .leftParen)
+        for (lexeme, type) in [
+            ("(", .leftParen),
+            (")", .rightParen),
+            ("{", .leftBrace),
+            ("}", .rightBrace),
+            ("[", .leftBracket),
+            ("]", .rightBracket),
+            (",", .comma),
+            (".", .dot),
+            (";", .semicolon),
+            ("%", .modulus),
+            (":", .colon),
+        ] as [(Character, TokenType)] {
+            if tryScan(lexeme) {
+                handleSingleCharacterLexeme(type: type)
+                return
+            }
         }
-        else if tryScan(")") {
-            handleSingleCharacterLexeme(type: .rightParen)
+
+        for (lexeme, oneCharType, twoCharType) in [
+            ("!", .bang, .bangEqual),
+            ("=", .equal, .equalEqual),
+            ("<", .less, .lessEqual),
+            (">", .greater, .greaterEqual),
+            ("-", .minus, .minusEqual),
+            ("+", .plus, .plusEqual),
+            ("*", .star, .starEqual),
+        ] as [(Character, TokenType, TokenType)] {
+            if tryScan(lexeme) {
+                handleOneOrTwoCharacterLexeme(oneCharType: oneCharType, twoCharType: twoCharType)
+                return
+            }
         }
-        else if tryScan("{") {
-            handleSingleCharacterLexeme(type: .leftBrace)
-        }
-        else if tryScan("}") {
-            handleSingleCharacterLexeme(type: .rightBrace)
-        }
-        else if tryScan("[") {
-            handleSingleCharacterLexeme(type: .leftBracket)
-        }
-        else if tryScan("]") {
-            handleSingleCharacterLexeme(type: .rightBracket)
-        }
-        else if tryScan(",") {
-            handleSingleCharacterLexeme(type: .comma)
-        }
-        else if tryScan(".") {
-            handleSingleCharacterLexeme(type: .dot)
-        }
-        else if tryScan(";") {
-            handleSingleCharacterLexeme(type: .semicolon)
-        }
-        else if tryScan("%") {
-            handleSingleCharacterLexeme(type: .modulus)
-        }
-        else if tryScan(":") {
-            handleSingleCharacterLexeme(type: .colon)
-        }
-        else if tryScan("/") {
+
+        if tryScan("/") {
             handleSlash()
         }
 
-        // Lexemes that can be one or two characters
-        else if tryScan("!") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .bang, twoCharLexeme: .bangEqual)
-        }
-        else if tryScan("=") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .equal, twoCharLexeme: .equalEqual)
-        }
-        else if tryScan("<") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .less, twoCharLexeme: .lessEqual)
-        }
-        else if tryScan(">") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .greater, twoCharLexeme: .greaterEqual)
-        }
-        else if tryScan("-") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .minus, twoCharLexeme: .minusEqual)
-        }
-        else if tryScan("+") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .plus, twoCharLexeme: .plusEqual)
-        }
-        else if tryScan("*") {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .star, twoCharLexeme: .starEqual)
-        }
-
-        // Whitespace
         else if tryScan(" ", "\r", "\t") {
             // do nothing
         }
@@ -184,15 +160,15 @@ struct Scanner {
         if tryScan("/") {
             repeatedly { tryNotScan("\n") }
         } else {
-            handleOneOrTwoCharacterLexeme(oneCharLexeme: .slash, twoCharLexeme: .slashEqual)
+            handleOneOrTwoCharacterLexeme(oneCharType: .slash, twoCharType: .slashEqual)
         }
     }
 
-    mutating private func handleOneOrTwoCharacterLexeme(oneCharLexeme: TokenType, twoCharLexeme: TokenType) {
+    mutating private func handleOneOrTwoCharacterLexeme(oneCharType: TokenType, twoCharType: TokenType) {
         if tryScan("=") {
-            addToken(type: twoCharLexeme)
+            addToken(type: twoCharType)
         } else {
-            addToken(type: oneCharLexeme)
+            addToken(type: oneCharType)
         }
     }
 
