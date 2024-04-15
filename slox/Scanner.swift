@@ -65,14 +65,6 @@ struct Scanner {
         return true
     }
 
-    mutating private func tryScan(_ charRanges: ClosedRange<Character>...) -> Bool {
-        tryScan(where: { char in
-            charRanges.contains(where: { charRange in
-                charRange.contains(char)
-            })
-        })
-    }
-
     mutating private func tryNotScan(_ char: Character) -> Bool {
         tryScan(where: { actualChar in
             actualChar != char
@@ -83,6 +75,15 @@ struct Scanner {
         tryScan(where: chars.contains(_:))
     }
 
+    mutating private func tryScan<Value>(_ charTable: KeyValuePairs<Character, Value>) -> Value? {
+        for (char, value) in charTable {
+            if tryScan(char) {
+                return value
+            }
+        }
+        return nil
+    }
+
     private func repeatedly(_ tryScanFn: () -> Bool) {
         var scanned: Bool
         repeat {
@@ -91,65 +92,59 @@ struct Scanner {
     }
 
     mutating private func scanToken() throws {
-        for (lexeme, type) in [
-            ("(", .leftParen),
-            (")", .rightParen),
-            ("{", .leftBrace),
-            ("}", .rightBrace),
-            ("[", .leftBracket),
-            ("]", .rightBracket),
-            (",", .comma),
-            (".", .dot),
-            (";", .semicolon),
-            ("%", .modulus),
-            (":", .colon),
-        ] as [(Character, TokenType)] {
-            if tryScan(lexeme) {
-                handleSingleCharacterLexeme(type: type)
-                return
-            }
+        if let type = tryScan([
+            "(": TokenType.leftParen,
+            ")": .rightParen,
+            "{": .leftBrace,
+            "}": .rightBrace,
+            "[": .leftBracket,
+            "]": .rightBracket,
+            ",": .comma,
+            ".": .dot,
+            ";": .semicolon,
+            "%": .modulus,
+            ":": .colon,
+        ]) {
+            return handleSingleCharacterLexeme(type: type)
         }
 
-        for (lexeme, oneCharType, twoCharType) in [
-            ("!", .bang, .bangEqual),
-            ("=", .equal, .equalEqual),
-            ("<", .less, .lessEqual),
-            (">", .greater, .greaterEqual),
-            ("-", .minus, .minusEqual),
-            ("+", .plus, .plusEqual),
-            ("*", .star, .starEqual),
-        ] as [(Character, TokenType, TokenType)] {
-            if tryScan(lexeme) {
-                handleOneOrTwoCharacterLexeme(oneCharType: oneCharType, twoCharType: twoCharType)
-                return
-            }
+        if let (oneCharType, twoCharType) = tryScan([
+            "!": (TokenType.bang, TokenType.bangEqual),
+            "=": (.equal, .equalEqual),
+            "<": (.less, .lessEqual),
+            ">": (.greater, .greaterEqual),
+            "-": (.minus, .minusEqual),
+            "+": (.plus, .plusEqual),
+            "*": (.star, .starEqual),
+        ]) {
+            return handleOneOrTwoCharacterLexeme(oneCharType: oneCharType, twoCharType: twoCharType)
         }
 
         if tryScan("/") {
-            handleSlash()
+            return handleSlash()
         }
 
-        else if tryScan(" ", "\r", "\t") {
-            // do nothing
+        if tryScan(" ", "\r", "\t") {
+            return
         }
-        else if tryScan("\n") {
+        if tryScan("\n") {
             line += 1
+            return
         }
 
-        else if tryScan("\"") {
-            try handleString()
+        if tryScan("\"") {
+            return try handleString()
         }
 
-        else if tryScan("0"..."9") {
-            handleNumber()
+        if tryScan(where: \.isLoxDigit) {
+            return handleNumber()
         }
 
-        else if tryScan("a"..."z", "A"..."Z") {
-            handleIdentifier()
+        if tryScan(where: { $0.isLetter || $0 == "_" }) {
+            return handleIdentifier()
         }
-        else {
-            throw ScanError.unexpectedCharacter(line)
-        }
+
+        throw ScanError.unexpectedCharacter(line)
     }
 
     mutating private func handleSingleCharacterLexeme(type: TokenType) {
@@ -183,13 +178,13 @@ struct Scanner {
     }
 
     mutating private func handleNumber() {
-        repeatedly { tryScan(where: \.isNumber) }
+        repeatedly { tryScan(where: \.isLoxDigit) }
 
         var tokenType: TokenType = .int
         if tryScan(".") {
             tokenType = .double
 
-            repeatedly { tryScan(where: \.isNumber) }
+            repeatedly { tryScan(where: \.isLoxDigit) }
         }
 
         addToken(type: tokenType)
@@ -209,5 +204,11 @@ struct Scanner {
         let text = scannedToken
         let newToken = Token(type: type, lexeme: text, line: line)
         tokens.append(newToken)
+    }
+}
+
+extension Character {
+    var isLoxDigit: Bool {
+        ("0"..."9").contains(self)
     }
 }
