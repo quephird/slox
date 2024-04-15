@@ -165,32 +165,6 @@ You can also create and invoke nameless functions or lambda expressions:
 fun (a, b) { return a + b; }(1, 2)
 ```
 
-Functions can also take a _single trailing_ variadic parameter, designated with a preceding asterisk. Inside the body of such a function, the parameter is handled like a list:
-
-```
-fun sum(*nums) {
-    return nums.reduce(0, fun(acc, num) { return acc + num; });
-}
-sum(1, 2, 3);          // Prints 6
-sum(1, 2, 3, 4, 5);    // Prints 15
-```
-
-You can also splat a list value, again with an asterisk, into either a function parameter list:
-
-```
-fun sum(a, b, c) {
-    return a + b + c;
-}
-var nums = [1, 2, 3];
-sum(*nums)             // Prints 6
-```
-
-... or a list literal:
-
-```
-[*nums, 4, 5, 6]       // Prints [1, 2, 3, 4, 5, 6]
-```
-
 ### Classes
 
 As with many other programming languages, classes in slox are declared with a preceding `class` keyword, with the class body contained between two braces, and instantiated with parentheses like functions.
@@ -354,7 +328,7 @@ bar;                   // Prints ["a": 1, "b": 2, "c": 3]
 bar.removeValue("a")   // Prints 1
 ```
 
-Note that both lists and dictionaries currently behave like class instances when assigned to variables. That is, such variables have a _reference_ to a `List` or `Dictionary` instance
+Note that both lists and dictionaries behave like class instances when assigned to variables. That is, such variables have a _reference_ to a `List` or `Dictionary` instance:
 
 ```
 var foo = [1, 2, 3];
@@ -362,7 +336,44 @@ var bar = foo;
 foo.append(4);
 bar                    // Prints [1, 2, 3, 4]
 ```
-There currently is no 
+
+And so, to create an independent copy of a list or dictionary, you can use the `clone()` method:
+
+```
+var foo = [1, 2, 3];
+var bar = foo;
+foo.append(4);
+bar                    // Prints [1, 2, 3]
+```
+
+### Other features
+
+Functions can also take a _single trailing_ variadic parameter, designated with a preceding asterisk. Inside the body of such a function, the parameter is handled like a list:
+
+```
+fun sum(*nums) {
+    return nums.reduce(0, fun(acc, num) { return acc + num; });
+}
+sum(1, 2, 3);          // Prints 6
+sum(1, 2, 3, 4, 5);    // Prints 15
+```
+
+You can also splat a list value, again with an asterisk, into either a function parameter list:
+
+```
+fun sum(a, b, c) {
+    return a + b + c;
+}
+var nums = [1, 2, 3];
+sum(*nums)             // Prints 6
+```
+
+... or a list literal:
+
+```
+[*nums, 4, 5, 6]       // Prints [1, 2, 3, 4, 5, 6]
+```
+
 
 # Design
 
