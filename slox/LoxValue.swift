@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/23/24.
 //
 
-enum LoxValue: CustomStringConvertible, Equatable, Hashable {
+enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable, Hashable {
     case string(String)
     case double(Double)
     case int(Int)
@@ -16,6 +16,15 @@ enum LoxValue: CustomStringConvertible, Equatable, Hashable {
     case instance(LoxInstance)
 
     var description: String {
+        switch self {
+        case .string(let string):
+            return string
+        default:
+            return self.debugDescription
+        }
+    }
+
+    var debugDescription: String {
         switch self {
         case .string(let string):
             return "\"\(string)\""
@@ -39,7 +48,7 @@ enum LoxValue: CustomStringConvertible, Equatable, Hashable {
                 if i > 0 {
                     string.append(", ")
                 }
-                string.append("\(element)")
+                string.append("\(String(reflecting: element))")
             }
             string.append("]")
             return string
@@ -53,7 +62,7 @@ enum LoxValue: CustomStringConvertible, Equatable, Hashable {
                         string.append(", ")
                     }
                     let (key, value) = kvPair
-                    string.append("\(key): \(value)")
+                    string.append("\(String(reflecting: key)): \(String(reflecting: value))")
                 }
             }
             string.append("]")

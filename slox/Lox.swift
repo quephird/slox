@@ -43,7 +43,7 @@ struct Lox {
         while let input = readLine() {
             do {
                 if let result = try interpreter.interpretRepl(source: input) {
-                    print(result)
+                    print(String(reflecting: result))
                 }
             } catch {
                 print(error)

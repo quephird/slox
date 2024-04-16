@@ -6,6 +6,10 @@
 //
 
 let standardLibrary = """
+fun getInput(prompt) {
+    return getInputNative(prompt);
+}
+
 class List {
     clone() {
         return this + [];
