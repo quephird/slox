@@ -9,6 +9,9 @@ import Foundation
 
 enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case clock
+    case toInt
+    case toDouble
+    case getInput
     case appendNative
     case deleteAtNative
     case removeValueNative
@@ -19,6 +22,12 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
         let normalParameters: [String] = switch self {
         case .clock:
             []
+        case .toInt:
+            ["input"]
+        case .toDouble:
+            ["input"]
+        case .getInput:
+            ["prompt"]
         case .appendNative:
             ["this", "element"]
         case .deleteAtNative:
@@ -42,6 +51,34 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
         switch self {
         case .clock:
             return .double(Date().timeIntervalSince1970)
+        case .toInt:
+            guard case .string(let string) = args[0] else {
+                throw RuntimeError.notAString
+            }
+
+            if let integer = Int(string) {
+                return .int(integer)
+            }
+
+            return .nil
+        case .toDouble:
+            guard case .string(let string) = args[0] else {
+                throw RuntimeError.notAString
+            }
+
+            if let double = Double(string) {
+                return .double(double)
+            }
+
+            return .nil
+        case .getInput:
+            let prompt = args[0]
+            print(prompt, terminator: " ")
+            if let input = readLine() {
+                return .string(input)
+            }
+
+            return .nil
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
                 throw RuntimeError.notAList
