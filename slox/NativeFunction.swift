@@ -17,6 +17,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case removeValueNative
     case keysNative
     case valuesNative
+    case randInt
+    case randDouble
 
     var parameterList: ParameterList? {
         let normalParameters: [String] = switch self {
@@ -38,6 +40,10 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             ["this"]
         case .valuesNative:
             ["this"]
+        case .randInt:
+            ["start", "end"]
+        case .randDouble:
+            ["start", "end"]
         }
 
         return ParameterList(
@@ -122,6 +128,26 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             let values = Array(loxDictionary.kvPairs.values)
 
             return try! interpreter.makeList(elements: values)
+        case .randInt:
+            guard case .int(let start) = args[0] else {
+                throw RuntimeError.notAnInt
+            }
+
+            guard case .int(let end) = args[1] else {
+                throw RuntimeError.notAnInt
+            }
+
+            return .int(Int.random(in: start...end))
+        case .randDouble:
+            guard case .double(let start) = args[0] else {
+                throw RuntimeError.notADouble
+            }
+
+            guard case .double(let end) = args[1] else {
+                throw RuntimeError.notADouble
+            }
+
+            return .double(Double.random(in: start...end))
         }
     }
 }
