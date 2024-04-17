@@ -22,6 +22,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notAListOrDictionary
     case notANumber
     case notAString
+    case notAnInt
+    case notADouble
     case onlyInstancesHaveProperties
     case undefinedProperty(String)
     case wrongArity(Int, Int)
@@ -60,6 +62,10 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected a number"
         case .notAString:
             return "Error: expected a string"
+        case .notAnInt:
+            return "Error: expected an integer"
+        case .notADouble:
+            return "Error: expected a double"
         case .onlyInstancesHaveProperties:
             return "Error: can only get/set properties of instances"
         case .undefinedProperty(let name):
