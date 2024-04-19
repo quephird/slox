@@ -335,6 +335,8 @@ struct Resolver {
             return try handleLambda(parameterList: parameterList, statements: statements, functionType: .lambda)
         case .super(let superToken, let methodToken):
             return try handleSuper(superToken: superToken, methodToken: methodToken)
+        case .string(let stringToken):
+            return .string(stringToken)
         case .list(let elements):
             return try handleList(elements: elements)
         case .subscriptGet(let listExpr, let indexExpr):

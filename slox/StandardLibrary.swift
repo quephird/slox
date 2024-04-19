@@ -6,6 +6,12 @@
 //
 
 let standardLibrary = """
+class String {
+    chars {
+        return charsNative(this);
+    }
+}
+
 class List {
     clone() {
         return this + [];

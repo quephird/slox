@@ -19,6 +19,7 @@ indirect enum ResolvedExpression: Equatable {
     case set(ResolvedExpression, Token, ResolvedExpression)
     case this(Token, Int)
     case `super`(Token, Token, Int)
+    case string(Token)
     case list([ResolvedExpression])
     case subscriptGet(ResolvedExpression, ResolvedExpression)
     case subscriptSet(ResolvedExpression, ResolvedExpression, ResolvedExpression)
@@ -53,6 +54,8 @@ indirect enum ResolvedExpression: Equatable {
             return lhsToken == rhsToken && lhsDepth == rhsDepth
         case (.super(let lhsSuper, let lhsMethod, let lhsDepth), .super(let rhsSuper, let rhsMethod, let rhsDepth)):
             return lhsSuper == rhsSuper && lhsMethod == rhsMethod && lhsDepth == rhsDepth
+        case (.string(let lhsString), .string(let rhsString)):
+            return lhsString == rhsString
         case (.list(let lhsExprs), .list(let rhsExprs)):
             return lhsExprs == rhsExprs
         case (.subscriptGet(let lhsList, let lhsIdx), .subscriptGet(let rhsList, let rhsIdx)):
