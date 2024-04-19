@@ -12,7 +12,7 @@ final class InterpreterTests: XCTestCase {
         let input = "\"forty-two\""
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)!
-        let expected: LoxValue = .string("forty-two")
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
         XCTAssertEqual(actual, expected)
     }
 
@@ -86,7 +86,7 @@ final class InterpreterTests: XCTestCase {
         let input = "\"forty\" + \"-two\""
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .string("forty-two")
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
         XCTAssertEqual(actual, expected)
     }
 
@@ -341,7 +341,7 @@ person.name
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .string("Danielle")
+        let expected: LoxValue = try interpreter.makeString(string: "Danielle")
         XCTAssertEqual(actual, expected)
     }
 
@@ -373,7 +373,7 @@ me.sayHello("Becca")
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .string("Hello, Becca")
+        let expected: LoxValue = try interpreter.makeString(string: "Hello, Becca")
         XCTAssertEqual(actual, expected)
     }
 
@@ -391,7 +391,7 @@ me.greeting()
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .string("My name is Danielle")
+        let expected: LoxValue = try interpreter.makeString(string: "My name is Danielle")
         XCTAssertEqual(actual, expected)
     }
 
@@ -469,7 +469,7 @@ becca.name
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .string("Becca")
+        let expected: LoxValue = try interpreter.makeString(string: "Becca")
         XCTAssertEqual(actual, expected)
     }
 
@@ -638,7 +638,7 @@ bar[1]()
 
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
-        let expected: LoxValue = .string("forty-two")
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
         XCTAssertEqual(actual, expected)
     }
 
@@ -954,9 +954,9 @@ foo.keys
         }
         let actualSet = Set(list.elements)
         let expectedSet = [
-            .string("a"),
-            .string("b"),
-            .string("c"),
+            try interpreter.makeString(string: "a"),
+            try interpreter.makeString(string: "b"),
+            try interpreter.makeString(string: "c"),
         ] as Set<LoxValue>
         XCTAssertEqual(actualSet, expectedSet)
     }
@@ -992,9 +992,9 @@ foo
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
         let expected = try interpreter.makeDictionary(kvPairs: [
-            .string("a"): .int(1),
-            .string("b"): .int(2),
-            .string("c"): .int(3),
+            try interpreter.makeString(string: "a"): .int(1),
+            try interpreter.makeString(string: "b"): .int(2),
+            try interpreter.makeString(string: "c"): .int(3),
         ])
         XCTAssertEqual(actual, expected)
     }
@@ -1010,8 +1010,8 @@ bar
         let interpreter = Interpreter()
         let actual = try interpreter.interpretRepl(source: input)
         let expected = try interpreter.makeDictionary(kvPairs: [
-            .string("a"): .int(1),
-            .string("b"): .int(2),
+            try interpreter.makeString(string: "a"): .int(1),
+            try interpreter.makeString(string: "b"): .int(2),
         ])
         XCTAssertEqual(actual, expected)
     }
