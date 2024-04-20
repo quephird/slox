@@ -20,6 +20,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case randInt
     case randDouble
     case charsNative
+    case firstIndexNative
 
     var parameterList: ParameterList? {
         let normalParameters: [String] = switch self {
@@ -47,6 +48,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             ["start", "end"]
         case .charsNative:
             ["this"]
+        case .firstIndexNative:
+            ["this", "element"]
         }
 
         return ParameterList(
@@ -161,6 +164,18 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             }
 
             return try interpreter.makeList(elements: characters)
+        case .firstIndexNative:
+            guard case .instance(let loxList as LoxList) = args[0] else {
+                throw RuntimeError.notAString
+            }
+
+            let element = args[1]
+
+            if let index = loxList.elements.firstIndex(of: element) {
+                return .int(index)
+            }
+
+            return .nil
         }
     }
 }

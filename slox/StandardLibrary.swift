@@ -51,6 +51,10 @@ class List {
         }
         return result;
     }
+
+    firstIndex(element) {
+        return firstIndexNative(this, element);
+    }
 }
 
 class Dictionary {
