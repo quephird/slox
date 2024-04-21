@@ -191,14 +191,12 @@ class Game {
 
     run() {
         this.word = "guess";
-        var roundOver = false;
         while (true) {
             this.display();
 
             if (this.status == win or this.status == loss) {
                 var input = getInput("Would you like to play again? (y/n)");
                 if (input == "y") {
-                    roundOver = false;
                     this.reset();
                     continue;
                 } else {
