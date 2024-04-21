@@ -1,0 +1,220 @@
+// ANSI escape codes
+var esc = "";
+var whiteBg = esc + "[47m";
+var greenBg = esc + "[42m";
+var yellowBg = esc + "[43m";
+var greyBg = esc + "[100m";
+var blackFg = esc + "[30m";
+var reset = esc + "[0m";
+
+// Letter statuses
+var notGuessed = 0;
+var correctPosition = 1;
+var wrongPosition = 2;
+var noMatch = 3;
+
+// Game statuses
+var win = 0;
+var loss = 1;
+var invalidGuess = 2;
+var stillGoing = 3;
+
+class Letter {
+    init(letter, status) {
+        this.letter = letter;
+        this.status = status;
+    }
+
+    format() {
+        var bgColor = nil;
+
+        if (this.status == correctPosition) {
+            bgColor = greenBg;
+        } else if (this.status == wrongPosition) {
+            bgColor = yellowBg;
+        } else if (this.status == noMatch) {
+            bgColor = greyBg;
+        } else {
+            bgColor = whiteBg;
+        }
+
+        return bgColor + blackFg + " " + this.letter + " " + reset;
+    }
+}
+
+class Keyboard {
+    init() {
+        var keys = "abcdefghijklmnopqrstuvwxyz"
+            .chars
+            .reduce([:], fun (acc, letter) {
+                acc[letter] = Letter(letter, notGuessed);
+                return acc;
+            });
+        this.keys = keys;
+    }
+
+    update(guess) {
+        for (var i = 0; i < 5; i += 1) {
+            var letter = guess.letters[i];
+            if (letter.status == correctPosition) {
+                this.keys[letter.letter].status = correctPosition;
+            } else if (letter.status == wrongPosition) {
+                if (this.keys[letter.letter].status == noMatch or
+                    this.keys[letter.letter].status == notGuessed) {
+                    this.keys[letter.letter].status = wrongPosition;
+                }
+            } else if (letter.status == noMatch) {
+                if (this.keys[letter.letter].status == notGuessed) {
+                    this.keys[letter.letter].status = noMatch;
+                }
+            }
+        }
+    }
+
+    displayRow(row, indent) {
+        var output = indent;
+        var letters = row.chars;
+        for (var i = 0; i < row.count; i += 1) {
+            output += this.keys[letters[i]].format();
+            output += " ";
+        }
+
+        print(output);
+        print("");
+    }
+
+    display() {
+        this.displayRow("qwertyuiop", "");
+        this.displayRow("asdfghjkl", " ");
+        this.displayRow("zxcvbnm", "  ");
+    }
+}
+
+class Guess {
+    init(letters) {
+        this.letters = letters;
+    }
+
+    display() {
+        var formattedGuess = "           ";
+        for (var i = 0; i < 5; i += 1) {
+            formattedGuess += this.letters[i].format();
+            formattedGuess += " ";
+        }
+        print formattedGuess;
+        print "";
+    }
+}
+
+class Game {
+    init() {
+        this.reset();
+    }
+
+    display() {
+        print "";
+        for (var i = 0; i < this.guesses.count; i += 1) {
+            this.guesses[i].display();
+        }
+
+        this.keyboard.display();
+
+        if (this.status == invalidGuess) {
+            print "Your word must only be five letters long!";
+        } else if (this.status == loss) {
+            print "The word was: " + this.word;
+        } else if (this.status == win) {
+            print "You won!";
+        }
+    }
+
+    reset() {
+        var guesses = [];
+        for (var i = 0; i < 6; i += 1) {
+            var letters = [];
+            for (var j = 0; j < 5; j += 1) {
+                letters.append(Letter(" ", notGuessed));
+            }
+            guesses.append(Guess(letters));
+        }
+
+        this.guesses = guesses;
+        this.keyboard = Keyboard();
+        this.guessCount = 0;
+        this.status = stillGoing;
+    }
+
+    submitGuess(guess) {
+        var wordChars = this.word.chars;
+        var guessChars = guess.chars;
+
+        var letters = [];
+        for (var i = 0; i < 5; i += 1) {
+            letters.append(Letter(guessChars[i], noMatch));
+        }
+
+        var matchableLetters = [];
+        for (i = 0; i < 5; i += 1) {
+            var status = nil;
+            if (guessChars[i] == wordChars[i]) {
+                letters[i].status = correctPosition;
+            } else {
+                matchableLetters.append(wordChars[i]);
+            }
+        }
+
+        for (i = 0; i < 5; i += 1) {
+            if (letters[i].status == correctPosition) {
+                continue;
+            }
+
+            var matchIndex = matchableLetters.firstIndex(guessChars[i]);
+            if (matchIndex != nil) {
+                letters[i].status = wrongPosition;
+                matchableLetters.deleteAt(matchIndex);
+            }
+        }
+
+        var newGuess = Guess(letters);
+        this.guesses[this.guessCount] = newGuess;
+        this.guessCount += 1;
+        this.keyboard.update(newGuess);
+
+        if (guess == this.word) {
+            this.status = win;
+        } else if (this.guessCount == 6) {
+            this.status = loss;
+        } else {
+            this.status = stillGoing;
+        }
+    }
+
+    run() {
+        this.word = "guess";
+        var roundOver = false;
+        while (true) {
+            this.display();
+
+            if (this.status == win or this.status == loss) {
+                var input = getInput("Would you like to play again? (y/n)");
+                if (input == "y") {
+                    roundOver = false;
+                    this.reset();
+                    continue;
+                } else {
+                    break;
+                }
+            }
+
+            var input = getInput("Enter a guess:");
+            if (input.chars.count != 5) {
+                this.status = invalidGuess;
+                continue;
+            }
+            this.submitGuess(input);
+        }
+    }
+}
+
+var game = Game();
+game.run();
