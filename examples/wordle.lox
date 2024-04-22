@@ -362,7 +362,6 @@ class Game {
 
     display() {
         print clearScreen;
-        print "";
         for (var i = 0; i < this.guesses.count; i += 1) {
             this.guesses[i].display();
         }
