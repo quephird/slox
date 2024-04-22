@@ -1,11 +1,12 @@
 // ANSI escape codes
 var esc = "";
-var whiteBg = esc + "[47m";
-var greenBg = esc + "[42m";
-var yellowBg = esc + "[43m";
-var greyBg = esc + "[100m";
-var blackFg = esc + "[30m";
+var whiteBackground = esc + "[47m";
+var greenBackground = esc + "[42m";
+var yellowBackground = esc + "[43m";
+var greyBackground = esc + "[100m";
+var blackForeground = esc + "[30m";
 var reset = esc + "[0m";
+var clearScreen = esc + "[2J";
 
 // Letter statuses
 var notGuessed = 0;
@@ -268,19 +269,19 @@ class Letter {
     }
 
     format() {
-        var bgColor = nil;
+        var backgroundColor = nil;
 
         if (this.status == correctPosition) {
-            bgColor = greenBg;
+            backgroundColor = greenBackground;
         } else if (this.status == wrongPosition) {
-            bgColor = yellowBg;
+            backgroundColor = yellowBackground;
         } else if (this.status == noMatch) {
-            bgColor = greyBg;
+            backgroundColor = greyBackground;
         } else {
-            bgColor = whiteBg;
+            backgroundColor = whiteBackground;
         }
 
-        return bgColor + blackFg + " " + this.letter + " " + reset;
+        return backgroundColor + blackForeground + " " + this.letter + " " + reset;
     }
 }
 
@@ -338,7 +339,7 @@ class Guess {
     }
 
     display() {
-        var formattedGuess = "           ";
+        var formattedGuess = "          ";
         for (var i = 0; i < 5; i += 1) {
             formattedGuess += this.letters[i].format();
             formattedGuess += " ";
@@ -355,6 +356,7 @@ class Game {
     }
 
     display() {
+        print clearScreen;
         print "";
         for (var i = 0; i < this.guesses.count; i += 1) {
             this.guesses[i].display();
