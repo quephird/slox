@@ -18,7 +18,8 @@ var noMatch = 3;
 var win = 0;
 var loss = 1;
 var invalidGuess = 2;
-var stillGoing = 3;
+var wordNotInList = 3;
+var stillGoing = 4;
 
 class WordList {
     init() {
@@ -260,6 +261,10 @@ class WordList {
     choose() {
         return this.words[randInt(0, this.words.count-1)];
     }
+
+    contains(word) {
+        return this.words.contains(word);
+    }
 }
 
 class Letter {
@@ -366,6 +371,8 @@ class Game {
 
         if (this.status == invalidGuess) {
             print "Your word must only be five letters long!";
+        } else if (this.status == wordNotInList) {
+            print "Word is not in this game's dictionary!";
         } else if (this.status == loss) {
             print "The word was: " + this.word;
         } else if (this.status == win) {
@@ -391,6 +398,14 @@ class Game {
     }
 
     submitGuess(guess) {
+        if (guess.chars.count != 5) {
+            this.status = invalidGuess;
+            return;
+        } else if (!this.wordList.contains(guess)) {
+            this.status = wordNotInList;
+            return;
+        }
+
         var wordChars = this.word.chars;
         var guessChars = guess.chars;
 
@@ -450,10 +465,6 @@ class Game {
             }
 
             var input = getInput("Enter a guess:");
-            if (input.chars.count != 5) {
-                this.status = invalidGuess;
-                continue;
-            }
             this.submitGuess(input);
         }
     }

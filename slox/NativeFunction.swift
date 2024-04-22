@@ -12,6 +12,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case toInt
     case toDouble
     case getInput
+    case containsNative
     case appendNative
     case deleteAtNative
     case removeValueNative
@@ -32,6 +33,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             ["input"]
         case .getInput:
             ["prompt"]
+        case .containsNative:
+            ["this", "element"]
         case .appendNative:
             ["this", "element"]
         case .deleteAtNative:
@@ -91,6 +94,14 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             }
 
             return .nil
+        case .containsNative:
+            guard case .instance(let loxList as LoxList) = args[0] else {
+                throw RuntimeError.notAList
+            }
+
+            let element = args[1]
+
+            return .boolean(loxList.elements.contains(element))
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
                 throw RuntimeError.notAList

@@ -17,6 +17,10 @@ class List {
         return this + [];
     }
 
+    contains(element) {
+        return containsNative(this, element);
+    }
+
     append(element) {
         appendNative(this, element);
     }
