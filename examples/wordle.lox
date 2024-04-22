@@ -359,12 +359,28 @@ class Guess {
         print formattedGuess;
         print "";
     }
+
+    reset() {
+        for (var i = 0; i < 5; i += 1) {
+            this.letters[i].letter = " ";
+            this.letters[i].status = notGuessed;
+        }
+    }
 }
 
 class Game {
     init() {
         this.wordList = WordList();
         this.keyboard = Keyboard();
+        var guesses = [];
+        for (var i = 0; i < 6; i += 1) {
+            var letters = [];
+            for (var j = 0; j < 5; j += 1) {
+                letters.append(Letter(" ", notGuessed));
+            }
+            guesses.append(Guess(letters));
+        }
+        this.guesses = guesses;
         this.reset();
     }
 
@@ -388,16 +404,10 @@ class Game {
     }
 
     reset() {
-        var guesses = [];
         for (var i = 0; i < 6; i += 1) {
-            var letters = [];
-            for (var j = 0; j < 5; j += 1) {
-                letters.append(Letter(" ", notGuessed));
-            }
-            guesses.append(Guess(letters));
+            this.guesses[i].reset();
         }
 
-        this.guesses = guesses;
         this.keyboard.reset();
         this.guessCount = 0;
         this.status = stillGoing;
