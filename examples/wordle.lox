@@ -301,6 +301,13 @@ class Keyboard {
         this.keys = keys;
     }
 
+    reset() {
+        var letters = "abcdefghijklmnopqrstuvwxyz".chars;
+        for (var i = 0; i < letters.count; i += 1) {
+            this.keys[letters[i]].status = notGuessed;
+        }
+    }
+
     update(guess) {
         for (var i = 0; i < 5; i += 1) {
             var letter = guess.letters[i];
@@ -357,6 +364,7 @@ class Guess {
 class Game {
     init() {
         this.wordList = WordList();
+        this.keyboard = Keyboard();
         this.reset();
     }
 
@@ -390,7 +398,7 @@ class Game {
         }
 
         this.guesses = guesses;
-        this.keyboard = Keyboard();
+        this.keyboard.reset();
         this.guessCount = 0;
         this.status = stillGoing;
         this.word = this.wordList.choose();
