@@ -418,6 +418,18 @@ The interpreter also reads in a small standard library defined in a string. At t
 
 This repository contains a fairly comprehensive suite of unit tests that exercise the scanner, parser, resolver, and interpreter; to run them, hit ⌘-U from within Xcode.
 
+# Examples
+
+At this time, there is only one example Lox script: a command-line implementation of Wordle, which displays the statuses of each letter using ANSI escape codes. To run it, type in the following in your terminal:
+
+```
+slox ./examples/wordle.lox
+```
+
+The game board should look something like this:
+
+<img src="./images/wordle.png" />
+
 # Relevant links
 
 - The online version of "Crafting Interpreters"  
