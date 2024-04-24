@@ -13,6 +13,10 @@ class LoxEnum: LoxClass {
         return ParameterList(normalParameters: parameters)
     }
 
+    override func set(propertyName: String, propertyValue: LoxValue) throws {
+        throw RuntimeError.onlyInstancesHaveProperties
+    }
+
     // NOTA BENE: This allows us to get back the case associated with its name
     override func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         precondition(args.count == 1)
