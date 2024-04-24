@@ -198,7 +198,7 @@ class Interpreter {
 
         for caseToken in caseTokens {
             let caseInstance = LoxInstance(klass: enumClass)
-            caseInstance.properties["name"] = .string(caseToken.lexeme)
+            caseInstance.properties["name"] = try makeString(string: caseToken.lexeme)
             enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
         }
 

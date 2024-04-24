@@ -16,10 +16,10 @@ class LoxEnum: LoxClass {
     // NOTA BENE: This allows us to get back the case associated with its name
     override func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {
         precondition(args.count == 1)
-        guard case .string(let caseName)? = args.first else {
+        guard case .instance(let caseName as LoxString)? = args.first else {
             return .nil
         }
 
-        return self.properties[caseName] ?? LoxValue.nil
+        return self.properties[caseName.string] ?? LoxValue.nil
     }
 }
