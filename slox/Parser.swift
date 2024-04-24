@@ -39,7 +39,8 @@ struct Parser {
     //                   | statement ;
     //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
     //                     "{" function* "}" ;
-    //    enumDecl       → "enum" IDENTIFIER "{" (IDENTIFIER ( "," IDENTIFIER )*)?
+    //    enumDecl       → "enum" IDENTIFIER "{"
+    //                     "case" (IDENTIFIER ( "," IDENTIFIER )*)? ";"
     //                     function* "}" ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
@@ -140,6 +141,10 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeEnumBody(currentToken)
         }
 
+        guard currentTokenMatchesAny(types: [.case]) else {
+            throw ParseError.missingCaseKeyword(currentToken)
+        }
+
         var enumCases: [Token] = []
         if currentToken.type != .rightBrace {
             repeat {
@@ -149,6 +154,10 @@ struct Parser {
 
                 enumCases.append(enumCase)
             } while currentTokenMatchesAny(types: [.comma])
+        }
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolonAfterCaseClause(currentToken)
         }
 
         var methods: [Statement] = []

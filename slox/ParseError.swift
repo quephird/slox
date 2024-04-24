@@ -24,6 +24,8 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingSemicolonAfterForLoopCondition(Token)
     case missingClassName(Token)
     case missingEnumName(Token)
+    case missingCaseKeyword(Token)
+    case missingSemicolonAfterCaseClause(Token)
     case missingOpenBraceBeforeClassBody(Token)
     case missingOpenBraceBeforeEnumBody(Token)
     case missingCloseBraceAfterEnumBody(Token)
@@ -73,6 +75,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected class name"
         case .missingEnumName(let token):
             return "[Line \(token.line)] Error: expected enum name"
+        case .missingCaseKeyword(let token):
+            return "[Line \(token.line)] Error: expected `case` keyword before list of names"
+        case .missingSemicolonAfterCaseClause(let token):
+            return "[Line \(token.line)] Error: expected semicolon after `case` clause"
         case .missingOpenBraceBeforeClassBody(let token):
             return "[Line \(token.line)] Error: expected open brace before class body"
         case .missingOpenBraceBeforeEnumBody(let token):

@@ -63,6 +63,7 @@ enum TokenType: Equatable {
     case `break`
     case `continue`
     case `enum`
+    case `case`
 
     case eof
 }
