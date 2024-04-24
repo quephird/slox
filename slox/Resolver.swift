@@ -18,6 +18,7 @@ struct Resolver {
         case none
         case `class`
         case subclass
+        case `enum`
     }
 
     private enum LoopType {
@@ -57,8 +58,10 @@ struct Resolver {
                                               superclassExpr: superclassExpr,
                                               methods: methods,
                                               staticMethods: staticMethods)
-        case .enum(let nameToken, let caseTokens):
-            return try handleEnumDeclaration(nameToken: nameToken, caseTokens: caseTokens)
+        case .enum(let nameToken, let caseTokens, let methods):
+            return try handleEnumDeclaration(nameToken: nameToken,
+                                             caseTokens: caseTokens,
+                                             methods: methods)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -187,11 +190,37 @@ struct Resolver {
     }
 
     mutating private func handleEnumDeclaration(nameToken: Token,
-                                                caseTokens: [Token]) throws -> ResolvedStatement {
+                                                caseTokens: [Token],
+                                                methods: [Statement]) throws -> ResolvedStatement {
+        let previousClassType = currentClassType
+        let previousLoopType = currentLoopType
+        currentClassType = .enum
+        currentLoopType = .none
+        defer {
+            currentClassType = previousClassType
+            currentLoopType = previousLoopType
+        }
+
         try declareVariable(name: nameToken.lexeme)
         defineVariable(name: nameToken.lexeme)
 
-        return .enum(nameToken, caseTokens)
+        beginScope()
+        defer {
+            endScope()
+        }
+        scopeStack.lastMutable["this"] = true
+
+        let resolvedMethods = try methods.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw ResolverError.notAFunction
+            }
+
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .method)
+        }
+
+        return .enum(nameToken, caseTokens, resolvedMethods)
     }
 
 
@@ -489,7 +518,7 @@ struct Resolver {
             throw ResolverError.cannotReferenceSuperOutsideClass
         case .class:
             throw ResolverError.cannotReferenceSuperWithoutSubclassing
-        case .subclass:
+        default:
             break
         }
 

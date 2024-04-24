@@ -82,8 +82,10 @@ class Interpreter {
                                        superclassExpr: superclassExpr,
                                        methods: methods,
                                        staticMethods: staticMethods)
-        case .enum(let nameToken, let caseTokens):
-            try handleEnumDeclaration(nameToken: nameToken, caseTokens: caseTokens)
+        case .enum(let nameToken, let caseTokens, let methods):
+            try handleEnumDeclaration(nameToken: nameToken,
+                                      caseTokens: caseTokens,
+                                      methods: methods)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -187,7 +189,9 @@ class Interpreter {
         try environment.assignAtDepth(name: nameToken.lexeme, value: .instance(newClass), depth: 0)
     }
 
-    private func handleEnumDeclaration(nameToken: Token, caseTokens: [Token]) throws {
+    private func handleEnumDeclaration(nameToken: Token,
+                                       caseTokens: [Token],
+                                       methods: [ResolvedStatement]) throws {
         guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(name: "Enum") else {
             fatalError()
         }
@@ -202,6 +206,26 @@ class Interpreter {
             enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
         }
 
+        var methodImpls: [String: UserDefinedFunction] = [:]
+        for method in methods {
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw RuntimeError.notAFunctionDeclaration
+            }
+
+            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
+                throw RuntimeError.notALambda
+            }
+
+            let isInitializer = nameToken.lexeme == "init"
+            let methodImpl = UserDefinedFunction(name: nameToken.lexeme,
+                                                 parameterList: parameterList,
+                                                 enclosingEnvironment: environment,
+                                                 body: methodBody,
+                                                 isInitializer: isInitializer)
+            methodImpls[nameToken.lexeme] = methodImpl
+        }
+
+        enumClass.methods = methodImpls
         environment.define(name: nameToken.lexeme, value: .instance(enumClass))
     }
 

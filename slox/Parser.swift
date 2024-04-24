@@ -39,7 +39,8 @@ struct Parser {
     //                   | statement ;
     //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
     //                     "{" function* "}" ;
-    //    enumDecl       → "enum" IDENTIFIER "{" (IDENTIFIER ( "," IDENTIFIER )*)? "} ;
+    //    enumDecl       → "enum" IDENTIFIER "{" (IDENTIFIER ( "," IDENTIFIER )*)?
+    //                     function* "}" ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -150,11 +151,20 @@ struct Parser {
             } while currentTokenMatchesAny(types: [.comma])
         }
 
+        var methods: [Statement] = []
+        while currentToken.type != .rightBrace && currentToken.type != .eof {
+            // Note that we don't look for/consume a `fun` token before
+            // calling `parseFunction()`. That's a deliberate design decision
+            // by the original author.
+            let method = try parseFunction()
+            methods.append(method)
+        }
+
         guard currentTokenMatchesAny(types: [.rightBrace]) else {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
         }
 
-        return .enum(enumName, enumCases)
+        return .enum(enumName, enumCases, methods)
     }
 
     mutating private func parseFunctionDeclaration() throws -> Statement? {
