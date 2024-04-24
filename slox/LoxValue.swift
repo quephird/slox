@@ -6,7 +6,6 @@
 //
 
 enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable, Hashable {
-    case string(String)
     case double(Double)
     case int(Int)
     case boolean(Bool)
@@ -17,8 +16,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
 
     var description: String {
         switch self {
-        case .string(let string):
-            return string
+        case .instance(let loxString as LoxString):
+            return loxString.string
         default:
             return self.debugDescription
         }
@@ -26,8 +25,6 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
 
     var debugDescription: String {
         switch self {
-        case .string(let string):
-            return "\"\(string)\""
         case .double(let number):
             return "\(number)"
         case .int(let number):
@@ -40,6 +37,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             return "<function: \(function.name)>"
         case .nativeFunction(let function):
             return "<function: \(function)>"
+        case .instance(let loxString as LoxString):
+            return "\"\(loxString.string)\""
         case .instance(let klass as LoxClass):
             return "<class: \(klass.name)>"
         case .instance(let list as LoxList):
@@ -85,10 +84,10 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             return Double(leftNumber) == rightNumber
         case (.double(let leftNumber), .int(let rightNumber)):
             return leftNumber == Double(rightNumber)
-        case (.string(let leftString), .string(let rightString)):
-            return leftString == rightString
         case (.boolean(let leftBoolean), .boolean(let rightBoolean)):
             return leftBoolean == rightBoolean
+        case (.instance(let leftString as LoxString), .instance(let rightString as LoxString)):
+            return leftString.string == rightString.string
         case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
             return leftList.elements == rightList.elements
         default:
@@ -132,8 +131,6 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
 
     static func == (lhs: LoxValue, rhs: LoxValue) -> Bool {
         switch (lhs, rhs) {
-        case (.string(let lhsString), .string(let rhsString)):
-            return lhsString == rhsString
         case (.int(let lhsNumber), .int(let rhsNumber)):
             return lhsNumber == rhsNumber
         case (.int, .double), (.double, .int), (.double, .double):
@@ -148,6 +145,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             return leftFunc.objectId == rightFunc.objectId
         case (.nativeFunction(let leftFunc), .nativeFunction(let rightFunc)):
             return leftFunc == rightFunc
+        case (.instance(let leftString as LoxString), .instance(let rightString as LoxString)):
+            return leftString.string == rightString.string
         case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
             return leftList.elements == rightList.elements
         case (.instance(let leftDict as LoxDictionary), .instance(let rightDict as LoxDictionary)):
@@ -159,13 +158,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
         }
     }
 
-    // TODO: Check with Becca if this is even remotely sensible
-    // especially with the function and instance cases, as they
-    // don't make much sense as candidates for keys
     func hash(into hasher: inout Hasher) {
         switch self {
-        case .string(let string):
-            hasher.combine(string)
         case .double(let double):
             hasher.combine(double)
         case .int(let int):
@@ -178,6 +172,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             hasher.combine(userDefinedFunction.objectId)
         case .nativeFunction(let nativeFunction):
             hasher.combine(nativeFunction)
+        case .instance(let loxString as LoxString):
+            hasher.combine(loxString.string)
         case .instance(let instance):
             hasher.combine(ObjectIdentifier(instance))
         }

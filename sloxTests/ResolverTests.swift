@@ -13,7 +13,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .expression(
                 .literal(
-                    .string("forty-two"))),
+                    .int(42))),
         ]
 
         var resolver = Resolver()
@@ -21,7 +21,7 @@ final class ResolverTests: XCTestCase {
         let expected: [ResolvedStatement] = [
             .expression(
                 .literal(
-                    .string("forty-two")))
+                    .int(42))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -129,7 +129,7 @@ final class ResolverTests: XCTestCase {
                         .expression(
                             .assignment(
                                 Token(type: .identifier, lexeme: "becca", line: 1),
-                                .literal(.string("awesome"))))
+                                .string(Token(type: .string, lexeme: "\"answer\"", line: 1))))
                     ])
                 ])
             ])
@@ -147,7 +147,7 @@ final class ResolverTests: XCTestCase {
                         .expression(
                             .assignment(
                                 Token(type: .identifier, lexeme: "becca", line: 1),
-                                .literal(.string("awesome")),
+                                .string(Token(type: .string, lexeme: "\"answer\"", line: 1)),
                                 3))
                     ])
                 ])
@@ -181,7 +181,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "x", line: 1),
-                .literal(.string("outer"))),
+                .string(Token(type: .string, lexeme: "\"outer\"", line: 1))),
             .block([
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "x", line: 3),
@@ -206,10 +206,10 @@ final class ResolverTests: XCTestCase {
             .block([
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "a", line: 2),
-                    .literal(.string("first"))),
+                    .string(Token(type: .string, lexeme: "\"first\"", line: 1))),
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "a", line: 3),
-                    .literal(.string("second"))),
+                    .string(Token(type: .string, lexeme: "\"second\"", line: 1))),
             ])
         ]
 
@@ -407,7 +407,7 @@ final class ResolverTests: XCTestCase {
                                     .set(
                                         .this(Token(type: .this, lexeme: "this", line: 3)),
                                         Token(type: .identifier, lexeme: "name", line: 3),
-                                        .literal(.string("bad"))))
+                                        .string(Token(type: .string, lexeme: "\"bad\"", line: 1))))
                             ]))
                 ])
         ]

@@ -641,9 +641,7 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.string]) {
-            assert(previousToken.lexeme.hasPrefix("\"") && previousToken.lexeme.hasSuffix("\""))
-            let string = String(previousToken.lexeme.dropFirst().dropLast())
-            return .literal(.string(string))
+            return .string(previousToken)
         }
 
         if let groupingExpr = try parseGrouping() {

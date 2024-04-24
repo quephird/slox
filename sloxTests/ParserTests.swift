@@ -18,7 +18,7 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement] = [
-            .expression(.literal(.string("forty-two")))
+            .expression(.string(Token(type: .string, lexeme: "\"forty-two\"", line: 1))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -193,9 +193,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .binary(
-                    .literal(.string("forty-")),
+                    .string(Token(type: .string, lexeme: "\"forty-\"", line: 1)),
                     Token(type: .plus, lexeme: "+", line: 1),
-                    .literal(.string("two"))))
+                    .string(Token(type: .string, lexeme: "\"two\"", line: 1))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -235,7 +235,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .binary(
-                    .literal(.string("forty-two")),
+                    .string(Token(type: .string, lexeme: "\"forty-two\"", line: 1)),
                     Token(type: .equalEqual, lexeme: "==", line: 1),
                     .literal(.nil)))
         ]
@@ -526,7 +526,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .if(
                 .literal(.boolean(true)),
-                .print(.literal(.string("Hello!"))),
+                .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
                 nil)
         ]
         XCTAssertEqual(actual, expected)
@@ -562,8 +562,8 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .if(
                 .literal(.boolean(true)),
-                .print(.literal(.string("Hello!"))),
-                .print(.literal(.string("Goodbye"))))
+                .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
+                .print(.string(Token(type: .string, lexeme: "\"Goodbye\"", line: 4))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -603,7 +603,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement] = [
             .print(
-                .literal(.string("forty-two")))
+                .string(Token(type: .string, lexeme: "\"forty-two\"", line: 1)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1232,7 +1232,7 @@ final class ParserTests: XCTestCase {
                 .set(
                     .variable(Token(type: .identifier, lexeme: "person", line: 1)),
                     Token(type: .identifier, lexeme: "name", line: 1),
-                    .literal(.string("Danielle")))),
+                    .string(Token(type: .string, lexeme: "\"Danielle\"", line: 1)))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1445,7 +1445,7 @@ final class ParserTests: XCTestCase {
             .expression(
                 .list([
                     .literal(.int(1)),
-                    .literal(.string("one")),
+                    .string(Token(type: .string, lexeme: "\"one\"", line: 1)),
                     .literal(.boolean(true))
                 ]))
         ]
@@ -1524,7 +1524,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .dictionary([
-                    (.literal(.string("a")), .literal(.int(1))),
+                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(.int(1))),
                 ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1554,9 +1554,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement] = [
             .expression(
                 .dictionary([
-                    (.literal(.string("a")), .literal(.int(1))),
-                    (.literal(.string("b")), .literal(.int(2))),
-                    (.literal(.string("c")), .literal(.int(3))),
+                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(.int(1))),
+                    (.string(Token(type: .string, lexeme: "\"b\"", line: 1)), .literal(.int(2))),
+                    (.string(Token(type: .string, lexeme: "\"c\"", line: 1)), .literal(.int(3))),
                 ]))
         ]
         XCTAssertEqual(actual, expected)

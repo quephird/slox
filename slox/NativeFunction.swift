@@ -12,6 +12,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case toInt
     case toDouble
     case getInput
+    case containsNative
     case appendNative
     case deleteAtNative
     case removeValueNative
@@ -19,6 +20,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
     case valuesNative
     case randInt
     case randDouble
+    case charsNative
+    case firstIndexNative
 
     var parameterList: ParameterList? {
         let normalParameters: [String] = switch self {
@@ -30,6 +33,8 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             ["input"]
         case .getInput:
             ["prompt"]
+        case .containsNative:
+            ["this", "element"]
         case .appendNative:
             ["this", "element"]
         case .deleteAtNative:
@@ -44,6 +49,10 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             ["start", "end"]
         case .randDouble:
             ["start", "end"]
+        case .charsNative:
+            ["this"]
+        case .firstIndexNative:
+            ["this", "element"]
         }
 
         return ParameterList(
@@ -58,21 +67,21 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
         case .clock:
             return .double(Date().timeIntervalSince1970)
         case .toInt:
-            guard case .string(let string) = args[0] else {
+            guard case .instance(let loxString as LoxString) = args[0] else {
                 throw RuntimeError.notAString
             }
 
-            if let integer = Int(string) {
+            if let integer = Int(loxString.string) {
                 return .int(integer)
             }
 
             return .nil
         case .toDouble:
-            guard case .string(let string) = args[0] else {
+            guard case .instance(let loxString as LoxString) = args[0] else {
                 throw RuntimeError.notAString
             }
 
-            if let double = Double(string) {
+            if let double = Double(loxString.string) {
                 return .double(double)
             }
 
@@ -81,10 +90,18 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             let prompt = args[0]
             print(prompt, terminator: " ")
             if let input = readLine() {
-                return .string(input)
+                return try interpreter.makeString(string: input)
             }
 
             return .nil
+        case .containsNative:
+            guard case .instance(let loxList as LoxList) = args[0] else {
+                throw RuntimeError.notAList
+            }
+
+            let element = args[1]
+
+            return .boolean(loxList.elements.contains(element))
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
                 throw RuntimeError.notAList
@@ -148,6 +165,28 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             }
 
             return .double(Double.random(in: start...end))
+        case .charsNative:
+            guard case .instance(let loxString as LoxString) = args[0] else {
+                throw RuntimeError.notAString
+            }
+
+            let characters = try loxString.string.unicodeScalars.map { unicodeScalar in
+                try interpreter.makeString(string: String(unicodeScalar))
+            }
+
+            return try interpreter.makeList(elements: characters)
+        case .firstIndexNative:
+            guard case .instance(let loxList as LoxList) = args[0] else {
+                throw RuntimeError.notAString
+            }
+
+            let element = args[1]
+
+            if let index = loxList.elements.firstIndex(of: element) {
+                return .int(index)
+            }
+
+            return .nil
         }
     }
 }

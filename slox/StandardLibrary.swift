@@ -6,9 +6,19 @@
 //
 
 let standardLibrary = """
+class String {
+    chars {
+        return charsNative(this);
+    }
+}
+
 class List {
     clone() {
         return this + [];
+    }
+
+    contains(element) {
+        return containsNative(this, element);
     }
 
     append(element) {
@@ -44,6 +54,10 @@ class List {
             result = fn(result, this[i]);
         }
         return result;
+    }
+
+    firstIndex(element) {
+        return firstIndexNative(this, element);
     }
 }
 

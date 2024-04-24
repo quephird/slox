@@ -309,6 +309,8 @@ class Interpreter {
             return try handleLambdaExpression(parameterList: parameterList, statements: statements)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
+        case .string(let stringToken):
+            return try handleStringExpression(stringToken: stringToken)
         case .list(let elements):
             return try handleListExpression(elements: elements)
         case .subscriptGet(let listExpr, let indexExpr):
@@ -398,10 +400,10 @@ class Interpreter {
             default:
                 break
             }
-        case (.string(let leftString), .string(let rightString)):
+        case (.instance(let leftString as LoxString), .instance(let rightString as LoxString)):
             switch oper.type {
             case .plus:
-                return .string(leftString + rightString)
+                return try makeString(string: leftString.string + rightString.string)
             default:
                 break
             }
@@ -550,6 +552,12 @@ class Interpreter {
         throw RuntimeError.undefinedProperty(methodToken.lexeme)
     }
 
+    private func handleStringExpression(stringToken: Token) throws -> LoxValue {
+        let stringValue = String(stringToken.lexeme.dropFirst().dropLast())
+
+        return try makeString(string: stringValue)
+    }
+
     private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
         let elementValues = try evaluateAndFlatten(exprs: elements)
 
@@ -636,6 +644,15 @@ class Interpreter {
         }
 
         return values
+    }
+
+    func makeString(string: String) throws -> LoxValue {
+        guard case .instance(let stringClass as LoxClass) = try environment.getValue(name: "String") else {
+            fatalError()
+        }
+
+        let list = LoxString(string: string, klass: stringClass)
+        return .instance(list)
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {
