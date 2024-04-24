@@ -134,50 +134,16 @@ class Interpreter {
             return superclass
         }
 
-        var methodImpls: [String: UserDefinedFunction] = [:]
-        for method in methods {
-            guard case .function(let nameToken, let lambdaExpr) = method else {
-                throw RuntimeError.notAFunctionDeclaration
-            }
-
-            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
-                throw RuntimeError.notALambda
-            }
-
-            let isInitializer = nameToken.lexeme == "init"
-            let methodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                 parameterList: parameterList,
-                                                 enclosingEnvironment: environment,
-                                                 body: methodBody,
-                                                 isInitializer: isInitializer)
-            methodImpls[nameToken.lexeme] = methodImpl
-        }
-
-        var staticMethodImpls: [String: UserDefinedFunction] = [:]
-        for staticMethod in staticMethods {
-            guard case .function(let nameToken, let lambdaExpr) = staticMethod else {
-                throw RuntimeError.notAFunctionDeclaration
-            }
-
-            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
-                throw RuntimeError.notALambda
-            }
-
-            let staticMethodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                       parameterList: parameterList,
-                                                       enclosingEnvironment: environment,
-                                                       body: methodBody,
-                                                       isInitializer: false)
-            staticMethodImpls[nameToken.lexeme] = staticMethodImpl
-        }
+        let instanceMethodLookup = try makeMethodLookup(methodDecls: methods)
+        let staticMethodLookup = try makeMethodLookup(methodDecls: staticMethods)
 
         let newClass = LoxClass(name: nameToken.lexeme,
                                 superclass: superclass,
-                                methods: methodImpls)
-        if !staticMethodImpls.isEmpty {
+                                methods: instanceMethodLookup)
+        if !staticMethodLookup.isEmpty {
             // NOTA BENE: This assigns the static methods to the metaclass,
             // which is lazily created in `LoxInstance`
-            newClass.klass.methods = staticMethodImpls
+            newClass.klass.methods = staticMethodLookup
         }
 
         // Note that we can't accomplish this via a defer block because we need
@@ -206,26 +172,7 @@ class Interpreter {
             enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
         }
 
-        var methodImpls: [String: UserDefinedFunction] = [:]
-        for method in methods {
-            guard case .function(let nameToken, let lambdaExpr) = method else {
-                throw RuntimeError.notAFunctionDeclaration
-            }
-
-            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
-                throw RuntimeError.notALambda
-            }
-
-            let isInitializer = nameToken.lexeme == "init"
-            let methodImpl = UserDefinedFunction(name: nameToken.lexeme,
-                                                 parameterList: parameterList,
-                                                 enclosingEnvironment: environment,
-                                                 body: methodBody,
-                                                 isInitializer: isInitializer)
-            methodImpls[nameToken.lexeme] = methodImpl
-        }
-
-        enumClass.methods = methodImpls
+        enumClass.methods = try makeMethodLookup(methodDecls: methods)
         environment.define(name: nameToken.lexeme, value: .instance(enumClass))
     }
 
@@ -674,6 +621,26 @@ class Interpreter {
     }
 
     // Utility functions
+    private func makeMethodLookup(methodDecls: [ResolvedStatement]) throws -> [String: UserDefinedFunction] {
+        return try methodDecls.reduce(into: [:]) { lookup, methodDecl in
+            guard case .function(let nameToken, let lambdaExpr) = methodDecl else {
+                throw RuntimeError.notAFunctionDeclaration
+            }
+
+            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
+                throw RuntimeError.notALambda
+            }
+
+            let isInitializer = nameToken.lexeme == "init"
+            let method = UserDefinedFunction(name: nameToken.lexeme,
+                                             parameterList: parameterList,
+                                             enclosingEnvironment: environment,
+                                             body: methodBody,
+                                             isInitializer: isInitializer)
+            lookup[nameToken.lexeme] = method
+        }
+    }
+
     private func evaluateAndFlatten(exprs: [ResolvedExpression]) throws -> [LoxValue] {
         let values = try exprs.flatMap { expr in
             if case .splat = expr {
