@@ -188,8 +188,12 @@ class Interpreter {
     }
 
     private func handleEnumDeclaration(nameToken: Token, caseTokens: [Token]) throws {
+        guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(name: "Enum") else {
+            fatalError()
+        }
+
         let enumClass = LoxEnum(name: nameToken.lexeme,
-                                superclass: nil,
+                                superclass: enumSuperclass,
                                 methods: [:])
 
         for caseToken in caseTokens {
