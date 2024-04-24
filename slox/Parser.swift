@@ -33,11 +33,13 @@ struct Parser {
     //
     //    program        → declaration* EOF ;
     //    declaration    → classDecl
+    //                   | enumDecl
     //                   | funDecl
     //                   | varDecl
     //                   | statement ;
     //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
     //                     "{" function* "}" ;
+    //    enumDecl       → "enum" IDENTIFIER "{" (IDENTIFIER ( "," IDENTIFIER )*)? "} ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -63,6 +65,10 @@ struct Parser {
     mutating private func parseDeclaration() throws -> Statement {
         if let classDecl = try parseClassDeclaration() {
             return classDecl
+        }
+
+        if let enumDecl = try parseEnumDeclaration() {
+            return enumDecl
         }
 
         if let funDecl = try parseFunctionDeclaration() {
@@ -118,6 +124,37 @@ struct Parser {
         }
 
         return .class(className, superclassExpr, methodStatements, staticMethodStatements)
+    }
+
+    mutating private func parseEnumDeclaration() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.enum]) else {
+            return nil
+        }
+
+        guard let enumName = consumeToken(type: .identifier) else {
+            throw ParseError.missingEnumName(currentToken)
+        }
+
+        guard currentTokenMatchesAny(types: [.leftBrace]) else {
+            throw ParseError.missingOpenBraceBeforeEnumBody(currentToken)
+        }
+
+        var enumCases: [Token] = []
+        if currentToken.type != .rightBrace {
+            repeat {
+                guard let enumCase = consumeToken(type: .identifier) else {
+                    throw ParseError.missingParameterName(currentToken)
+                }
+
+                enumCases.append(enumCase)
+            } while currentTokenMatchesAny(types: [.comma])
+        }
+
+        guard currentTokenMatchesAny(types: [.rightBrace]) else {
+            throw ParseError.missingCloseParenAfterArguments(currentToken)
+        }
+
+        return .enum(enumName, enumCases)
     }
 
     mutating private func parseFunctionDeclaration() throws -> Statement? {

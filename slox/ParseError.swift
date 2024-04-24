@@ -23,7 +23,10 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingCloseParenForForStatement(Token)
     case missingSemicolonAfterForLoopCondition(Token)
     case missingClassName(Token)
+    case missingEnumName(Token)
     case missingOpenBraceBeforeClassBody(Token)
+    case missingOpenBraceBeforeEnumBody(Token)
+    case missingCloseBraceAfterEnumBody(Token)
     case missingFunctionName(Token)
     case missingOpenParenForFunctionDeclaration(Token)
     case missingParameterName(Token)
@@ -68,8 +71,14 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected semicolon after `for` loop condition"
         case .missingClassName(let token):
             return "[Line \(token.line)] Error: expected class name"
+        case .missingEnumName(let token):
+            return "[Line \(token.line)] Error: expected enum name"
         case .missingOpenBraceBeforeClassBody(let token):
             return "[Line \(token.line)] Error: expected open brace before class body"
+        case .missingOpenBraceBeforeEnumBody(let token):
+            return "[Line \(token.line)] Error: expected open brace before enum body"
+        case .missingCloseBraceAfterEnumBody(let token):
+            return "[Line \(token.line)] Error: expected close brace after enum body"
         case .missingFunctionName(let token):
             return "[Line \(token.line)] Error: expected function name"
         case .missingOpenParenForFunctionDeclaration(let token):

@@ -57,6 +57,8 @@ struct Resolver {
                                               superclassExpr: superclassExpr,
                                               methods: methods,
                                               staticMethods: staticMethods)
+        case .enum(let nameToken, let caseTokens):
+            return try handleEnumDeclaration(nameToken: nameToken, caseTokens: caseTokens)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -183,6 +185,15 @@ struct Resolver {
 
         return .class(nameToken, resolvedSuperclassExpr, resolvedMethods, resolvedStaticMethods)
     }
+
+    mutating private func handleEnumDeclaration(nameToken: Token,
+                                                caseTokens: [Token]) throws -> ResolvedStatement {
+        try declareVariable(name: nameToken.lexeme)
+        defineVariable(name: nameToken.lexeme)
+
+        return .enum(nameToken, caseTokens)
+    }
+
 
     mutating private func handleFunctionDeclaration(nameToken: Token,
                                                     lambdaExpr: Expression,

@@ -62,6 +62,7 @@ enum TokenType: Equatable {
     case `while`
     case `break`
     case `continue`
+    case `enum`
 
     case eof
 }

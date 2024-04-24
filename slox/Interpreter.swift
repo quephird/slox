@@ -82,6 +82,8 @@ class Interpreter {
                                        superclassExpr: superclassExpr,
                                        methods: methods,
                                        staticMethods: staticMethods)
+        case .enum(let nameToken, let caseTokens):
+            try handleEnumDeclaration(nameToken: nameToken, caseTokens: caseTokens)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -183,6 +185,20 @@ class Interpreter {
         }
 
         try environment.assignAtDepth(name: nameToken.lexeme, value: .instance(newClass), depth: 0)
+    }
+
+    private func handleEnumDeclaration(nameToken: Token, caseTokens: [Token]) throws {
+        let enumClass = LoxEnum(name: nameToken.lexeme,
+                                superclass: nil,
+                                methods: [:])
+
+        for caseToken in caseTokens {
+            let caseInstance = LoxInstance(klass: enumClass)
+            caseInstance.properties["name"] = .string(caseToken.lexeme)
+            enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
+        }
+
+        environment.define(name: nameToken.lexeme, value: .instance(enumClass))
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
