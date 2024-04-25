@@ -1,28 +1,3 @@
-// ANSI escape codes
-var esc = "";
-var whiteBackground = esc + "[47m";
-var greenBackground = esc + "[42m";
-var yellowBackground = esc + "[43m";
-var greyBackground = esc + "[100m";
-var blackForeground = esc + "[30m";
-var reset = esc + "[0m";
-var clearScreen = esc + "[2J";
-
-enum LetterStatus {
-    notGuessed,
-    correctPosition,
-    wrongPosition,
-    noMatch
-}
-
-enum GameStatus {
-    win,
-    loss,
-    invalidGuess,
-    wordNotInList,
-    stillGoing
-}
-
 class WordList {
     init() {
         this.words = [
@@ -269,6 +244,68 @@ class WordList {
     }
 }
 
+enum Color {
+    case black, green, yellow, grey, white;
+
+    foregroundValue {
+        if (this == Color.black) {
+            return "30";
+        } else if (this == Color.green) {
+            return "32";
+        } else if (this == Color.yellow) {
+            return "33";
+        } else if (this == Color.white) {
+            return "37";
+        } else {
+            return "90";
+        }
+    }
+
+    backgroundValue {
+        if (this == Color.black) {
+            return "40";
+        } else if (this == Color.green) {
+            return "42";
+        } else if (this == Color.yellow) {
+            return "43";
+        } else if (this == Color.white) {
+            return "47";
+        } else {
+            return "100";
+        }
+    }
+}
+
+class Terminal {
+    class escape(sequence) {
+        return "[" + sequence;
+    }
+
+    class clearScreenStr() {
+        return Terminal.escape("2J");
+    }
+
+    class resetColorStr() {
+        return Terminal.escape("0m");
+    }
+
+    class foregroundStr(color) {
+        return Terminal.escape(color.foregroundValue + "m");
+    }
+
+    class backgroundStr(color) {
+        return Terminal.escape(color.backgroundValue + "m");
+    }
+}
+
+enum LetterStatus {
+    case notGuessed, correctPosition, wrongPosition, noMatch;
+}
+
+enum GameStatus {
+    case win, loss, invalidGuess, wordNotInList, stillGoing;
+}
+
 class Letter {
     init(letter, status) {
         this.letter = letter;
@@ -279,16 +316,19 @@ class Letter {
         var backgroundColor = nil;
 
         if (this.status == LetterStatus.correctPosition) {
-            backgroundColor = greenBackground;
+            backgroundColor = Color.green;
         } else if (this.status == LetterStatus.wrongPosition) {
-            backgroundColor = yellowBackground;
+            backgroundColor = Color.yellow;
         } else if (this.status == LetterStatus.noMatch) {
-            backgroundColor = greyBackground;
+            backgroundColor = Color.grey;
         } else {
-            backgroundColor = whiteBackground;
+            backgroundColor = Color.white;
         }
 
-        return backgroundColor + blackForeground + " " + this.letter + " " + reset;
+        return Terminal.backgroundStr(backgroundColor) +
+               Terminal.foregroundStr(Color.black) +
+               " " + this.letter + " " +
+               Terminal.resetColorStr();
     }
 }
 
@@ -387,7 +427,7 @@ class Game {
     }
 
     display() {
-        print clearScreen;
+        print Terminal.clearScreenStr();
         for (var i = 0; i < this.guesses.count; i += 1) {
             this.guesses[i].display();
         }
