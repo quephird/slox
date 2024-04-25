@@ -147,19 +147,8 @@ struct Parser {
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             if currentTokenMatchesAny(types: [.case]) {
-                if currentToken.type != .rightBrace {
-                    repeat {
-                        guard let enumCase = consumeToken(type: .identifier) else {
-                            throw ParseError.missingParameterName(currentToken)
-                        }
-
-                        enumCases.append(enumCase)
-                    } while currentTokenMatchesAny(types: [.comma])
-                }
-
-                guard currentTokenMatchesAny(types: [.semicolon]) else {
-                    throw ParseError.missingSemicolonAfterCaseClause(currentToken)
-                }
+                let newEnumCases = try parseCaseElementList()
+                enumCases.append(contentsOf: newEnumCases)
             } else {
                 let method = try parseFunction()
                 methods.append(method)
@@ -184,6 +173,25 @@ struct Parser {
         advanceCursor()
 
         return try parseFunction()
+    }
+
+    mutating private func parseCaseElementList() throws -> [Token] {
+        var enumCases: [Token] = []
+        if currentToken.type != .rightBrace {
+            repeat {
+                guard let enumCase = consumeToken(type: .identifier) else {
+                    throw ParseError.missingParameterName(currentToken)
+                }
+
+                enumCases.append(enumCase)
+            } while currentTokenMatchesAny(types: [.comma])
+        }
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolonAfterCaseClause(currentToken)
+        }
+
+        return enumCases
     }
 
     mutating private func parseFunction() throws -> Statement {
