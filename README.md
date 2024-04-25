@@ -324,7 +324,7 @@ enum Color {
 }
 
 var randomColor = Color.choose();
-print randomColor.name
+randomColor.name         // Prints one of "red", "green", or "blue"
 ```
 
 
