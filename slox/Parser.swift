@@ -40,8 +40,9 @@ struct Parser {
     //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
     //                     "{" function* "}" ;
     //    enumDecl       → "enum" IDENTIFIER "{"
-    //                     "case" (IDENTIFIER ( "," IDENTIFIER )*)? ";"
-    //                     function* "}" ;
+    //                     ( caseDecl | function )*
+    //                     "}" ;
+    //    caseDecl       → "case" IDENTIFIER ( "," IDENTIFIER )* ";" ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -141,32 +142,28 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeEnumBody(currentToken)
         }
 
-        guard currentTokenMatchesAny(types: [.case]) else {
-            throw ParseError.missingCaseKeyword(currentToken)
-        }
-
         var enumCases: [Token] = []
-        if currentToken.type != .rightBrace {
-            repeat {
-                guard let enumCase = consumeToken(type: .identifier) else {
-                    throw ParseError.missingParameterName(currentToken)
+        var methods: [Statement] = []
+
+        while currentToken.type != .rightBrace && currentToken.type != .eof {
+            if currentTokenMatchesAny(types: [.case]) {
+                if currentToken.type != .rightBrace {
+                    repeat {
+                        guard let enumCase = consumeToken(type: .identifier) else {
+                            throw ParseError.missingParameterName(currentToken)
+                        }
+
+                        enumCases.append(enumCase)
+                    } while currentTokenMatchesAny(types: [.comma])
                 }
 
-                enumCases.append(enumCase)
-            } while currentTokenMatchesAny(types: [.comma])
-        }
-
-        guard currentTokenMatchesAny(types: [.semicolon]) else {
-            throw ParseError.missingSemicolonAfterCaseClause(currentToken)
-        }
-
-        var methods: [Statement] = []
-        while currentToken.type != .rightBrace && currentToken.type != .eof {
-            // Note that we don't look for/consume a `fun` token before
-            // calling `parseFunction()`. That's a deliberate design decision
-            // by the original author.
-            let method = try parseFunction()
-            methods.append(method)
+                guard currentTokenMatchesAny(types: [.semicolon]) else {
+                    throw ParseError.missingSemicolonAfterCaseClause(currentToken)
+                }
+            } else {
+                let method = try parseFunction()
+                methods.append(method)
+            }
         }
 
         guard currentTokenMatchesAny(types: [.rightBrace]) else {
