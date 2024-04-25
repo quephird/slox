@@ -151,7 +151,7 @@ struct Parser {
                 let newEnumCases = try parseCaseElementList()
                 enumCases.append(contentsOf: newEnumCases)
             } else if currentTokenMatchesAny(types: [.class]) {
-                // It's a little weird to look for the "class" keyword here,
+                // It's a little weird to look for the "class" keyword here
                 // for an enum, but we want to be consistent with the Lox specification,
                 // and enums are _somewhat_ like classes anyway
                 let staticMethod = try parseFunction()
