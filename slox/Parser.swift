@@ -144,11 +144,18 @@ struct Parser {
 
         var enumCases: [Token] = []
         var methods: [Statement] = []
+        var staticMethods: [Statement] = []
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             if currentTokenMatchesAny(types: [.case]) {
                 let newEnumCases = try parseCaseElementList()
                 enumCases.append(contentsOf: newEnumCases)
+            } else if currentTokenMatchesAny(types: [.class]) {
+                // It's a little weird to look for the "class" keyword here,
+                // for an enum, but we want to be consistent with the Lox specification,
+                // and enums are _somewhat_ like classes anyway
+                let staticMethod = try parseFunction()
+                staticMethods.append(staticMethod)
             } else {
                 let method = try parseFunction()
                 methods.append(method)
@@ -159,7 +166,7 @@ struct Parser {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
         }
 
-        return .enum(enumName, enumCases, methods)
+        return .enum(enumName, enumCases, methods, staticMethods)
     }
 
     mutating private func parseFunctionDeclaration() throws -> Statement? {

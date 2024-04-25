@@ -82,10 +82,11 @@ class Interpreter {
                                        superclassExpr: superclassExpr,
                                        methods: methods,
                                        staticMethods: staticMethods)
-        case .enum(let nameToken, let caseTokens, let methods):
+        case .enum(let nameToken, let caseTokens, let methods, let staticMethods):
             try handleEnumDeclaration(nameToken: nameToken,
                                       caseTokens: caseTokens,
-                                      methods: methods)
+                                      methods: methods,
+                                      staticMethods: staticMethods)
         case .function(let name, let lambda):
             try handleFunctionDeclaration(name: name, lambda: lambda)
         case .return(let returnToken, let expr):
@@ -157,7 +158,8 @@ class Interpreter {
 
     private func handleEnumDeclaration(nameToken: Token,
                                        caseTokens: [Token],
-                                       methods: [ResolvedStatement]) throws {
+                                       methods: [ResolvedStatement],
+                                       staticMethods: [ResolvedStatement]) throws {
         guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(name: "Enum") else {
             fatalError()
         }
@@ -172,7 +174,13 @@ class Interpreter {
             enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
         }
 
-        enumClass.methods = try makeMethodLookup(methodDecls: methods)
+        let methodLookup = try makeMethodLookup(methodDecls: methods)
+        let staticMethodLookup = try makeMethodLookup(methodDecls: staticMethods)
+        enumClass.methods = methodLookup
+        if !staticMethodLookup.isEmpty {
+            enumClass.klass.methods = staticMethodLookup
+        }
+
         environment.define(name: nameToken.lexeme, value: .instance(enumClass))
     }
 

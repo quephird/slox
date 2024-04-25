@@ -58,10 +58,11 @@ struct Resolver {
                                               superclassExpr: superclassExpr,
                                               methods: methods,
                                               staticMethods: staticMethods)
-        case .enum(let nameToken, let caseTokens, let methods):
+        case .enum(let nameToken, let caseTokens, let methods, let staticMethods):
             return try handleEnumDeclaration(nameToken: nameToken,
                                              caseTokens: caseTokens,
-                                             methods: methods)
+                                             methods: methods,
+                                             staticMethods: staticMethods)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -191,7 +192,8 @@ struct Resolver {
 
     mutating private func handleEnumDeclaration(nameToken: Token,
                                                 caseTokens: [Token],
-                                                methods: [Statement]) throws -> ResolvedStatement {
+                                                methods: [Statement],
+                                                staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
         let previousLoopType = currentLoopType
         currentClassType = .enum
@@ -220,7 +222,17 @@ struct Resolver {
                                                  functionType: .method)
         }
 
-        return .enum(nameToken, caseTokens, resolvedMethods)
+        let resolvedStaticMethods = try staticMethods.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw ResolverError.notAFunction
+            }
+
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .method)
+        }
+
+        return .enum(nameToken, caseTokens, resolvedMethods, resolvedStaticMethods)
     }
 
 
