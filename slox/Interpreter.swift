@@ -117,7 +117,31 @@ class Interpreter {
     private func handleSwitchStatement(testExpr: ResolvedExpression,
                                        switchCaseDecls: [ResolvedSwitchCaseDeclaration],
                                        switchDefaultStmts: [ResolvedStatement]?) throws {
-        print("OMFG I GOT HERE")
+        let testValue = try evaluate(expr: testExpr)
+
+        var foundMatch = false
+        for switchCaseDecl in switchCaseDecls {
+            let caseValue = try evaluate(expr: switchCaseDecl.valueExpression)
+
+            if caseValue == testValue {
+                for statement in switchCaseDecl.statements {
+                    try execute(statement: statement)
+                }
+
+                foundMatch = true
+                break
+            }
+        }
+
+        if foundMatch {
+            return
+        }
+
+        if let switchDefaultStmts {
+            for statement in switchDefaultStmts {
+                try execute(statement: statement)
+            }
+        }
     }
 
     private func handlePrintStatement(expr: ResolvedExpression) throws {
