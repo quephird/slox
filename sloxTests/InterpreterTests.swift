@@ -1068,4 +1068,38 @@ Color.lookup("green").name
         let expected: LoxValue = try interpreter.makeString(string: "green")
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretEnumWithNoCases() throws {
+        let input = """
+enum Life {
+    class theAnswer() {
+        return 42;
+    }
+}
+
+Life.theAnswer();
+"""
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretComparingCasesOfDifferentEnumsButSameNames() throws {
+        let input = """
+enum PizzaSize {
+    case small, medium, large;
+}
+
+enum ClothingSize {
+  case small, medium, large;
+}
+
+PizzaSize.medium == ClothingSize.medium;
+"""
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .boolean(false)
+        XCTAssertEqual(actual, expected)
+    }
 }
