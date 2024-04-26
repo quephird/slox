@@ -390,7 +390,7 @@ struct Parser {
         }
 
         var statements: [Statement] = []
-        while !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
+        while !currentTokenMatches(type: .case) && !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
             let statement = try parseStatement()
             statements.append(statement)
         }

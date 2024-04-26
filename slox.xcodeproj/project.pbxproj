@@ -19,6 +19,8 @@
 		8730C77D2BD88F4200EA8D30 /* LoxEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C77B2BD842A400EA8D30 /* LoxEnum.swift */; };
 		8730C7832BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */; };
 		8730C7852BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7842BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift */; };
+		8730C7862BDC6DFB00EA8D30 /* SwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */; };
+		8730C7872BDC6DFF00EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7842BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift */; };
 		8730DDE92BB250CE00372548 /* LoxDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730DDE82BB250CE00372548 /* LoxDictionary.swift */; };
 		8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283902B93FC0900E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
@@ -358,6 +360,7 @@
 				876A315C2B897C000085A350 /* Token.swift in Sources */,
 				876A31572B8979BD0085A350 /* ScannerTests.swift in Sources */,
 				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
+				8730C7862BDC6DFB00EA8D30 /* SwitchCaseDeclaration.swift in Sources */,
 				873CCB312B8EBB7800FC249A /* Statement.swift in Sources */,
 				8730C77D2BD88F4200EA8D30 /* LoxEnum.swift in Sources */,
 				8755B8B52B91984C00530DC4 /* LoxCallable.swift in Sources */,
@@ -371,6 +374,7 @@
 				873CCB272B8E7AD100FC249A /* ParserTests.swift in Sources */,
 				876A315D2B897C020085A350 /* Scanner.swift in Sources */,
 				87EEDFBF2B9920F900C7FE6D /* LoxClass.swift in Sources */,
+				8730C7872BDC6DFF00EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */,
 				876A315B2B897BFD0085A350 /* TokenType.swift in Sources */,
 				87EEDFC02B9920FD00C7FE6D /* LoxInstance.swift in Sources */,
 				873CCB292B8E7B6900FC249A /* ParseError.swift in Sources */,

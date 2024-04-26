@@ -1102,4 +1102,132 @@ PizzaSize.medium == ClothingSize.medium;
         let expected: LoxValue = .boolean(false)
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretSwitchStatementThatMatchesFirstCase() throws {
+        let input = """
+fun spell(number) {
+    switch (number) {
+    case 1:
+        return "one";
+    case 2:
+        return "two";
+    default:
+        return "unhandled";
+    }
+}
+
+spell(1)
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "one")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSwitchStatementThatMatchesAnotherCase() throws {
+        let input = """
+fun spell(number) {
+    switch (number) {
+    case 1:
+        return "one";
+    case 2:
+        return "two";
+    default:
+        return "unhandled";
+    }
+}
+
+spell(2)
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "two")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSwitchStatementThatFallsThroughToDefaultCase() throws {
+        let input = """
+fun spell(number) {
+    switch (number) {
+    case 1:
+        return "one";
+    case 2:
+        return "two";
+    default:
+        return "unhandled";
+    }
+}
+
+spell(3)
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "unhandled")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSwitchStatementWithACaseThatHasMultipleStatements() throws {
+        let input = """
+var answer = "";
+switch (42) {
+case 41:
+    answer += "not ";
+    answer += "the ";
+    answer += "answer";
+case 42:
+    answer += "forty-";
+    answer += "two";
+default:
+    answer += "unhandled";
+}
+
+answer
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSwitchStatementWithACaseThatDeclaresAVariable() throws {
+        let input = """
+switch (42) {
+case 42:
+    var answer = "forty-two";
+}
+
+answer
+"""
+
+        let interpreter = Interpreter()
+        let expectedError = RuntimeError.undefinedVariable("answer")
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
+    func testInterpretSwitchStatementWithACaseThatHasABreakStatement() throws {
+        let input = """
+var answer = "forty-two";
+switch (42) {
+case 42:
+    if (true) {
+        break;
+    }
+    // We should never get here!!!
+    answer = "NEVER!";
+}
+
+answer
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
+        XCTAssertEqual(actual, expected)
+    }
 }
