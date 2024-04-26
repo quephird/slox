@@ -540,4 +540,35 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveEnumWithDuplicateCaseNames() throws {
+        // enum Color {
+        //     case red, green, blue, violet;
+        //     case orange, yellow, green, indigo;
+        // }
+        let statements: [Statement] = [
+            .enum(
+                Token(type: .identifier, lexeme: "color", line: 1),
+                [
+                    Token(type: .identifier, lexeme: "red", line: 2),
+                    Token(type: .identifier, lexeme: "green", line: 2),
+                    Token(type: .identifier, lexeme: "blue", line: 2),
+                    Token(type: .identifier, lexeme: "violet", line: 2),
+                    Token(type: .identifier, lexeme: "orange", line: 3),
+                    Token(type: .identifier, lexeme: "yellow", line: 3),
+                    Token(type: .identifier, lexeme: "green", line: 3),
+                    Token(type: .identifier, lexeme: "indigo", line: 3),
+                ],
+                [],
+                [])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.duplicateCaseNamesNotAllowed(
+            Token(type: .identifier, lexeme: "green", line: 3)
+        )
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }

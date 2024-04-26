@@ -22,6 +22,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case cannotContinueOutsideLoop
     case functionsMustHaveAParameterList
     case cannotUseSplatOperatorOutOfContext
+    case duplicateCaseNamesNotAllowed(Token)
 
     var description: String {
         switch self {
@@ -53,6 +54,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Functions must have a parameter list"
         case .cannotUseSplatOperatorOutOfContext:
             return "Cannot use splat operator in this context"
+        case .duplicateCaseNamesNotAllowed(let token):
+            return "Cannot use duplicate case names in enum: \(token.lexeme)"
         }
     }
 }

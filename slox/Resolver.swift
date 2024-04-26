@@ -212,6 +212,14 @@ struct Resolver {
         }
         scopeStack.lastMutable["this"] = true
 
+        var caseNameSet: Set<String> = Set()
+        for caseToken in caseTokens {
+            let (inserted, _) = caseNameSet.insert(caseToken.lexeme)
+            if !inserted {
+                throw ResolverError.duplicateCaseNamesNotAllowed(caseToken)
+            }
+        }
+
         let resolvedMethods = try methods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
                 throw ResolverError.notAFunction
@@ -225,6 +233,10 @@ struct Resolver {
         let resolvedStaticMethods = try staticMethods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
                 throw ResolverError.notAFunction
+            }
+
+            if nameToken.lexeme == "init" {
+                throw ResolverError.staticInitsNotAllowed
             }
 
             return try handleFunctionDeclaration(nameToken: nameToken,
