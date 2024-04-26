@@ -71,6 +71,10 @@ struct Resolver {
             return try handleExpressionStatement(expr: expr)
         case .if(let testExpr, let consequentStmt, let alternativeStmt):
             return try handleIf(testExpr: testExpr, consequentStmt: consequentStmt, alternativeStmt: alternativeStmt)
+        case .switch(let testExpr, let switchCaseDecls, let switchDefaultStmts):
+            return try handleSwitch(testExpr: testExpr,
+                                    switchCaseDecls: switchCaseDecls,
+                                    switchDefaultStmts: switchDefaultStmts)
         case .print(let expr):
             return try handlePrintStatement(expr: expr)
         case .return(let returnToken, let expr):
@@ -282,6 +286,29 @@ struct Resolver {
         }
 
         return .if(resolvedTestExpr, resolvedConsequentStmt, resolvedAlternativeStmt)
+    }
+
+    mutating private func handleSwitch(testExpr: Expression,
+                                       switchCaseDecls: [SwitchCaseDeclaration],
+                                       switchDefaultStmts: [Statement]?) throws -> ResolvedStatement {
+        let resolvedTestExpr = try resolve(expression: testExpr)
+        let resolvedSwitchCaseDecls = try switchCaseDecls.map { switchCaseDecl in
+            try handleSwitchCaseDeclaration(switchCaseDecl: switchCaseDecl)
+        }
+
+        var resolvedSwitchDefaultStmts: [ResolvedStatement]? = nil
+        if let switchDefaultStmts {
+            resolvedSwitchDefaultStmts = try resolve(statements: switchDefaultStmts)
+        }
+
+        return .switch(resolvedTestExpr, resolvedSwitchCaseDecls, resolvedSwitchDefaultStmts)
+    }
+
+    mutating private func handleSwitchCaseDeclaration(switchCaseDecl: SwitchCaseDeclaration) throws -> ResolvedSwitchCaseDeclaration {
+        let resolvedValueExpr = try resolve(expression: switchCaseDecl.valueExpression)
+        let resolvedStmts = try resolve(statements: switchCaseDecl.statements)
+
+        return ResolvedSwitchCaseDeclaration(valueExpression: resolvedValueExpr, statements: resolvedStmts)
     }
 
     mutating private func handlePrintStatement(expr: Expression) throws -> ResolvedStatement {

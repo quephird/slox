@@ -49,6 +49,7 @@ struct Parser {
     //    statement      → exprStmt
     //                   | forStmt
     //                   | ifStmt
+    //                   | switchStmt
     //                   | printStmt
     //                   | jumpStmt
     //                   | whileStmt
@@ -59,6 +60,10 @@ struct Parser {
     //                     expression? ")" statement ;
     //    ifStmt         → "if" "(" expression ")" statement
     //                     ( "else" statement )? ;
+    //    switchStmt     → "switch" "(" expression ")" "{"
+    //                     ( "case" expression ":" statement+ )+
+    //                     ( "default" ":" statement )?
+    //                     "}"
     //    printStmt      → "print" expression ";" ;
     //    jumpStmt       → ( "return" expression? ";"
     //                   | "break" ";"
@@ -251,6 +256,10 @@ struct Parser {
             return ifStmt
         }
 
+        if let switchStmt = try parseSwitchStatement() {
+            return switchStmt
+        }
+
         if let printStmt = try parsePrintStatement() {
             return printStmt
         }
@@ -331,6 +340,80 @@ struct Parser {
         }
 
         return .if(testExpr, consequentStmt, alternativeStmt)
+    }
+
+    mutating private func parseSwitchStatement() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.switch]) else {
+            return nil
+        }
+
+        guard currentTokenMatchesAny(types: [.leftParen]) else {
+            throw ParseError.missingOpenParenForSwitchStatement(currentToken)
+        }
+
+        let switchExpr = try parseExpression()
+        if !currentTokenMatchesAny(types: [.rightParen]) {
+            throw ParseError.missingCloseParenForSwitchStatement(currentToken)
+        }
+
+        guard currentTokenMatchesAny(types: [.leftBrace]) else {
+            throw ParseError.missingOpenBraceBeforeSwitchBody(currentToken)
+        }
+
+        var switchCaseDecls: [SwitchCaseDeclaration] = []
+        while !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
+            let switchCaseDecl = try parseSwitchCaseDeclaration()
+            switchCaseDecls.append(switchCaseDecl)
+        }
+
+        var switchDefaultDecl: [Statement]? = nil
+        if currentTokenMatches(type: .default) {
+            switchDefaultDecl = try parseSwitchDefaultDecl()
+        }
+
+        guard currentTokenMatchesAny(types: [.rightBrace]) else {
+            throw ParseError.missingClosingBrace(currentToken)
+        }
+
+        return .switch(switchExpr, switchCaseDecls, switchDefaultDecl)
+    }
+
+    mutating private func parseSwitchCaseDeclaration() throws -> SwitchCaseDeclaration {
+        guard currentTokenMatchesAny(types: [.case]) else {
+            throw ParseError.missingCaseOrDefault(currentToken)
+        }
+
+        let valueExpr = try parseExpression()
+
+        guard currentTokenMatchesAny(types: [.colon]) else {
+            throw ParseError.missingColon(currentToken)
+        }
+
+        var statements: [Statement] = []
+        while !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
+            let statement = try parseStatement()
+            statements.append(statement)
+        }
+
+        return SwitchCaseDeclaration(valueExpression: valueExpr, statements: statements)
+    }
+
+    mutating private func parseSwitchDefaultDecl() throws -> [Statement] {
+        guard currentTokenMatchesAny(types: [.default]) else {
+            throw ParseError.missingCaseOrDefault(currentToken)
+        }
+
+        guard currentTokenMatchesAny(types: [.colon]) else {
+            throw ParseError.missingColon(currentToken)
+        }
+
+        var statements: [Statement] = []
+        while !currentTokenMatches(type: .rightBrace) {
+            let statement = try parseStatement()
+            statements.append(statement)
+        }
+
+        return statements
     }
 
     mutating private func parsePrintStatement() throws -> Statement? {

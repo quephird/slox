@@ -34,6 +34,8 @@ struct Scanner {
         "continue": .continue,
         "enum": .enum,
         "case": .case
+        "switch": .switch,
+        "default": .default
     ]
 
     init(source: String) {
