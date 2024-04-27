@@ -391,11 +391,11 @@ struct Parser {
 
         var statements: [Statement] = []
         while !currentTokenMatches(type: .case) && !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
-            let statement = try parseStatement()
+            let statement = try parseDeclaration()
             statements.append(statement)
         }
 
-        return SwitchCaseDeclaration(valueExpression: valueExpr, statements: statements)
+        return SwitchCaseDeclaration(valueExpression: valueExpr, statement: .block(statements))
     }
 
     mutating private func parseSwitchDefaultDecl() throws -> [Statement] {
@@ -409,7 +409,7 @@ struct Parser {
 
         var statements: [Statement] = []
         while !currentTokenMatches(type: .rightBrace) {
-            let statement = try parseStatement()
+            let statement = try parseDeclaration()
             statements.append(statement)
         }
 
