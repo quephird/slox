@@ -18,6 +18,7 @@ struct Resolver {
         case none
         case `class`
         case subclass
+        case `enum`
     }
 
     private enum LoopType {
@@ -57,6 +58,11 @@ struct Resolver {
                                               superclassExpr: superclassExpr,
                                               methods: methods,
                                               staticMethods: staticMethods)
+        case .enum(let nameToken, let caseTokens, let methods, let staticMethods):
+            return try handleEnumDeclaration(nameToken: nameToken,
+                                             caseTokens: caseTokens,
+                                             methods: methods,
+                                             staticMethods: staticMethods)
         case .function(let nameToken, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
                                                  lambdaExpr: lambdaExpr,
@@ -183,6 +189,64 @@ struct Resolver {
 
         return .class(nameToken, resolvedSuperclassExpr, resolvedMethods, resolvedStaticMethods)
     }
+
+    mutating private func handleEnumDeclaration(nameToken: Token,
+                                                caseTokens: [Token],
+                                                methods: [Statement],
+                                                staticMethods: [Statement]) throws -> ResolvedStatement {
+        let previousClassType = currentClassType
+        let previousLoopType = currentLoopType
+        currentClassType = .enum
+        currentLoopType = .none
+        defer {
+            currentClassType = previousClassType
+            currentLoopType = previousLoopType
+        }
+
+        try declareVariable(name: nameToken.lexeme)
+        defineVariable(name: nameToken.lexeme)
+
+        beginScope()
+        defer {
+            endScope()
+        }
+        scopeStack.lastMutable["this"] = true
+
+        var caseNameSet: Set<String> = Set()
+        for caseToken in caseTokens {
+            let (inserted, _) = caseNameSet.insert(caseToken.lexeme)
+            if !inserted {
+                throw ResolverError.duplicateCaseNamesNotAllowed(caseToken)
+            }
+        }
+
+        let resolvedMethods = try methods.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw ResolverError.notAFunction
+            }
+
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .method)
+        }
+
+        let resolvedStaticMethods = try staticMethods.map { method in
+            guard case .function(let nameToken, let lambdaExpr) = method else {
+                throw ResolverError.notAFunction
+            }
+
+            if nameToken.lexeme == "init" {
+                throw ResolverError.staticInitsNotAllowed
+            }
+
+            return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 lambdaExpr: lambdaExpr,
+                                                 functionType: .method)
+        }
+
+        return .enum(nameToken, caseTokens, resolvedMethods, resolvedStaticMethods)
+    }
+
 
     mutating private func handleFunctionDeclaration(nameToken: Token,
                                                     lambdaExpr: Expression,
@@ -478,7 +542,7 @@ struct Resolver {
             throw ResolverError.cannotReferenceSuperOutsideClass
         case .class:
             throw ResolverError.cannotReferenceSuperWithoutSubclassing
-        case .subclass:
+        default:
             break
         }
 

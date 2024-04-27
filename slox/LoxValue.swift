@@ -39,6 +39,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             return "<function: \(function)>"
         case .instance(let loxString as LoxString):
             return "\"\(loxString.string)\""
+        case .instance(let enoom as LoxEnum):
+            return "<enum: \(enoom.name)>"
         case .instance(let klass as LoxClass):
             return "<class: \(klass.name)>"
         case .instance(let list as LoxList):
@@ -67,6 +69,10 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             string.append("]")
             return string
         case .instance(let instance):
+            if instance.klass is LoxEnum {
+                let caseName = instance.properties["name"]!
+                return "<enum case: \(instance.klass.name).\(caseName)>"
+            }
             return "<instance: \(instance.klass.name)>"
         }
     }
@@ -90,6 +96,8 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
             return leftString.string == rightString.string
         case (.instance(let leftList as LoxList), .instance(let rightList as LoxList)):
             return leftList.elements == rightList.elements
+        case (.instance(let leftInstance), .instance(let rightInstance)):
+            return leftInstance === rightInstance
         default:
             return false
         }

@@ -1561,4 +1561,99 @@ final class ParserTests: XCTestCase {
         ]
         XCTAssertEqual(actual, expected)
     }
+
+    func testParseEnumDeclarationWithMethods() throws {
+        // enum Foo {
+        //     case foo, bar, baz;
+        //     isBar() {
+        //         if (this == Foo.bar) {
+        //             return true;
+        //         }
+        //         return false;
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .enum, lexeme: "enum", line: 1),
+            Token(type: .identifier, lexeme: "Foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .case, lexeme: "case", line: 2),
+            Token(type: .identifier, lexeme: "foo", line: 2),
+            Token(type: .comma, lexeme: ",", line: 2),
+            Token(type: .identifier, lexeme: "bar", line: 2),
+            Token(type: .comma, lexeme: ",", line: 2),
+            Token(type: .identifier, lexeme: "baz", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .identifier, lexeme: "isBar", line: 3),
+            Token(type: .leftParen, lexeme: "(", line: 3),
+            Token(type: .rightParen, lexeme: ")", line: 3),
+            Token(type: .leftBrace, lexeme: "{", line: 3),
+
+            Token(type: .if, lexeme: "if", line: 4),
+            Token(type: .leftParen, lexeme: "(", line: 4),
+            Token(type: .this, lexeme: "this", line: 4),
+            Token(type: .equalEqual, lexeme: "==", line: 4),
+            Token(type: .identifier, lexeme: "Foo", line: 4),
+            Token(type: .dot, lexeme: ".", line: 4),
+            Token(type: .identifier, lexeme: "bar", line: 4),
+            Token(type: .rightParen, lexeme: ")", line: 4),
+            Token(type: .leftBrace, lexeme: "{", line: 4),
+
+            Token(type: .return, lexeme: "return", line: 5),
+            Token(type: .true, lexeme: "true", line: 5),
+            Token(type: .semicolon, lexeme: ";", line: 5),
+
+            Token(type: .rightBrace, lexeme: "}", line: 6),
+
+            Token(type: .return, lexeme: "return", line: 7),
+            Token(type: .false, lexeme: "false", line: 7),
+            Token(type: .semicolon, lexeme: ";", line: 7),
+
+            Token(type: .rightBrace, lexeme: "}", line: 8),
+
+            Token(type: .rightBrace, lexeme: "}", line: 9),
+            Token(type: .eof, lexeme: "", line: 9)
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .enum(
+                Token(type: .identifier, lexeme: "Foo", line: 1),
+                [
+                    Token(type: .identifier, lexeme: "foo", line: 2),
+                    Token(type: .identifier, lexeme: "bar", line: 2),
+                    Token(type: .identifier, lexeme: "baz", line: 2),
+                ],
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "isBar", line: 3),
+                        .lambda(
+                            ParameterList(
+                                normalParameters: [],
+                                variadicParameter: nil),
+                            [
+                                .if(
+                                    .binary(
+                                        .this(Token(type: .this, lexeme: "this", line: 4)),
+                                        Token(type: .equalEqual, lexeme: "==", line: 4),
+                                        .get(
+                                            .variable(Token(type: .identifier, lexeme: "Foo", line: 4)),
+                                            Token(type: .identifier, lexeme: "bar", line: 4))),
+                                    .block([
+                                        .return(
+                                            Token(type: .return, lexeme: "return", line: 5),
+                                            .literal(.boolean(true))),
+                                    ]),
+                                    nil),
+                                .return(
+                                    Token(type: .return, lexeme: "return", line: 7),
+                                    .literal(.boolean(false)))
+                            ]))
+                ],
+                []),
+        ]
+        XCTAssertEqual(actual, expected)
+    }
 }

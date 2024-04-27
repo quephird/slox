@@ -274,6 +274,60 @@ var sa = SavingsAccount(199);
 sa.withdraw(100);
 ```
 
+### Enums
+
+slox also supports enums:
+
+```
+enum Color {
+    case red, green, blue;
+}
+```
+
+All enum cases have a `name` property, and all enums have an `allCases` computed property which returns a list of all the defined cases:
+
+```
+Color.red.name           // Prints "red"
+Color.allCases           // Prints [<enum case: Color.red>,
+                         //         <enum case: Color.green>,
+                         //         <enum case: Color.blue>]
+```
+
+You can define methods on them too, as well as computed properties. Specific enum cases are referred to by the `this` keyword, similarly to how class instances are:
+
+```
+enum Color {
+    case red, green, blue;
+
+    isRed() {
+        if (this == Color.red) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+Color.green.isRed()      // Prints "false"
+```
+
+As with Lox classes, static methods are declared inside an enum using the `class` keyword:
+
+```
+enum Color {
+    case red, green, blue;
+
+    class choose() {
+        var cases = Color.allCases;
+        return cases[randInt(0, cases.count-1)];
+    }
+}
+
+var randomColor = Color.choose();
+randomColor.name         // Prints one of "red", "green", or "blue"
+```
+
+
 ### Collections
 
 Currently, there are two collection types supported in slox: lists and dictionaries. List literals are created using square brackets, and there are native properties and functions for them:

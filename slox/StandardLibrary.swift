@@ -12,6 +12,12 @@ class String {
     }
 }
 
+class Enum {
+    class allCases {
+        return allCasesNative(this);
+    }
+}
+
 class List {
     clone() {
         return this + [];

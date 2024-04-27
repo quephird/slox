@@ -19,7 +19,7 @@ class LoxInstance {
         if _klass == nil {
             // Only metaclasses should ever have a `nil` value for `_klass`
             let selfClass = self as! LoxClass
-            _klass = LoxClass(name: "\(selfClass.name) metaclass", superclass: nil, methods: [:])
+            _klass = LoxClass(name: "\(selfClass.name) metaclass", superclass: selfClass.superclass?.klass, methods: [:])
         }
         return _klass!
     }

@@ -1,26 +1,3 @@
-// ANSI escape codes
-var esc = "";
-var whiteBackground = esc + "[47m";
-var greenBackground = esc + "[42m";
-var yellowBackground = esc + "[43m";
-var greyBackground = esc + "[100m";
-var blackForeground = esc + "[30m";
-var reset = esc + "[0m";
-var clearScreen = esc + "[2J";
-
-// Letter statuses
-var notGuessed = 0;
-var correctPosition = 1;
-var wrongPosition = 2;
-var noMatch = 3;
-
-// Game statuses
-var win = 0;
-var loss = 1;
-var invalidGuess = 2;
-var wordNotInList = 3;
-var stillGoing = 4;
-
 class WordList {
     init() {
         this.words = [
@@ -267,6 +244,68 @@ class WordList {
     }
 }
 
+enum Color {
+    case black, green, yellow, grey, white;
+
+    foregroundValue {
+        if (this == Color.black) {
+            return "30";
+        } else if (this == Color.green) {
+            return "32";
+        } else if (this == Color.yellow) {
+            return "33";
+        } else if (this == Color.white) {
+            return "37";
+        } else {
+            return "90";
+        }
+    }
+
+    backgroundValue {
+        if (this == Color.black) {
+            return "40";
+        } else if (this == Color.green) {
+            return "42";
+        } else if (this == Color.yellow) {
+            return "43";
+        } else if (this == Color.white) {
+            return "47";
+        } else {
+            return "100";
+        }
+    }
+}
+
+class Terminal {
+    class escape(sequence) {
+        return "[" + sequence;
+    }
+
+    class clearScreenStr() {
+        return Terminal.escape("2J");
+    }
+
+    class resetColorStr() {
+        return Terminal.escape("0m");
+    }
+
+    class foregroundStr(color) {
+        return Terminal.escape(color.foregroundValue + "m");
+    }
+
+    class backgroundStr(color) {
+        return Terminal.escape(color.backgroundValue + "m");
+    }
+}
+
+enum LetterStatus {
+    case notGuessed, correctPosition, wrongPosition, noMatch;
+}
+
+enum GameStatus {
+    case win, loss, invalidGuess, wordNotInList, stillGoing;
+}
+
 class Letter {
     init(letter, status) {
         this.letter = letter;
@@ -276,17 +315,20 @@ class Letter {
     format() {
         var backgroundColor = nil;
 
-        if (this.status == correctPosition) {
-            backgroundColor = greenBackground;
-        } else if (this.status == wrongPosition) {
-            backgroundColor = yellowBackground;
-        } else if (this.status == noMatch) {
-            backgroundColor = greyBackground;
+        if (this.status == LetterStatus.correctPosition) {
+            backgroundColor = Color.green;
+        } else if (this.status == LetterStatus.wrongPosition) {
+            backgroundColor = Color.yellow;
+        } else if (this.status == LetterStatus.noMatch) {
+            backgroundColor = Color.grey;
         } else {
-            backgroundColor = whiteBackground;
+            backgroundColor = Color.white;
         }
 
-        return backgroundColor + blackForeground + " " + this.letter + " " + reset;
+        return Terminal.backgroundStr(backgroundColor) +
+               Terminal.foregroundStr(Color.black) +
+               " " + this.letter + " " +
+               Terminal.resetColorStr();
     }
 }
 
@@ -295,7 +337,7 @@ class Keyboard {
         var keys = "abcdefghijklmnopqrstuvwxyz"
             .chars
             .reduce([:], fun (acc, letter) {
-                acc[letter] = Letter(letter, notGuessed);
+                acc[letter] = Letter(letter, LetterStatus.notGuessed);
                 return acc;
             });
         this.keys = keys;
@@ -304,23 +346,23 @@ class Keyboard {
     reset() {
         var letters = "abcdefghijklmnopqrstuvwxyz".chars;
         for (var i = 0; i < letters.count; i += 1) {
-            this.keys[letters[i]].status = notGuessed;
+            this.keys[letters[i]].status = LetterStatus.notGuessed;
         }
     }
 
     update(guess) {
         for (var i = 0; i < 5; i += 1) {
             var letter = guess.letters[i];
-            if (letter.status == correctPosition) {
-                this.keys[letter.letter].status = correctPosition;
-            } else if (letter.status == wrongPosition) {
-                if (this.keys[letter.letter].status == noMatch or
-                    this.keys[letter.letter].status == notGuessed) {
-                    this.keys[letter.letter].status = wrongPosition;
+            if (letter.status == LetterStatus.correctPosition) {
+                this.keys[letter.letter].status = LetterStatus.correctPosition;
+            } else if (letter.status == LetterStatus.wrongPosition) {
+                if (this.keys[letter.letter].status == LetterStatus.noMatch or
+                    this.keys[letter.letter].status == LetterStatus.notGuessed) {
+                    this.keys[letter.letter].status = LetterStatus.wrongPosition;
                 }
-            } else if (letter.status == noMatch) {
-                if (this.keys[letter.letter].status == notGuessed) {
-                    this.keys[letter.letter].status = noMatch;
+            } else if (letter.status == LetterStatus.noMatch) {
+                if (this.keys[letter.letter].status == LetterStatus.notGuessed) {
+                    this.keys[letter.letter].status = LetterStatus.noMatch;
                 }
             }
         }
@@ -363,7 +405,7 @@ class Guess {
     reset() {
         for (var i = 0; i < 5; i += 1) {
             this.letters[i].letter = " ";
-            this.letters[i].status = notGuessed;
+            this.letters[i].status = LetterStatus.notGuessed;
         }
     }
 }
@@ -376,7 +418,7 @@ class Game {
         for (var i = 0; i < 6; i += 1) {
             var letters = [];
             for (var j = 0; j < 5; j += 1) {
-                letters.append(Letter(" ", notGuessed));
+                letters.append(Letter(" ", LetterStatus.notGuessed));
             }
             guesses.append(Guess(letters));
         }
@@ -385,20 +427,20 @@ class Game {
     }
 
     display() {
-        print clearScreen;
+        print Terminal.clearScreenStr();
         for (var i = 0; i < this.guesses.count; i += 1) {
             this.guesses[i].display();
         }
 
         this.keyboard.display();
 
-        if (this.status == invalidGuess) {
+        if (this.status == GameStatus.invalidGuess) {
             print "Your word must only be five letters long!";
-        } else if (this.status == wordNotInList) {
+        } else if (this.status == GameStatus.wordNotInList) {
             print "Word is not in this game's dictionary!";
-        } else if (this.status == loss) {
+        } else if (this.status == GameStatus.loss) {
             print "The word was: " + this.word;
-        } else if (this.status == win) {
+        } else if (this.status == GameStatus.win) {
             print "You won!";
         }
     }
@@ -410,16 +452,16 @@ class Game {
 
         this.keyboard.reset();
         this.guessCount = 0;
-        this.status = stillGoing;
+        this.status = GameStatus.stillGoing;
         this.word = this.wordList.choose();
     }
 
     submitGuess(guess) {
         if (guess.chars.count != 5) {
-            this.status = invalidGuess;
+            this.status = GameStatus.invalidGuess;
             return;
         } else if (!this.wordList.contains(guess)) {
-            this.status = wordNotInList;
+            this.status = GameStatus.wordNotInList;
             return;
         }
 
@@ -428,27 +470,27 @@ class Game {
 
         var letters = [];
         for (var i = 0; i < 5; i += 1) {
-            letters.append(Letter(guessChars[i], noMatch));
+            letters.append(Letter(guessChars[i], LetterStatus.noMatch));
         }
 
         var matchableLetters = [];
         for (i = 0; i < 5; i += 1) {
             var status = nil;
             if (guessChars[i] == wordChars[i]) {
-                letters[i].status = correctPosition;
+                letters[i].status = LetterStatus.correctPosition;
             } else {
                 matchableLetters.append(wordChars[i]);
             }
         }
 
         for (i = 0; i < 5; i += 1) {
-            if (letters[i].status == correctPosition) {
+            if (letters[i].status == LetterStatus.correctPosition) {
                 continue;
             }
 
             var matchIndex = matchableLetters.firstIndex(guessChars[i]);
             if (matchIndex != nil) {
-                letters[i].status = wrongPosition;
+                letters[i].status = LetterStatus.wrongPosition;
                 matchableLetters.deleteAt(matchIndex);
             }
         }
@@ -459,11 +501,11 @@ class Game {
         this.keyboard.update(newGuess);
 
         if (guess == this.word) {
-            this.status = win;
+            this.status = GameStatus.win;
         } else if (this.guessCount == 6) {
-            this.status = loss;
+            this.status = GameStatus.loss;
         } else {
-            this.status = stillGoing;
+            this.status = GameStatus.stillGoing;
         }
     }
 
@@ -471,7 +513,7 @@ class Game {
         while (true) {
             this.display();
 
-            if (this.status == win or this.status == loss) {
+            if (this.status == GameStatus.win or this.status == GameStatus.loss) {
                 var input = getInput("Would you like to play again? (y/n)");
                 if (input == "y") {
                     this.reset();

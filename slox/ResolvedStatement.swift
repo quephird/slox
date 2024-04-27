@@ -16,6 +16,7 @@ indirect enum ResolvedStatement: Equatable {
     case function(Token, ResolvedExpression)
     case `return`(Token, ResolvedExpression?)
     case `class`(Token, ResolvedExpression?, [ResolvedStatement], [ResolvedStatement])
+    case `enum`(Token, [Token], [ResolvedStatement], [ResolvedStatement])
     case `break`(Token)
     case `continue`(Token)
 }

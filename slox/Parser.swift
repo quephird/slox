@@ -33,11 +33,16 @@ struct Parser {
     //
     //    program        → declaration* EOF ;
     //    declaration    → classDecl
+    //                   | enumDecl
     //                   | funDecl
     //                   | varDecl
     //                   | statement ;
     //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
     //                     "{" function* "}" ;
+    //    enumDecl       → "enum" IDENTIFIER "{"
+    //                     ( caseDecl | function )*
+    //                     "}" ;
+    //    caseDecl       → "case" IDENTIFIER ( "," IDENTIFIER )* ";" ;
     //    funDecl        → "fun" function ;
     //    function       → IDENTIFIER "(" parameters? ")" block ;
     //    varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -63,6 +68,10 @@ struct Parser {
     mutating private func parseDeclaration() throws -> Statement {
         if let classDecl = try parseClassDeclaration() {
             return classDecl
+        }
+
+        if let enumDecl = try parseEnumDeclaration() {
+            return enumDecl
         }
 
         if let funDecl = try parseFunctionDeclaration() {
@@ -120,6 +129,46 @@ struct Parser {
         return .class(className, superclassExpr, methodStatements, staticMethodStatements)
     }
 
+    mutating private func parseEnumDeclaration() throws -> Statement? {
+        guard currentTokenMatchesAny(types: [.enum]) else {
+            return nil
+        }
+
+        guard let enumName = consumeToken(type: .identifier) else {
+            throw ParseError.missingEnumName(currentToken)
+        }
+
+        guard currentTokenMatchesAny(types: [.leftBrace]) else {
+            throw ParseError.missingOpenBraceBeforeEnumBody(currentToken)
+        }
+
+        var enumCases: [Token] = []
+        var methods: [Statement] = []
+        var staticMethods: [Statement] = []
+
+        while currentToken.type != .rightBrace && currentToken.type != .eof {
+            if currentTokenMatchesAny(types: [.case]) {
+                let newEnumCases = try parseCaseElementList()
+                enumCases.append(contentsOf: newEnumCases)
+            } else if currentTokenMatchesAny(types: [.class]) {
+                // It's a little weird to look for the "class" keyword here
+                // for an enum, but we want to be consistent with the Lox specification,
+                // and enums are _somewhat_ like classes anyway
+                let staticMethod = try parseFunction()
+                staticMethods.append(staticMethod)
+            } else {
+                let method = try parseFunction()
+                methods.append(method)
+            }
+        }
+
+        guard currentTokenMatchesAny(types: [.rightBrace]) else {
+            throw ParseError.missingCloseParenAfterArguments(currentToken)
+        }
+
+        return .enum(enumName, enumCases, methods, staticMethods)
+    }
+
     mutating private func parseFunctionDeclaration() throws -> Statement? {
         // We look ahead to see if the next token is an identifer,
         // and if so we assume this is a function declaration. Otherwise,
@@ -131,6 +180,25 @@ struct Parser {
         advanceCursor()
 
         return try parseFunction()
+    }
+
+    mutating private func parseCaseElementList() throws -> [Token] {
+        var enumCases: [Token] = []
+        if currentToken.type != .rightBrace {
+            repeat {
+                guard let enumCase = consumeToken(type: .identifier) else {
+                    throw ParseError.missingParameterName(currentToken)
+                }
+
+                enumCases.append(enumCase)
+            } while currentTokenMatchesAny(types: [.comma])
+        }
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolonAfterCaseClause(currentToken)
+        }
+
+        return enumCases
     }
 
     mutating private func parseFunction() throws -> Statement {

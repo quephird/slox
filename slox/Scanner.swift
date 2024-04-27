@@ -32,6 +32,8 @@ struct Scanner {
         "while": .while,
         "break": .break,
         "continue": .continue,
+        "enum": .enum,
+        "case": .case
     ]
 
     init(source: String) {

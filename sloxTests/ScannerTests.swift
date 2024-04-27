@@ -112,7 +112,7 @@ final class ScannerTests: XCTestCase {
     }
 
     func testScanningOfKeywords() throws {
-        let source = "and class else false for fun if nil or print return super this true var while break continue"
+        let source = "and class else false for fun if nil or print return super this true var while break continue enum case"
         var scanner = Scanner(source: source)
         let actual = try! scanner.scanTokens()
         let expected: [Token] = [
@@ -134,6 +134,8 @@ final class ScannerTests: XCTestCase {
             Token(type: .while, lexeme: "while", line: 1),
             Token(type: .break, lexeme: "break", line: 1),
             Token(type: .continue, lexeme: "continue", line: 1),
+            Token(type: .enum, lexeme: "enum", line: 1),
+            Token(type: .case, lexeme: "case", line: 1),
             Token(type: .eof, lexeme: "", line: 1),
         ]
 

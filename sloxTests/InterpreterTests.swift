@@ -1015,4 +1015,91 @@ bar
         ])
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretEnumWithMethod() throws {
+        let input = """
+enum Color {
+    case red, green, blue;
+
+    isRed() {
+        if (this == Color.red) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+Color.blue.isRed()
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .boolean(false)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretEnumWithClassLevelMethod() throws {
+        let input = """
+enum Color {
+    case red, green, blue;
+
+    class lookup(name) {
+        if (name == "red") {
+            return Color.red;
+        } else if (name == "green") {
+            return Color.green;
+        } else if (name == "blue") {
+            return Color.blue;
+        }
+
+        return nil;
+    }
+}
+
+Color.lookup("green").name
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        // NOTA BENE: We need to compare names here because we do not
+        // currently have a means of getting a handle to a specific
+        // Lox enum case from within Swift.
+        let expected: LoxValue = try interpreter.makeString(string: "green")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretEnumWithNoCases() throws {
+        let input = """
+enum Life {
+    class theAnswer() {
+        return 42;
+    }
+}
+
+Life.theAnswer();
+"""
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretComparingCasesOfDifferentEnumsButSameNames() throws {
+        let input = """
+enum PizzaSize {
+    case small, medium, large;
+}
+
+enum ClothingSize {
+  case small, medium, large;
+}
+
+PizzaSize.medium == ClothingSize.medium;
+"""
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .boolean(false)
+        XCTAssertEqual(actual, expected)
+    }
 }
