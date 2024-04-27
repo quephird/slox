@@ -21,9 +21,10 @@ struct Resolver {
         case `enum`
     }
 
-    private enum LoopType {
+    private enum JumpableType {
         case none
         case loop
+        case `switch`
     }
 
     private enum ArgumentListType {
@@ -35,7 +36,7 @@ struct Resolver {
     private var scopeStack: [[String: Bool]] = []
     private var currentFunctionType: FunctionType = .none
     private var currentClassType: ClassType = .none
-    private var currentLoopType: LoopType = .none
+    private var currentJumpableType: JumpableType = .none
     private var currentArgumentListType: ArgumentListType = .none
 
     // Main point of entry
@@ -121,12 +122,12 @@ struct Resolver {
                                                  methods: [Statement],
                                                  staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
-        let previousLoopType = currentLoopType
+        let previousJumpableType = currentJumpableType
         currentClassType = .class
-        currentLoopType = .none
+        currentJumpableType = .none
         defer {
             currentClassType = previousClassType
-            currentLoopType = previousLoopType
+            currentJumpableType = previousJumpableType
         }
 
         try declareVariable(name: nameToken.lexeme)
@@ -291,6 +292,12 @@ struct Resolver {
     mutating private func handleSwitch(testExpr: Expression,
                                        switchCaseDecls: [SwitchCaseDeclaration],
                                        switchDefaultStmts: [Statement]?) throws -> ResolvedStatement {
+        let previousJumpableType = currentJumpableType
+        currentJumpableType = .switch
+        defer {
+            currentJumpableType = previousJumpableType
+        }
+
         let resolvedTestExpr = try resolve(expression: testExpr)
         let resolvedSwitchCaseDecls = try switchCaseDecls.map { switchCaseDecl in
             try handleSwitchCaseDeclaration(switchCaseDecl: switchCaseDecl)
@@ -336,15 +343,15 @@ struct Resolver {
     }
 
     mutating private func handleBreak(breakToken: Token) throws -> ResolvedStatement {
-        if currentLoopType == .none {
-            throw ResolverError.cannotBreakOutsideLoop
+        if currentJumpableType == .none {
+            throw ResolverError.cannotBreakOutsideLoopOrSwitch
         }
 
         return .break(breakToken)
     }
 
     mutating private func handleContinue(continueToken: Token) throws -> ResolvedStatement {
-        if currentLoopType == .none {
+        if currentJumpableType != .loop {
             throw ResolverError.cannotContinueOutsideLoop
         }
 
@@ -352,10 +359,10 @@ struct Resolver {
     }
 
     mutating private func handleWhile(conditionExpr: Expression, bodyStmt: Statement) throws -> ResolvedStatement {
-        let previousLoopType = currentLoopType
-        currentLoopType = .loop
+        let previousLoopType = currentJumpableType
+        currentJumpableType = .loop
         defer {
-            currentLoopType = previousLoopType
+            currentJumpableType = previousLoopType
         }
 
         let resolvedConditionExpr = try resolve(expression: conditionExpr)
@@ -368,10 +375,10 @@ struct Resolver {
                                     testExpr: Expression,
                                     incrementExpr: Expression?,
                                     bodyStmt: Statement) throws -> ResolvedStatement {
-        let previousLoopType = currentLoopType
-        currentLoopType = .loop
+        let previousJumpableType = currentJumpableType
+        currentJumpableType = .loop
         defer {
-            currentLoopType = previousLoopType
+            currentJumpableType = previousJumpableType
         }
 
         var resolvedInitializerStmt: ResolvedStatement? = nil
@@ -533,13 +540,13 @@ struct Resolver {
                                        functionType: FunctionType) throws -> ResolvedExpression {
         beginScope()
         let previousFunctionType = currentFunctionType
-        let previousLoopType = currentLoopType
+        let previousLoopType = currentJumpableType
         currentFunctionType = functionType
-        currentLoopType = .none
+        currentJumpableType = .none
         defer {
             endScope()
             currentFunctionType = previousFunctionType
-            currentLoopType = previousLoopType
+            currentJumpableType = previousLoopType
         }
 
         if let parameterList {

@@ -18,7 +18,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case classCannotInheritFromItself
     case cannotReferenceSuperOutsideClass
     case cannotReferenceSuperWithoutSubclassing
-    case cannotBreakOutsideLoop
+    case cannotBreakOutsideLoopOrSwitch
     case cannotContinueOutsideLoop
     case functionsMustHaveAParameterList
     case cannotUseSplatOperatorOutOfContext
@@ -46,8 +46,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot use `super` from outside a class"
         case .cannotReferenceSuperWithoutSubclassing:
             return "Cannot use `super` without subclassing"
-        case .cannotBreakOutsideLoop:
-            return "Can only `break` from inside a `while` or `for` loop"
+        case .cannotBreakOutsideLoopOrSwitch:
+            return "Can only `break` from inside a loop or switch statement"
         case .cannotContinueOutsideLoop:
             return "Can only `continue` from inside a `while` or `for` loop"
         case .functionsMustHaveAParameterList:

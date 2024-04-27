@@ -114,27 +114,26 @@ class Interpreter {
         }
     }
 
+//    var foo = 42;
+//    var bar = 21;
+//    switch (bar) { case 21: if (foo > bar) { break; } foo = 0; }
     private func handleSwitchStatement(testExpr: ResolvedExpression,
                                        switchCaseDecls: [ResolvedSwitchCaseDeclaration],
                                        switchDefaultStmts: [ResolvedStatement]?) throws {
         let testValue = try evaluate(expr: testExpr)
 
-        var foundMatch = false
         for switchCaseDecl in switchCaseDecls {
             let caseValue = try evaluate(expr: switchCaseDecl.valueExpression)
 
             if caseValue == testValue {
-                for statement in switchCaseDecl.statements {
-                    try execute(statement: statement)
+                do {
+                    try execute(statement: switchCaseDecl.statement)
+                } catch JumpType.break {
+                    break
                 }
 
-                foundMatch = true
-                break
+                return
             }
-        }
-
-        if foundMatch {
-            return
         }
 
         if let switchDefaultStmts {

@@ -483,7 +483,7 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotBreakOutsideLoop
+        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -516,7 +516,7 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotBreakOutsideLoop
+        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
