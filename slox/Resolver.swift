@@ -200,12 +200,9 @@ struct Resolver {
                                                 methods: [Statement],
                                                 staticMethods: [Statement]) throws -> ResolvedStatement {
         let previousClassType = currentClassType
-        let previousLoopType = currentLoopType
         currentClassType = .enum
-        currentLoopType = .none
         defer {
             currentClassType = previousClassType
-            currentLoopType = previousLoopType
         }
 
         try declareVariable(name: nameToken.lexeme)
