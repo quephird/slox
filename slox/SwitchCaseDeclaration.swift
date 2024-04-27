@@ -7,5 +7,5 @@
 
 struct SwitchCaseDeclaration: Equatable {
     var valueExpression: Expression
-    var statements: [Statement]
+    var statement: Statement
 }
