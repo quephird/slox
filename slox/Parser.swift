@@ -61,7 +61,7 @@ struct Parser {
     //    ifStmt         → "if" "(" expression ")" statement
     //                     ( "else" statement )? ;
     //    switchStmt     → "switch" "(" expression ")" "{"
-    //                     ( "case" expression ":" statement+ )+
+    //                     ( "case" expression+ ":" statement+ )+
     //                     ( "default" ":" statement )?
     //                     "}"
     //    printStmt      → "print" expression ";" ;
@@ -383,7 +383,8 @@ struct Parser {
             throw ParseError.missingCaseOrDefault(currentToken)
         }
 
-        let valueExpr = try parseExpression()
+        let firstValueExpr = try parseExpression()
+        let valueExprs = try parseRemainingExpressions(firstExpr: firstValueExpr)
 
         guard currentTokenMatchesAny(types: [.colon]) else {
             throw ParseError.missingColon(currentToken)
@@ -395,7 +396,7 @@ struct Parser {
             statements.append(statement)
         }
 
-        return SwitchCaseDeclaration(valueExpression: valueExpr, statement: .block(statements))
+        return SwitchCaseDeclaration(valueExpressions: valueExprs, statement: .block(statements))
     }
 
     mutating private func parseSwitchDefaultDecl() throws -> [Statement] {
@@ -852,7 +853,12 @@ struct Parser {
             return .dictionary(kvPairs)
         }
 
-        let elements = try parseExpressionList(firstExpr: firstExpr)
+        let elements = try parseRemainingExpressions(firstExpr: firstExpr)
+
+        guard currentTokenMatchesAny(types: [.rightBracket]) else {
+            throw ParseError.missingClosingBracket(previousToken)
+        }
+
         return .list(elements)
     }
 
@@ -929,16 +935,12 @@ struct Parser {
         return parameterList
     }
 
-    mutating private func parseExpressionList(firstExpr: Expression) throws -> [Expression] {
+    mutating private func parseRemainingExpressions(firstExpr: Expression) throws -> [Expression] {
         var exprs: [Expression] = [firstExpr]
 
         while currentTokenMatchesAny(types: [.comma]) {
             let expr = try parseExpression()
             exprs.append(expr)
-        }
-
-        guard currentTokenMatchesAny(types: [.rightBracket]) else {
-            throw ParseError.missingClosingBracket(previousToken)
         }
 
         return exprs

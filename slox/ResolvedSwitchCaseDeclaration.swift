@@ -6,6 +6,6 @@
 //
 
 struct ResolvedSwitchCaseDeclaration: Equatable {
-    var valueExpression: ResolvedExpression
+    var valueExpressions: [ResolvedExpression]
     var statement: ResolvedStatement
 }

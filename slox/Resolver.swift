@@ -312,10 +312,12 @@ struct Resolver {
     }
 
     mutating private func handleSwitchCaseDeclaration(switchCaseDecl: SwitchCaseDeclaration) throws -> ResolvedSwitchCaseDeclaration {
-        let resolvedValueExpr = try resolve(expression: switchCaseDecl.valueExpression)
+        let resolvedValueExprs = try switchCaseDecl.valueExpressions.map { valueExpr in
+            try resolve(expression: valueExpr)
+        }
         let resolvedStmt = try resolve(statement: switchCaseDecl.statement)
 
-        return ResolvedSwitchCaseDeclaration(valueExpression: resolvedValueExpr, statement: resolvedStmt)
+        return ResolvedSwitchCaseDeclaration(valueExpressions: resolvedValueExprs, statement: resolvedStmt)
     }
 
     mutating private func handlePrintStatement(expr: Expression) throws -> ResolvedStatement {

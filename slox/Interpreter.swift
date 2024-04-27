@@ -120,9 +120,11 @@ class Interpreter {
         let testValue = try evaluate(expr: testExpr)
 
         for switchCaseDecl in switchCaseDecls {
-            let caseValue = try evaluate(expr: switchCaseDecl.valueExpression)
+            let caseValues = try switchCaseDecl.valueExpressions.map { valueExpr in
+                try evaluate(expr: valueExpr)
+            }
 
-            if caseValue == testValue {
+            if caseValues.contains(testValue) {
                 do {
                     try execute(statement: switchCaseDecl.statement)
                 } catch JumpType.break {
