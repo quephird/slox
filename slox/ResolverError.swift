@@ -23,6 +23,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case functionsMustHaveAParameterList
     case cannotUseSplatOperatorOutOfContext
     case duplicateCaseNamesNotAllowed(Token)
+    case switchMustHaveAtLeastOneCaseOrDefault
 
     var description: String {
         switch self {
@@ -56,6 +57,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot use splat operator in this context"
         case .duplicateCaseNamesNotAllowed(let token):
             return "Cannot use duplicate case names in enum: \(token.lexeme)"
+        case .switchMustHaveAtLeastOneCaseOrDefault:
+            return "`switch` statement must have at least one `case` or `default` block"
         }
     }
 }

@@ -1230,4 +1230,26 @@ answer
         let expected: LoxValue = try interpreter.makeString(string: "forty-two")
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretSwitchStatementWithACaseThatHasAListOfTestValues() throws {
+        let input = """
+fun foo(number) {
+    switch (number) {
+    case 1:
+        return "one";
+    case 2, 3, 4:
+        return "two, three, or four";
+    default:
+        return "unhandled";
+    }
+}
+
+foo(3)
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "two, three, or four")
+        XCTAssertEqual(actual, expected)
+    }
 }

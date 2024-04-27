@@ -299,6 +299,10 @@ struct Resolver {
         }
 
         let resolvedTestExpr = try resolve(expression: testExpr)
+
+        guard switchCaseDecls.count > 0 else {
+            throw ResolverError.switchMustHaveAtLeastOneCaseOrDefault
+        }
         let resolvedSwitchCaseDecls = try switchCaseDecls.map { switchCaseDecl in
             try handleSwitchCaseDeclaration(switchCaseDecl: switchCaseDecl)
         }

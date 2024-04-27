@@ -571,4 +571,18 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveSwitchWithEmptyBody() throws {
+        // switch (42) {
+        // }
+        let statements: [Statement] = [
+            .switch(.literal(.int(42)), [], [])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.switchMustHaveAtLeastOneCaseOrDefault
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }
