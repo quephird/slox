@@ -114,9 +114,6 @@ class Interpreter {
         }
     }
 
-//    var foo = 42;
-//    var bar = 21;
-//    switch (bar) { case 21: if (foo > bar) { break; } foo = 0; }
     private func handleSwitchStatement(testExpr: ResolvedExpression,
                                        switchCaseDecls: [ResolvedSwitchCaseDeclaration],
                                        switchDefaultStmts: [ResolvedStatement]?) throws {
