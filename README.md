@@ -94,7 +94,7 @@ x *= 2;
 
 ### Flow control
 
-There are three types of flow control statements in slox: `if` blocks:
+There are four types of flow control statements in slox, two of which are non-looping constructs: `if` blocks:
 
 ```
 if (x == 42) {
@@ -104,7 +104,49 @@ if (x == 42) {
 }
 ```
 
-... `while` loops:
+... and `switch` statements
+
+```
+var foo = 42;
+switch (foo) {
+case 42
+    print "The answer!";
+default:
+    print "nope";
+}
+```
+
+`switch` statements also support having multiple values associated with one `case`:
+
+```
+var foo = 3;
+switch (foo) {
+case 1:
+    print "one";
+case 2, 3, 4:
+    print "two, three, or four";
+default:
+    print "something else";
+}
+```
+
+... or multiple inner statements associated with a `case`:
+
+```
+var foo = 3;
+switch (foo) {
+case 1:
+    print "one";
+case 2, 3, 4:
+    print "two";
+    print "three";
+    print "or four";
+default:
+    print "something else";
+}
+```
+
+There are also two looping statements, one of them the `while` statement:
 
 ```
 var i = 0;
@@ -114,7 +156,7 @@ while (i < 3) {
 }
 ```
 
-... and `for` loops
+... and the other a `for` statement:
 
 ```
 for (var i = 0; i < 3; i = i + 1) {
@@ -132,6 +174,23 @@ while (true) {
         break;
     }
     i = i + 1;
+}
+```
+
+... or a `switch` statement:
+
+```
+var foo = 3;
+switch (foo) {
+case 1:
+    print "one";
+default:
+    if (foo < 5) {
+        print "less than five";
+        break;
+    }
+
+    print "greater than four";      // This is never called
 }
 ```
 
@@ -327,6 +386,17 @@ var randomColor = Color.choose();
 randomColor.name         // Prints one of "red", "green", or "blue"
 ```
 
+Enums can also be used for namespacing by only exposing class-level methods and no cases, and without having to instantiate a class:
+
+```
+enum Math {
+    class add(a, b) {
+        return a + b;
+    }
+}
+
+Math.add(2, 3);          // Prints "5"
+```
 
 ### Collections
 
