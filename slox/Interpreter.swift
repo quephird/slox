@@ -14,7 +14,7 @@ class Interpreter {
         setUpGlobals()
     }
 
-    private func prepareCode(source: String) throws -> [ResolvedStatement] {
+    private func prepareCode(source: String) throws -> [Statement<Int>] {
         var scanner = Scanner(source: source)
         let tokens = try scanner.scanTokens()
         var parser = Parser(tokens: tokens)
@@ -55,7 +55,7 @@ class Interpreter {
         return nil
     }
 
-    private func execute(statement: ResolvedStatement) throws {
+    private func execute(statement: Statement<Int>) throws {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
@@ -101,9 +101,9 @@ class Interpreter {
         }
     }
 
-    private func handleIfStatement(testExpr: ResolvedExpression,
-                                   consequentStmt: ResolvedStatement,
-                                   alternativeStmt: ResolvedStatement?) throws {
+    private func handleIfStatement(testExpr: Expression<Int>,
+                                   consequentStmt: Statement<Int>,
+                                   alternativeStmt: Statement<Int>?) throws {
         let value = try evaluate(expr: testExpr)
 
         if value.isTruthy {
@@ -113,8 +113,8 @@ class Interpreter {
         }
     }
 
-    private func handleSwitchStatement(testExpr: ResolvedExpression,
-                                       switchCaseDecls: [ResolvedSwitchCaseDeclaration]) throws {
+    private func handleSwitchStatement(testExpr: Expression<Int>,
+                                       switchCaseDecls: [SwitchCaseDeclaration<Int>]) throws {
         let testValue = try evaluate(expr: testExpr)
 
         for switchCaseDecl in switchCaseDecls {
@@ -134,15 +134,15 @@ class Interpreter {
         }
     }
 
-    private func handlePrintStatement(expr: ResolvedExpression) throws {
+    private func handlePrintStatement(expr: Expression<Int>) throws {
         let literal = try evaluate(expr: expr)
         print(literal)
     }
 
     private func handleClassDeclaration(nameToken: Token,
-                                        superclassExpr: ResolvedExpression?,
-                                        methods: [ResolvedStatement],
-                                        staticMethods: [ResolvedStatement]) throws {
+                                        superclassExpr: Expression<Int>?,
+                                        methods: [Statement<Int>],
+                                        staticMethods: [Statement<Int>]) throws {
         // NOTA BENE: We temporarily set the initial value associated with
         // the class name to `.nil` so that, according to the book,
         // "allows references to the class inside its own methods".
@@ -182,8 +182,8 @@ class Interpreter {
 
     private func handleEnumDeclaration(nameToken: Token,
                                        caseTokens: [Token],
-                                       methods: [ResolvedStatement],
-                                       staticMethods: [ResolvedStatement]) throws {
+                                       methods: [Statement<Int>],
+                                       staticMethods: [Statement<Int>]) throws {
         guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(name: "Enum") else {
             fatalError()
         }
@@ -208,7 +208,7 @@ class Interpreter {
         environment.define(name: nameToken.lexeme, value: .instance(enumClass))
     }
 
-    private func handleFunctionDeclaration(name: Token, lambda: ResolvedExpression) throws {
+    private func handleFunctionDeclaration(name: Token, lambda: Expression<Int>) throws {
         guard case .lambda(let parameterList, let body) = lambda else {
             throw RuntimeError.notALambda
         }
@@ -222,7 +222,7 @@ class Interpreter {
         environment.define(name: name.lexeme, value: .userDefinedFunction(function))
     }
 
-    private func handleReturnStatement(returnToken: Token, expr: ResolvedExpression?) throws {
+    private func handleReturnStatement(returnToken: Token, expr: Expression<Int>?) throws {
         var value: LoxValue = .nil
         if let expr {
             value = try evaluate(expr: expr)
@@ -239,7 +239,7 @@ class Interpreter {
         throw JumpType.continue
     }
 
-    private func handleVariableDeclaration(name: Token, expr: ResolvedExpression?) throws {
+    private func handleVariableDeclaration(name: Token, expr: Expression<Int>?) throws {
         var value: LoxValue = .nil
         if let expr = expr {
             value = try evaluate(expr: expr)
@@ -248,7 +248,7 @@ class Interpreter {
         environment.define(name: name.lexeme, value: value)
     }
 
-    func handleBlock(statements: [ResolvedStatement], environment: Environment) throws {
+    func handleBlock(statements: [Statement<Int>], environment: Environment) throws {
         let environmentBeforeBlock = self.environment
         self.environment = environment
 
@@ -264,7 +264,7 @@ class Interpreter {
         }
     }
 
-    private func handleWhileStatement(expr: ResolvedExpression, stmt: ResolvedStatement) throws {
+    private func handleWhileStatement(expr: Expression<Int>, stmt: Statement<Int>) throws {
         while try evaluate(expr: expr).isTruthy {
             do {
                 try execute(statement: stmt)
@@ -276,10 +276,10 @@ class Interpreter {
         }
     }
 
-    private func handleForStatement(initializerStmt: ResolvedStatement?,
-                                    testExpr: ResolvedExpression,
-                                    incrementExpr: ResolvedExpression?,
-                                    bodyStmt: ResolvedStatement) throws {
+    private func handleForStatement(initializerStmt: Statement<Int>?,
+                                    testExpr: Expression<Int>,
+                                    incrementExpr: Expression<Int>?,
+                                    bodyStmt: Statement<Int>) throws {
         if let initializerStmt {
             try execute(statement: initializerStmt)
         }
@@ -302,7 +302,7 @@ class Interpreter {
         }
     }
 
-    private func evaluate(expr: ResolvedExpression) throws -> LoxValue {
+    private func evaluate(expr: Expression<Int>) throws -> LoxValue {
         switch expr {
         case .literal(let literal):
             return literal
@@ -349,7 +349,7 @@ class Interpreter {
         }
     }
 
-    private func handleUnaryExpression(oper: Token, expr: ResolvedExpression) throws -> LoxValue {
+    private func handleUnaryExpression(oper: Token, expr: Expression<Int>) throws -> LoxValue {
         let value = try evaluate(expr: expr)
 
         switch oper.type {
@@ -369,9 +369,9 @@ class Interpreter {
         }
     }
 
-    private func handleBinaryExpression(leftExpr: ResolvedExpression,
+    private func handleBinaryExpression(leftExpr: Expression<Int>,
                                         oper: Token,
-                                        rightExpr: ResolvedExpression) throws -> LoxValue {
+                                        rightExpr: Expression<Int>) throws -> LoxValue {
         let leftValue = try evaluate(expr: leftExpr)
         let rightValue = try evaluate(expr: rightExpr)
 
@@ -461,16 +461,16 @@ class Interpreter {
     }
 
     private func handleAssignmentExpression(name: Token,
-                                            expr: ResolvedExpression,
+                                            expr: Expression<Int>,
                                             depth: Int) throws -> LoxValue {
         let value = try evaluate(expr: expr)
         try environment.assignAtDepth(name: name.lexeme, value: value, depth: depth)
         return value
     }
 
-    private func handleLogicalExpression(leftExpr: ResolvedExpression,
+    private func handleLogicalExpression(leftExpr: Expression<Int>,
                                          oper: Token,
-                                         rightExpr: ResolvedExpression) throws -> LoxValue {
+                                         rightExpr: Expression<Int>) throws -> LoxValue {
         let leftValue = try evaluate(expr: leftExpr)
 
         if case .and = oper.type {
@@ -488,9 +488,9 @@ class Interpreter {
         }
     }
 
-    private func handleCallExpression(calleeExpr: ResolvedExpression,
+    private func handleCallExpression(calleeExpr: Expression<Int>,
                                       rightParen: Token,
-                                      args: [ResolvedExpression]) throws -> LoxValue {
+                                      args: [Expression<Int>]) throws -> LoxValue {
         let callee = try evaluate(expr: calleeExpr)
 
         let actualCallable: LoxCallable = switch callee {
@@ -514,7 +514,7 @@ class Interpreter {
         return try actualCallable.call(interpreter: self, args: argValues)
     }
 
-    private func handleGetExpression(instanceExpr: ResolvedExpression,
+    private func handleGetExpression(instanceExpr: Expression<Int>,
                                      propertyNameToken: Token) throws -> LoxValue {
         guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
             throw RuntimeError.onlyInstancesHaveProperties
@@ -530,9 +530,9 @@ class Interpreter {
         return property
     }
 
-    private func handleSetExpression(instanceExpr: ResolvedExpression,
+    private func handleSetExpression(instanceExpr: Expression<Int>,
                                      propertyNameToken: Token,
-                                     valueExpr: ResolvedExpression) throws -> LoxValue {
+                                     valueExpr: Expression<Int>) throws -> LoxValue {
         guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
             throw RuntimeError.onlyInstancesHaveProperties
         }
@@ -547,7 +547,7 @@ class Interpreter {
         return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
     }
 
-    private func handleLambdaExpression(parameterList: ParameterList?, statements: [ResolvedStatement]) throws -> LoxValue {
+    private func handleLambdaExpression(parameterList: ParameterList?, statements: [Statement<Int>]) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
         let function = UserDefinedFunction(name: "lambda",
@@ -581,14 +581,14 @@ class Interpreter {
         return try makeString(string: stringValue)
     }
 
-    private func handleListExpression(elements: [ResolvedExpression]) throws -> LoxValue {
+    private func handleListExpression(elements: [Expression<Int>]) throws -> LoxValue {
         let elementValues = try evaluateAndFlatten(exprs: elements)
 
         return try makeList(elements: elementValues)
     }
 
-    private func handleSubscriptGetExpression(collectionExpr: ResolvedExpression,
-                                              indexExpr: ResolvedExpression) throws -> LoxValue {
+    private func handleSubscriptGetExpression(collectionExpr: Expression<Int>,
+                                              indexExpr: Expression<Int>) throws -> LoxValue {
         let collection = try evaluate(expr: collectionExpr)
 
         switch collection {
@@ -607,9 +607,9 @@ class Interpreter {
         }
     }
 
-    private func handleSubscriptSetExpression(collectionExpr: ResolvedExpression,
-                                              indexExpr: ResolvedExpression,
-                                              valueExpr: ResolvedExpression) throws -> LoxValue {
+    private func handleSubscriptSetExpression(collectionExpr: Expression<Int>,
+                                              indexExpr: Expression<Int>,
+                                              valueExpr: Expression<Int>) throws -> LoxValue {
         let collection = try evaluate(expr: collectionExpr)
         let value = try evaluate(expr: valueExpr)
 
@@ -631,11 +631,11 @@ class Interpreter {
         return value
     }
 
-    private func handleSplatExpression(listExpr: ResolvedExpression) throws -> LoxValue {
+    private func handleSplatExpression(listExpr: Expression<Int>) throws -> LoxValue {
         return try evaluate(expr: listExpr)
     }
 
-    private func handleDictionary(kvExprPairs: [(ResolvedExpression, ResolvedExpression)]) throws -> LoxValue {
+    private func handleDictionary(kvExprPairs: [(Expression<Int>, Expression<Int>)]) throws -> LoxValue {
         var kvPairs: [LoxValue: LoxValue] = [:]
 
         for (keyExpr, valueExpr) in kvExprPairs {
@@ -653,7 +653,7 @@ class Interpreter {
     }
 
     // Utility functions
-    private func makeMethodLookup(methodDecls: [ResolvedStatement]) throws -> [String: UserDefinedFunction] {
+    private func makeMethodLookup(methodDecls: [Statement<Int>]) throws -> [String: UserDefinedFunction] {
         return try methodDecls.reduce(into: [:]) { lookup, methodDecl in
             guard case .function(let nameToken, let lambdaExpr) = methodDecl else {
                 throw RuntimeError.notAFunctionDeclaration
@@ -673,7 +673,7 @@ class Interpreter {
         }
     }
 
-    private func evaluateAndFlatten(exprs: [ResolvedExpression]) throws -> [LoxValue] {
+    private func evaluateAndFlatten(exprs: [Expression<Int>]) throws -> [LoxValue] {
         let values = try exprs.flatMap { expr in
             if case .splat = expr {
                 guard case .instance(let list as LoxList) = try evaluate(expr: expr) else {
