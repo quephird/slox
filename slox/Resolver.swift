@@ -316,6 +316,12 @@ struct Resolver {
         let resolvedValueExprs = try switchCaseDecl.valueExpressions.map { valueExpr in
             try resolve(expression: valueExpr)
         }
+
+        guard case .block(let statements) = switchCaseDecl.statement,
+              statements.count > 0 else {
+            throw ResolverError.switchMustHaveAtLeastOneStatementPerCaseOrDefault
+        }
+
         let resolvedStmt = try resolve(statement: switchCaseDecl.statement)
 
         return ResolvedSwitchCaseDeclaration(valueExpressions: resolvedValueExprs, statement: resolvedStmt)

@@ -585,4 +585,28 @@ final class ResolverTests: XCTestCase {
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
+
+    func testResolveSwitchWithEmptyCase() throws {
+        // switch (42) {
+        // case 42:
+        // }
+        let statements: [Statement] = [
+            .switch(
+                .literal(.int(42)),
+                [
+                    SwitchCaseDeclaration(
+                        valueExpressions: [
+                            .literal(.int(42))
+                        ],
+                        statement: .block([]))
+                ],
+                [])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.switchMustHaveAtLeastOneStatementPerCaseOrDefault
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
 }
