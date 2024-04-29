@@ -18,11 +18,13 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case classCannotInheritFromItself
     case cannotReferenceSuperOutsideClass
     case cannotReferenceSuperWithoutSubclassing
-    case cannotBreakOutsideLoop
+    case cannotBreakOutsideLoopOrSwitch
     case cannotContinueOutsideLoop
     case functionsMustHaveAParameterList
     case cannotUseSplatOperatorOutOfContext
     case duplicateCaseNamesNotAllowed(Token)
+    case switchMustHaveAtLeastOneCaseOrDefault
+    case switchMustHaveAtLeastOneStatementPerCaseOrDefault
 
     var description: String {
         switch self {
@@ -46,8 +48,8 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot use `super` from outside a class"
         case .cannotReferenceSuperWithoutSubclassing:
             return "Cannot use `super` without subclassing"
-        case .cannotBreakOutsideLoop:
-            return "Can only `break` from inside a `while` or `for` loop"
+        case .cannotBreakOutsideLoopOrSwitch:
+            return "Can only `break` from inside a loop or switch statement"
         case .cannotContinueOutsideLoop:
             return "Can only `continue` from inside a `while` or `for` loop"
         case .functionsMustHaveAParameterList:
@@ -56,6 +58,10 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
             return "Cannot use splat operator in this context"
         case .duplicateCaseNamesNotAllowed(let token):
             return "Cannot use duplicate case names in enum: \(token.lexeme)"
+        case .switchMustHaveAtLeastOneCaseOrDefault:
+            return "`switch` statement must have at least one `case` or `default` block"
+        case .switchMustHaveAtLeastOneStatementPerCaseOrDefault:
+            return "`Each `case` or `default` block must have at least one statement"
         }
     }
 }

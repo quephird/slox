@@ -17,6 +17,11 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
     case missingClosingBrace(Token)
     case missingOpenParenForIfStatement(Token)
     case missingCloseParenForIfStatement(Token)
+    case missingOpenParenForSwitchStatement(Token)
+    case missingCloseParenForSwitchStatement(Token)
+    case missingOpenBraceBeforeSwitchBody(Token)
+    case missingCaseOrDefault(Token)
+    case missingColon(Token)
     case missingOpenParenForWhileStatement(Token)
     case missingCloseParenForWhileStatement(Token)
     case missingOpenParenForForStatement(Token)
@@ -61,6 +66,16 @@ enum ParseError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(token.line)] Error: expected left parenthesis after `if`"
         case .missingCloseParenForIfStatement(let token):
             return "[Line \(token.line)] Error: expected right parenthesis after `if` condition"
+        case .missingOpenParenForSwitchStatement(let token):
+            return "[Line \(token.line)] Error: expected left parenthesis after `switch`"
+        case .missingCloseParenForSwitchStatement(let token):
+            return "[Line \(token.line)] Error: expected right parenthesis after `switch` condition"
+        case .missingOpenBraceBeforeSwitchBody(let token):
+            return "[Line \(token.line)] Error: expected open brace before switch body"
+        case .missingCaseOrDefault(let token):
+            return "[Line \(token.line)] Error: expected `case` or `default` inside `switch` body"
+        case .missingColon(let token):
+            return "[Line \(token.line)] Error: colon required after `case` and `default`"
         case .missingOpenParenForWhileStatement(let token):
             return "[Line \(token.line)] Error: expected left parenthesis after `while`"
         case .missingCloseParenForWhileStatement(let token):

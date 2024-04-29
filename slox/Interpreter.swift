@@ -63,6 +63,9 @@ class Interpreter {
             try handleIfStatement(testExpr: testExpr,
                                   consequentStmt: consequentStmt,
                                   alternativeStmt: alternativeStmt)
+        case .switch(let testExpr, let switchCaseDecls):
+            try handleSwitchStatement(testExpr: testExpr,
+                                      switchCaseDecls: switchCaseDecls)
         case .print(let expr):
             try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
@@ -107,6 +110,27 @@ class Interpreter {
             try execute(statement: consequentStmt)
         } else if let alternativeStmt {
             try execute(statement: alternativeStmt)
+        }
+    }
+
+    private func handleSwitchStatement(testExpr: ResolvedExpression,
+                                       switchCaseDecls: [ResolvedSwitchCaseDeclaration]) throws {
+        let testValue = try evaluate(expr: testExpr)
+
+        for switchCaseDecl in switchCaseDecls {
+            let caseValues = try switchCaseDecl.valueExpressions?.map { valueExpr in
+                try evaluate(expr: valueExpr)
+            }
+
+            if caseValues?.contains(testValue) ?? true {
+                do {
+                    try execute(statement: switchCaseDecl.statement)
+                } catch JumpType.break {
+                    break
+                }
+
+                return
+            }
         }
     }
 

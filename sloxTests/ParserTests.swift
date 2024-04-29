@@ -1656,4 +1656,268 @@ final class ParserTests: XCTestCase {
         ]
         XCTAssertEqual(actual, expected)
     }
+
+    func testParseSwitchStatement() throws {
+        // switch (foo) {
+        // case 1:
+        //     print "one";
+        // case 2, 3, 4:
+        //     print "two";
+        //     print "three";
+        //     print "or four";
+        // default:
+        //     print "unhandled";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .case, lexeme: "case", line: 2),
+            Token(type: .int, lexeme: "1", line: 2),
+            Token(type: .colon, lexeme: ":", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"one\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .case, lexeme: "case", line: 4),
+            Token(type: .int, lexeme: "2", line: 4),
+            Token(type: .comma, lexeme: ",", line: 4),
+            Token(type: .int, lexeme: "3", line: 4),
+            Token(type: .comma, lexeme: ",", line: 4),
+            Token(type: .int, lexeme: "4", line: 4),
+            Token(type: .colon, lexeme: ":", line: 4),
+
+            Token(type: .print, lexeme: "print", line: 5),
+            Token(type: .string, lexeme: "\"two\"", line: 5),
+            Token(type: .semicolon, lexeme: ";", line: 5),
+
+            Token(type: .print, lexeme: "print", line: 6),
+            Token(type: .string, lexeme: "\"three\"", line: 6),
+            Token(type: .semicolon, lexeme: ";", line: 6),
+
+            Token(type: .print, lexeme: "print", line: 7),
+            Token(type: .string, lexeme: "\"or four\"", line: 7),
+            Token(type: .semicolon, lexeme: ";", line: 7),
+
+            Token(type: .default, lexeme: "default", line: 8),
+            Token(type: .colon, lexeme: ":", line: 8),
+
+            Token(type: .print, lexeme: "print", line: 9),
+            Token(type: .string, lexeme: "\"unhandled\"", line: 9),
+            Token(type: .semicolon, lexeme: ";", line: 9),
+
+            Token(type: .rightBrace, lexeme: "}", line: 10),
+            Token(type: .eof, lexeme: "", line: 10),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement] = [
+            .switch(
+                .variable(Token(type: .identifier, lexeme: "foo", line: 1)),
+                [
+                    SwitchCaseDeclaration(
+                        valueExpressions: [
+                            .literal(.int(1))
+                        ],
+                        statement: .block([
+                            .print(.string(Token(type: .string, lexeme: "\"one\"", line: 3)))
+                        ])),
+                    SwitchCaseDeclaration(
+                        valueExpressions: [
+                            .literal(.int(2)),
+                            .literal(.int(3)),
+                            .literal(.int(4)),
+                        ],
+                        statement: .block([
+                            .print(.string(Token(type: .string, lexeme: "\"two\"", line: 5))),
+                            .print(.string(Token(type: .string, lexeme: "\"three\"", line: 6))),
+                            .print(.string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
+                        ])),
+                    SwitchCaseDeclaration(
+                        statement: .block([
+                            .print(.string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
+                        ])),
+                ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseSwitchStatementMissingOpenParen() throws {
+        // switch foo {
+        // default:
+        //     print "boom!";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .default, lexeme: "default", line: 2),
+            Token(type: .colon, lexeme: ":", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"boom!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .identifier, lexeme: "foo", line: 1)
+        let expectedError = ParseError.missingOpenParenForSwitchStatement(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
+    func testParseSwitchStatementMissingCloseParen() throws {
+        // switch (foo {
+        // default:
+        //     print "boom!";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .default, lexeme: "default", line: 2),
+            Token(type: .colon, lexeme: ":", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"boom!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .leftBrace, lexeme: "{", line: 1)
+        let expectedError = ParseError.missingCloseParenForSwitchStatement(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
+    func testParseSwitchStatementMissingOpenBrace() throws {
+        // switch (foo)
+        // default:
+        //     print "boom!";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+
+            Token(type: .default, lexeme: "default", line: 2),
+            Token(type: .colon, lexeme: ":", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"boom!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .default, lexeme: "default", line: 2)
+        let expectedError = ParseError.missingOpenBraceBeforeSwitchBody(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
+    func testParseSwitchStatementMissingColon() throws {
+        // switch (foo) {
+        // default
+        //     print "boom!";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .default, lexeme: "default", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"boom!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+            Token(type: .eof, lexeme: "", line: 4),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .print, lexeme: "print", line: 3)
+        let expectedError = ParseError.missingColon(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
+    func testParseSwitchStatementMissingCloseBrace() throws {
+        // switch (foo) {
+        // default:
+        //     print "boom!";
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .default, lexeme: "default", line: 2),
+            Token(type: .colon, lexeme: ":", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"boom!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+            Token(type: .eof, lexeme: "", line: 3),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .eof, lexeme: "", line: 3)
+        let expectedError = ParseError.missingClosingBrace(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
+    func testParseSwitchStatementWithStatementInsteadOfCase() throws {
+        // switch (foo) {
+        //     print "boom!";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .string, lexeme: "\"boom!\"", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 3),
+            Token(type: .eof, lexeme: "", line: 3),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .print, lexeme: "print", line: 2)
+        let expectedError = ParseError.missingCaseOrDefault(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
 }

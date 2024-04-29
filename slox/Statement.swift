@@ -8,6 +8,7 @@
 indirect enum Statement: Equatable {
     case expression(Expression)
     case `if`(Expression, Statement, Statement?)
+    case `switch`(Expression, [SwitchCaseDeclaration])
     case print(Expression)
     case variableDeclaration(Token, Expression?)
     case block([Statement])

@@ -483,7 +483,7 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotBreakOutsideLoop
+        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -516,7 +516,7 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotBreakOutsideLoop
+        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -567,6 +567,43 @@ final class ResolverTests: XCTestCase {
         let expectedError = ResolverError.duplicateCaseNamesNotAllowed(
             Token(type: .identifier, lexeme: "green", line: 3)
         )
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
+    func testResolveSwitchWithEmptyBody() throws {
+        // switch (42) {
+        // }
+        let statements: [Statement] = [
+            .switch(.literal(.int(42)), [])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.switchMustHaveAtLeastOneCaseOrDefault
+        XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
+            XCTAssertEqual(actualError as! ResolverError, expectedError)
+        }
+    }
+
+    func testResolveSwitchWithEmptyCase() throws {
+        // switch (42) {
+        // case 42:
+        // }
+        let statements: [Statement] = [
+            .switch(
+                .literal(.int(42)),
+                [
+                    SwitchCaseDeclaration(
+                        valueExpressions: [
+                            .literal(.int(42))
+                        ],
+                        statement: .block([]))
+                ])
+        ]
+
+        var resolver = Resolver()
+        let expectedError = ResolverError.switchMustHaveAtLeastOneStatementPerCaseOrDefault
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }

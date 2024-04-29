@@ -17,6 +17,10 @@
 		870230802B96E9580056FE57 /* LoxClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307F2B96E9580056FE57 /* LoxClass.swift */; };
 		8730C77C2BD842A400EA8D30 /* LoxEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C77B2BD842A400EA8D30 /* LoxEnum.swift */; };
 		8730C77D2BD88F4200EA8D30 /* LoxEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C77B2BD842A400EA8D30 /* LoxEnum.swift */; };
+		8730C7832BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */; };
+		8730C7852BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7842BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift */; };
+		8730C7862BDC6DFB00EA8D30 /* SwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */; };
+		8730C7872BDC6DFF00EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7842BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift */; };
 		8730DDE92BB250CE00372548 /* LoxDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730DDE82BB250CE00372548 /* LoxDictionary.swift */; };
 		8732838F2B93F89300E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
 		873283902B93FC0900E49035 /* NativeFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732838E2B93F89300E49035 /* NativeFunction.swift */; };
@@ -90,6 +94,8 @@
 		8702307D2B95AA2A0056FE57 /* ResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverTests.swift; sourceTree = "<group>"; };
 		8702307F2B96E9580056FE57 /* LoxClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxClass.swift; sourceTree = "<group>"; };
 		8730C77B2BD842A400EA8D30 /* LoxEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxEnum.swift; sourceTree = "<group>"; };
+		8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchCaseDeclaration.swift; sourceTree = "<group>"; };
+		8730C7842BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedSwitchCaseDeclaration.swift; sourceTree = "<group>"; };
 		8730DDE82BB250CE00372548 /* LoxDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxDictionary.swift; sourceTree = "<group>"; };
 		8732838E2B93F89300E49035 /* NativeFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFunction.swift; sourceTree = "<group>"; };
 		873283912B95118A00E49035 /* ResolvedExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolvedExpression.swift; sourceTree = "<group>"; };
@@ -184,6 +190,7 @@
 				876A31662B8C11810085A350 /* Parser.swift */,
 				873283912B95118A00E49035 /* ResolvedExpression.swift */,
 				873283932B95122800E49035 /* ResolvedStatement.swift */,
+				8730C7842BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift */,
 				873283952B95127100E49035 /* Resolver.swift */,
 				873283972B9523AD00E49035 /* ResolverError.swift */,
 				873CCB222B8D617C00FC249A /* RuntimeError.swift */,
@@ -191,6 +198,7 @@
 				876560062B8827F9002BDE42 /* Scanner.swift */,
 				8792A9982BB36C66009842D8 /* StandardLibrary.swift */,
 				873CCB2F2B8EAEC100FC249A /* Statement.swift */,
+				8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */,
 				876560042B8825AC002BDE42 /* Token.swift */,
 				876560022B882259002BDE42 /* TokenType.swift */,
 				87BAFC4A2B918C520013E5FE /* UserDefinedFunction.swift */,
@@ -301,6 +309,7 @@
 				876A31622B8986630085A350 /* ScanError.swift in Sources */,
 				87777E3C2BA0FF70002E38F2 /* LoxList.swift in Sources */,
 				8730C77C2BD842A400EA8D30 /* LoxEnum.swift in Sources */,
+				8730C7852BDC4B4300EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */,
 				876560052B8825AC002BDE42 /* Token.swift in Sources */,
 				873283942B95122800E49035 /* ResolvedStatement.swift in Sources */,
 				876A315F2B897EEB0085A350 /* LoxValue.swift in Sources */,
@@ -317,6 +326,7 @@
 				87BAFC4B2B918C520013E5FE /* UserDefinedFunction.swift in Sources */,
 				8792A9992BB36C66009842D8 /* StandardLibrary.swift in Sources */,
 				873CCB332B8ED8B900FC249A /* Environment.swift in Sources */,
+				8730C7832BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift in Sources */,
 				876A31652B8C04990085A350 /* Expression.swift in Sources */,
 				876560032B882259002BDE42 /* TokenType.swift in Sources */,
 				87EEDFBE2B96F52D00C7FE6D /* LoxInstance.swift in Sources */,
@@ -350,6 +360,7 @@
 				876A315C2B897C000085A350 /* Token.swift in Sources */,
 				876A31572B8979BD0085A350 /* ScannerTests.swift in Sources */,
 				876A31602B89827B0085A350 /* LoxValue.swift in Sources */,
+				8730C7862BDC6DFB00EA8D30 /* SwitchCaseDeclaration.swift in Sources */,
 				873CCB312B8EBB7800FC249A /* Statement.swift in Sources */,
 				8730C77D2BD88F4200EA8D30 /* LoxEnum.swift in Sources */,
 				8755B8B52B91984C00530DC4 /* LoxCallable.swift in Sources */,
@@ -363,6 +374,7 @@
 				873CCB272B8E7AD100FC249A /* ParserTests.swift in Sources */,
 				876A315D2B897C020085A350 /* Scanner.swift in Sources */,
 				87EEDFBF2B9920F900C7FE6D /* LoxClass.swift in Sources */,
+				8730C7872BDC6DFF00EA8D30 /* ResolvedSwitchCaseDeclaration.swift in Sources */,
 				876A315B2B897BFD0085A350 /* TokenType.swift in Sources */,
 				87EEDFC02B9920FD00C7FE6D /* LoxInstance.swift in Sources */,
 				873CCB292B8E7B6900FC249A /* ParseError.swift in Sources */,
