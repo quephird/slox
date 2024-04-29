@@ -409,7 +409,7 @@ struct Parser {
         }
 
         var statements: [Statement] = []
-        while !currentTokenMatches(type: .rightBrace) {
+        while !currentTokenMatches(type: .rightBrace) && currentToken.type != .eof {
             let statement = try parseDeclaration()
             statements.append(statement)
         }
