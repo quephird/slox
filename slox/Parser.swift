@@ -19,8 +19,8 @@ struct Parser {
         self.tokens = tokens
     }
 
-    mutating func parse() throws -> [Statement] {
-        var statements: [Statement] = []
+    mutating func parse() throws -> [Statement<Void>] {
+        var statements: [Statement<Void>] = []
         while currentToken.type != .eof {
             let statement = try parseDeclaration()
             statements.append(statement)
@@ -70,7 +70,7 @@ struct Parser {
     //                   | "continue" ";" ) ;
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
-    mutating private func parseDeclaration() throws -> Statement {
+    mutating private func parseDeclaration() throws -> Statement<Void> {
         if let classDecl = try parseClassDeclaration() {
             return classDecl
         }
@@ -90,7 +90,7 @@ struct Parser {
         return try parseStatement()
     }
 
-    mutating private func parseClassDeclaration() throws -> Statement? {
+    mutating private func parseClassDeclaration() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.class]) else {
             return nil
         }
@@ -99,21 +99,21 @@ struct Parser {
             throw ParseError.missingClassName(currentToken)
         }
 
-        var superclassExpr: Expression? = nil
+        var superclassExpr: Expression<Void>? = nil
         if currentTokenMatchesAny(types: [.less]) {
             guard let superclassName = consumeToken(type: .identifier) else {
                 throw ParseError.missingSuperclassName(currentToken)
             }
 
-            superclassExpr = .variable(superclassName)
+            superclassExpr = .variable(superclassName, ())
         }
 
         if !currentTokenMatchesAny(types: [.leftBrace]) {
             throw ParseError.missingOpenBraceBeforeClassBody(currentToken)
         }
 
-        var methodStatements: [Statement] = []
-        var staticMethodStatements: [Statement] = []
+        var methodStatements: [Statement<Void>] = []
+        var staticMethodStatements: [Statement<Void>] = []
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             // Note that we don't look for/consume a `fun` token before
             // calling `parseFunction()`. That's a deliberate design decision
@@ -134,7 +134,7 @@ struct Parser {
         return .class(className, superclassExpr, methodStatements, staticMethodStatements)
     }
 
-    mutating private func parseEnumDeclaration() throws -> Statement? {
+    mutating private func parseEnumDeclaration() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.enum]) else {
             return nil
         }
@@ -148,8 +148,8 @@ struct Parser {
         }
 
         var enumCases: [Token] = []
-        var methods: [Statement] = []
-        var staticMethods: [Statement] = []
+        var methods: [Statement<Void>] = []
+        var staticMethods: [Statement<Void>] = []
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             if currentTokenMatchesAny(types: [.case]) {
@@ -174,7 +174,7 @@ struct Parser {
         return .enum(enumName, enumCases, methods, staticMethods)
     }
 
-    mutating private func parseFunctionDeclaration() throws -> Statement? {
+    mutating private func parseFunctionDeclaration() throws -> Statement<Void>? {
         // We look ahead to see if the next token is an identifer,
         // and if so we assume this is a function declaration. Otherwise,
         // if the current token is `fun`, then we have a lambda, and we
@@ -206,7 +206,7 @@ struct Parser {
         return enumCases
     }
 
-    mutating private func parseFunction() throws -> Statement {
+    mutating private func parseFunction() throws -> Statement<Void> {
         guard let functionName = consumeToken(type: .identifier) else {
             throw ParseError.missingFunctionName(currentToken)
         }
@@ -226,7 +226,7 @@ struct Parser {
         return .function(functionName, .lambda(parameterList, functionBody))
     }
 
-    mutating private func parseVariableDeclaration() throws -> Statement? {
+    mutating private func parseVariableDeclaration() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.var]) else {
             return nil
         }
@@ -235,7 +235,7 @@ struct Parser {
             throw ParseError.missingVariableName(currentToken)
         }
 
-        var initializer: Expression? = nil
+        var initializer: Expression<Void>? = nil
         if currentTokenMatchesAny(types: [.equal]) {
             initializer = try parseExpression()
         }
@@ -247,7 +247,7 @@ struct Parser {
         return .variableDeclaration(varName, initializer);
     }
 
-    mutating private func parseStatement() throws -> Statement {
+    mutating private func parseStatement() throws -> Statement<Void> {
         if let forStmt = try parseForStatement() {
             return forStmt
         }
@@ -279,7 +279,7 @@ struct Parser {
         return try parseExpressionStatement()
     }
 
-    mutating private func parseForStatement() throws -> Statement? {
+    mutating private func parseForStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.for]) else {
             return nil
         }
@@ -288,7 +288,7 @@ struct Parser {
             throw ParseError.missingOpenParenForForStatement(currentToken)
         }
 
-        var initializerStmt: Statement?
+        var initializerStmt: Statement<Void>?
         if currentTokenMatchesAny(types: [.semicolon]) {
             initializerStmt = nil
         } else if let varDecl = try parseVariableDeclaration() {
@@ -297,7 +297,7 @@ struct Parser {
             initializerStmt = try parseExpressionStatement()
         }
 
-        var testExpr: Expression = .literal(.boolean(true))
+        var testExpr: Expression<Void> = .literal(.boolean(true))
         if !currentTokenMatches(type: .semicolon) {
             testExpr = try parseExpression()
         }
@@ -305,7 +305,7 @@ struct Parser {
             throw ParseError.missingSemicolonAfterForLoopCondition(currentToken)
         }
 
-        var incrementExpr: Expression? = nil
+        var incrementExpr: Expression<Void>? = nil
         if !currentTokenMatches(type: .rightParen) {
             incrementExpr = try parseExpression()
         }
@@ -318,7 +318,7 @@ struct Parser {
         return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
 
-    mutating private func parseIfStatement() throws -> Statement? {
+    mutating private func parseIfStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.if]) else {
             return nil
         }
@@ -334,7 +334,7 @@ struct Parser {
 
         let consequentStmt = try parseStatement()
 
-        var alternativeStmt: Statement? = nil
+        var alternativeStmt: Statement<Void>? = nil
         if currentTokenMatchesAny(types: [.else]) {
             alternativeStmt = try parseStatement()
         }
@@ -342,7 +342,7 @@ struct Parser {
         return .if(testExpr, consequentStmt, alternativeStmt)
     }
 
-    mutating private func parseSwitchStatement() throws -> Statement? {
+    mutating private func parseSwitchStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.switch]) else {
             return nil
         }
@@ -360,7 +360,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeSwitchBody(currentToken)
         }
 
-        var switchCaseDecls: [SwitchCaseDeclaration] = []
+        var switchCaseDecls: [SwitchCaseDeclaration<Void>] = []
         while let switchCaseDecl = try parseSwitchCaseDeclaration() {
             switchCaseDecls.append(switchCaseDecl)
         }
@@ -384,7 +384,7 @@ struct Parser {
         return .switch(switchExpr, switchCaseDecls)
     }
 
-    mutating private func parseSwitchCaseDeclaration() throws -> SwitchCaseDeclaration? {
+    mutating private func parseSwitchCaseDeclaration() throws -> SwitchCaseDeclaration<Void>? {
         guard currentTokenMatchesAny(types: [.case]) else {
             return nil
         }
@@ -396,7 +396,7 @@ struct Parser {
             throw ParseError.missingColon(currentToken)
         }
 
-        var statements: [Statement] = []
+        var statements: [Statement<Void>] = []
         while !currentTokenMatches(type: .case) && !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
             let statement = try parseDeclaration()
             statements.append(statement)
@@ -405,7 +405,7 @@ struct Parser {
         return SwitchCaseDeclaration(valueExpressions: valueExprs, statement: .block(statements))
     }
 
-    mutating private func parseSwitchDefaultDeclaration() throws -> SwitchCaseDeclaration? {
+    mutating private func parseSwitchDefaultDeclaration() throws -> SwitchCaseDeclaration<Void>? {
         guard currentTokenMatchesAny(types: [.default]) else {
             return nil
         }
@@ -414,7 +414,7 @@ struct Parser {
             throw ParseError.missingColon(currentToken)
         }
 
-        var statements: [Statement] = []
+        var statements: [Statement<Void>] = []
         while !currentTokenMatches(type: .rightBrace) && currentToken.type != .eof {
             let statement = try parseDeclaration()
             statements.append(statement)
@@ -424,7 +424,7 @@ struct Parser {
         return switchCaseDecl
     }
 
-    mutating private func parsePrintStatement() throws -> Statement? {
+    mutating private func parsePrintStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.print]) else {
             return nil
         }
@@ -438,7 +438,7 @@ struct Parser {
         return .print(expr)
     }
 
-    mutating private func parseJumpStatement() throws -> Statement? {
+    mutating private func parseJumpStatement() throws -> Statement<Void>? {
         if let returnStmt = try parseReturnStatement() {
             return returnStmt
         }
@@ -454,14 +454,14 @@ struct Parser {
         return nil
     }
 
-    mutating private func parseReturnStatement() throws -> Statement? {
+    mutating private func parseReturnStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.return]) else {
             return nil
         }
 
         let returnToken = previousToken
 
-        var expr: Expression? = nil
+        var expr: Expression<Void>? = nil
         if currentToken.type != .semicolon {
             expr = try parseExpression()
         }
@@ -473,7 +473,7 @@ struct Parser {
         return .return(returnToken, expr)
     }
 
-    mutating private func parseBreakStatement() throws -> Statement? {
+    mutating private func parseBreakStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.break]) else {
             return nil
         }
@@ -487,7 +487,7 @@ struct Parser {
         return .break(breakToken)
     }
 
-    mutating private func parseContinueStatement() throws -> Statement? {
+    mutating private func parseContinueStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.continue]) else {
             return nil
         }
@@ -501,7 +501,7 @@ struct Parser {
         return .continue(continueToken)
     }
 
-    mutating private func parseWhileStatement() throws -> Statement? {
+    mutating private func parseWhileStatement() throws -> Statement<Void>? {
         guard currentTokenMatchesAny(types: [.while]) else {
             return nil
         }
@@ -519,12 +519,12 @@ struct Parser {
         return .while(expr, stmt)
     }
 
-    mutating private func parseBlock() throws -> [Statement]? {
+    mutating private func parseBlock() throws -> [Statement<Void>]? {
         guard currentTokenMatchesAny(types: [.leftBrace]) else {
             return nil
         }
 
-        var statements: [Statement] = []
+        var statements: [Statement<Void>] = []
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             let statement = try parseDeclaration()
@@ -538,7 +538,7 @@ struct Parser {
         return statements
     }
 
-    mutating private func parseExpressionStatement() throws -> Statement {
+    mutating private func parseExpressionStatement() throws -> Statement<Void> {
         let expr = try parseExpression()
 
         // NOTA BENE: If the expression is the last thing to be parsed,
@@ -576,11 +576,11 @@ struct Parser {
     //                   | "super" "." IDENTIFIER ;
     //    lambda         → "fun" "(" parameters? ")" block ;
     //
-    mutating private func parseExpression() throws -> Expression {
+    mutating private func parseExpression() throws -> Expression<Void> {
         return try parseAssignment()
     }
 
-    mutating private func parseAssignment() throws -> Expression {
+    mutating private func parseAssignment() throws -> Expression<Void> {
         let expr = try parseLogicOr()
 
         guard currentTokenMatchesAny(types: [.equal, .plusEqual, .minusEqual, .starEqual, .slashEqual]) else {
@@ -610,8 +610,8 @@ struct Parser {
             valueExpr
         }
 
-        if case .variable(let name) = expr {
-            return .assignment(name, newValueExpr)
+        if case .variable(let name, let depth) = expr {
+            return .assignment(name, newValueExpr, depth)
         } else if case .get(let instanceExpr, let propertyNameToken) = expr {
             return .set(instanceExpr, propertyNameToken, newValueExpr)
         } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
@@ -621,7 +621,7 @@ struct Parser {
         throw ParseError.invalidAssignmentTarget(assignmentOperToken)
     }
 
-    mutating private func parseLogicOr() throws -> Expression {
+    mutating private func parseLogicOr() throws -> Expression<Void> {
         var expr = try parseLogicAnd()
 
         while currentTokenMatchesAny(types: [.or]) {
@@ -633,7 +633,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseLogicAnd() throws -> Expression {
+    mutating private func parseLogicAnd() throws -> Expression<Void> {
         var expr = try parseEquality()
 
         while currentTokenMatchesAny(types: [.and]) {
@@ -645,7 +645,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseEquality() throws -> Expression {
+    mutating private func parseEquality() throws -> Expression<Void> {
         var expr = try parseComparison()
 
         while currentTokenMatchesAny(types: [.bangEqual, .equalEqual]) {
@@ -657,7 +657,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseComparison() throws -> Expression {
+    mutating private func parseComparison() throws -> Expression<Void> {
         var expr = try parseTerm()
 
         while currentTokenMatchesAny(types: [.less, .lessEqual, .greater, .greaterEqual]) {
@@ -669,7 +669,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseTerm() throws -> Expression {
+    mutating private func parseTerm() throws -> Expression<Void> {
         var expr = try parseFactor()
 
         while currentTokenMatchesAny(types: [.plus, .minus]) {
@@ -681,7 +681,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseFactor() throws -> Expression {
+    mutating private func parseFactor() throws -> Expression<Void> {
         var expr = try parseUnary()
 
         while currentTokenMatchesAny(types: [.slash, .star, .modulus]) {
@@ -693,7 +693,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseUnary() throws -> Expression {
+    mutating private func parseUnary() throws -> Expression<Void> {
         if currentTokenMatchesAny(types: [.bang, .minus]) {
             let oper = previousToken
             let expr = try parseUnary()
@@ -708,7 +708,7 @@ struct Parser {
         return try parsePostfix()
     }
 
-    mutating private func parsePostfix() throws -> Expression {
+    mutating private func parsePostfix() throws -> Expression<Void> {
         var expr = try parsePrimary()
 
         while true {
@@ -733,7 +733,7 @@ struct Parser {
         return expr
     }
 
-    mutating private func parseCall(expr: Expression) throws -> Expression? {
+    mutating private func parseCall(expr: Expression<Void>) throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.leftParen]) else {
             return nil
         }
@@ -747,7 +747,7 @@ struct Parser {
         return.call(expr, previousToken, args)
     }
 
-    mutating private func parseGet(expr: Expression) throws -> Expression? {
+    mutating private func parseGet(expr: Expression<Void>) throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.dot]) else {
             return nil
         }
@@ -759,7 +759,7 @@ struct Parser {
         return .get(expr, previousToken)
     }
 
-    mutating private func parseSubscript(expr: Expression) throws -> Expression? {
+    mutating private func parseSubscript(expr: Expression<Void>) throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
@@ -773,7 +773,7 @@ struct Parser {
         return .subscriptGet(expr, indexExpr)
     }
 
-    mutating private func parsePrimary() throws -> Expression {
+    mutating private func parsePrimary() throws -> Expression<Void> {
         if let lambdaExpr = try parseLambda() {
             return lambdaExpr
         }
@@ -816,17 +816,17 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.this]) {
-            return .this(previousToken)
+            return .this(previousToken, ())
         }
 
         if currentTokenMatchesAny(types: [.identifier]) {
-            return .variable(previousToken)
+            return .variable(previousToken, ())
         }
 
         throw ParseError.expectedPrimaryExpression(currentToken)
     }
 
-    mutating private func parseGrouping() throws -> Expression? {
+    mutating private func parseGrouping() throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.leftParen]) else {
             return nil
         }
@@ -840,7 +840,7 @@ struct Parser {
         return .grouping(expr)
     }
 
-    mutating private func parseCollectionExpression() throws -> Expression? {
+    mutating private func parseCollectionExpression() throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
@@ -869,7 +869,7 @@ struct Parser {
         return .list(elements)
     }
 
-    mutating private func parseSuperExpression() throws -> Expression? {
+    mutating private func parseSuperExpression() throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.super]) else {
             return nil
         }
@@ -883,10 +883,10 @@ struct Parser {
             throw ParseError.expectedSuperclassMethodName(currentToken)
         }
 
-        return .super(superToken, methodToken)
+        return .super(superToken, methodToken, ())
     }
 
-    mutating private func parseLambda() throws -> Expression? {
+    mutating private func parseLambda() throws -> Expression<Void>? {
         guard currentTokenMatchesAny(types: [.fun]) else {
             return nil
         }
@@ -942,8 +942,8 @@ struct Parser {
         return parameterList
     }
 
-    mutating private func parseRemainingExpressions(firstExpr: Expression) throws -> [Expression] {
-        var exprs: [Expression] = [firstExpr]
+    mutating private func parseRemainingExpressions(firstExpr: Expression<Void>) throws -> [Expression<Void>] {
+        var exprs: [Expression<Void>] = [firstExpr]
 
         while currentTokenMatchesAny(types: [.comma]) {
             let expr = try parseExpression()
@@ -954,7 +954,7 @@ struct Parser {
     }
 
 
-    mutating private func parseKeyValuePairs(firstKeyExpr: Expression) throws -> [(Expression, Expression)] {
+    mutating private func parseKeyValuePairs(firstKeyExpr: Expression<Void>) throws -> [(Expression<Void>, Expression<Void>)] {
         let firstValueExpr = try parseExpression()
 
         var kvPairs = [(firstKeyExpr, firstValueExpr)]
@@ -973,8 +973,8 @@ struct Parser {
         return kvPairs
     }
 
-    mutating private func parseArguments(endTokenType: TokenType) throws -> [Expression] {
-        var args: [Expression] = []
+    mutating private func parseArguments(endTokenType: TokenType) throws -> [Expression<Void>] {
+        var args: [Expression<Void>] = []
         if currentToken.type != endTokenType {
             repeat {
                 let newArg = try parseExpression()

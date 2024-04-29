@@ -5,20 +5,20 @@
 //  Created by Danielle Kefford on 2/25/24.
 //
 
-indirect enum Expression: Equatable {
+indirect enum Expression<Depth>: Equatable {
     case binary(Expression, Token, Expression)
     case unary(Token, Expression)
     case literal(LoxValue)
     case grouping(Expression)
-    case variable(Token)
-    case assignment(Token, Expression)
+    case variable(Token, Depth)
+    case assignment(Token, Expression, Depth)
     case logical(Expression, Token, Expression)
     case call(Expression, Token, [Expression])
     case lambda(ParameterList?, [Statement])
     case get(Expression, Token)
     case set(Expression, Token, Expression)
-    case this(Token)
-    case `super`(Token, Token)
+    case this(Token, Depth)
+    case `super`(Token, Token, Depth)
     case string(Token)
     case list([Expression])
     case subscriptGet(Expression, Expression)
