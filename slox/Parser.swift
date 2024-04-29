@@ -366,16 +366,16 @@ struct Parser {
             switchCaseDecls.append(switchCaseDecl)
         }
 
-        var switchDefaultDecl: [Statement]? = nil
         if currentTokenMatches(type: .default) {
-            switchDefaultDecl = try parseSwitchDefaultDecl()
+            let switchDefaultCaseDecl = try parseSwitchDefaultDecl()
+            switchCaseDecls.append(switchDefaultCaseDecl)
         }
 
         guard currentTokenMatchesAny(types: [.rightBrace]) else {
             throw ParseError.missingClosingBrace(currentToken)
         }
 
-        return .switch(switchExpr, switchCaseDecls, switchDefaultDecl)
+        return .switch(switchExpr, switchCaseDecls)
     }
 
     mutating private func parseSwitchCaseDeclaration() throws -> SwitchCaseDeclaration {
@@ -399,7 +399,7 @@ struct Parser {
         return SwitchCaseDeclaration(valueExpressions: valueExprs, statement: .block(statements))
     }
 
-    mutating private func parseSwitchDefaultDecl() throws -> [Statement] {
+    mutating private func parseSwitchDefaultDecl() throws -> SwitchCaseDeclaration {
         guard currentTokenMatchesAny(types: [.default]) else {
             throw ParseError.missingCaseOrDefault(currentToken)
         }
@@ -414,7 +414,8 @@ struct Parser {
             statements.append(statement)
         }
 
-        return statements
+        let switchCaseDecl = SwitchCaseDeclaration(statement: .block(statements))
+        return switchCaseDecl
     }
 
     mutating private func parsePrintStatement() throws -> Statement? {

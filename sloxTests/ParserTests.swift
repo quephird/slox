@@ -1738,9 +1738,10 @@ final class ParserTests: XCTestCase {
                             .print(.string(Token(type: .string, lexeme: "\"three\"", line: 6))),
                             .print(.string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
                         ])),
-                ],
-                [
-                    .print(.string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
+                    SwitchCaseDeclaration(
+                        statement: .block([
+                            .print(.string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
+                        ])),
                 ])
         ]
         XCTAssertEqual(actual, expected)

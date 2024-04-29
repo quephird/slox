@@ -1252,4 +1252,38 @@ foo(3)
         let expected: LoxValue = try interpreter.makeString(string: "two, three, or four")
         XCTAssertEqual(actual, expected)
     }
+
+    func testInterpretSwitchStatementWithJustOneCase() throws {
+        let input = """
+var answer = "";
+switch (42) {
+case 42:
+    answer = "forty-two";
+}
+
+answer
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretSwitchStatementWithJustDefault() throws {
+        let input = """
+var answer = "";
+switch (42) {
+default:
+    answer = "forty-two";
+}
+
+answer
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "forty-two")
+        XCTAssertEqual(actual, expected)
+    }
 }

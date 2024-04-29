@@ -63,10 +63,9 @@ class Interpreter {
             try handleIfStatement(testExpr: testExpr,
                                   consequentStmt: consequentStmt,
                                   alternativeStmt: alternativeStmt)
-        case .switch(let testExpr, let switchCaseDecls, let switchDefaultStmts):
+        case .switch(let testExpr, let switchCaseDecls):
             try handleSwitchStatement(testExpr: testExpr,
-                                      switchCaseDecls: switchCaseDecls,
-                                      switchDefaultStmts: switchDefaultStmts)
+                                      switchCaseDecls: switchCaseDecls)
         case .print(let expr):
             try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
@@ -115,16 +114,15 @@ class Interpreter {
     }
 
     private func handleSwitchStatement(testExpr: ResolvedExpression,
-                                       switchCaseDecls: [ResolvedSwitchCaseDeclaration],
-                                       switchDefaultStmts: [ResolvedStatement]?) throws {
+                                       switchCaseDecls: [ResolvedSwitchCaseDeclaration]) throws {
         let testValue = try evaluate(expr: testExpr)
 
         for switchCaseDecl in switchCaseDecls {
-            let caseValues = try switchCaseDecl.valueExpressions.map { valueExpr in
+            let caseValues = try switchCaseDecl.valueExpressions?.map { valueExpr in
                 try evaluate(expr: valueExpr)
             }
 
-            if caseValues.contains(testValue) {
+            if caseValues == nil || caseValues!.contains(testValue) {
                 do {
                     try execute(statement: switchCaseDecl.statement)
                 } catch JumpType.break {
@@ -132,12 +130,6 @@ class Interpreter {
                 }
 
                 return
-            }
-        }
-
-        if let switchDefaultStmts {
-            for statement in switchDefaultStmts {
-                try execute(statement: statement)
             }
         }
     }

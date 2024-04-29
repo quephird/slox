@@ -576,7 +576,7 @@ final class ResolverTests: XCTestCase {
         // switch (42) {
         // }
         let statements: [Statement] = [
-            .switch(.literal(.int(42)), [], [])
+            .switch(.literal(.int(42)), [])
         ]
 
         var resolver = Resolver()
@@ -599,8 +599,7 @@ final class ResolverTests: XCTestCase {
                             .literal(.int(42))
                         ],
                         statement: .block([]))
-                ],
-                [])
+                ])
         ]
 
         var resolver = Resolver()

@@ -72,10 +72,9 @@ struct Resolver {
             return try handleExpressionStatement(expr: expr)
         case .if(let testExpr, let consequentStmt, let alternativeStmt):
             return try handleIf(testExpr: testExpr, consequentStmt: consequentStmt, alternativeStmt: alternativeStmt)
-        case .switch(let testExpr, let switchCaseDecls, let switchDefaultStmts):
+        case .switch(let testExpr, let switchCaseDecls):
             return try handleSwitch(testExpr: testExpr,
-                                    switchCaseDecls: switchCaseDecls,
-                                    switchDefaultStmts: switchDefaultStmts)
+                                    switchCaseDecls: switchCaseDecls)
         case .print(let expr):
             return try handlePrintStatement(expr: expr)
         case .return(let returnToken, let expr):
@@ -287,8 +286,7 @@ struct Resolver {
     }
 
     mutating private func handleSwitch(testExpr: Expression,
-                                       switchCaseDecls: [SwitchCaseDeclaration],
-                                       switchDefaultStmts: [Statement]?) throws -> ResolvedStatement {
+                                       switchCaseDecls: [SwitchCaseDeclaration]) throws -> ResolvedStatement {
         let previousJumpableType = currentJumpableType
         currentJumpableType = .switch
         defer {
@@ -304,16 +302,11 @@ struct Resolver {
             try handleSwitchCaseDeclaration(switchCaseDecl: switchCaseDecl)
         }
 
-        var resolvedSwitchDefaultStmts: [ResolvedStatement]? = nil
-        if let switchDefaultStmts {
-            resolvedSwitchDefaultStmts = try resolve(statements: switchDefaultStmts)
-        }
-
-        return .switch(resolvedTestExpr, resolvedSwitchCaseDecls, resolvedSwitchDefaultStmts)
+        return .switch(resolvedTestExpr, resolvedSwitchCaseDecls)
     }
 
     mutating private func handleSwitchCaseDeclaration(switchCaseDecl: SwitchCaseDeclaration) throws -> ResolvedSwitchCaseDeclaration {
-        let resolvedValueExprs = try switchCaseDecl.valueExpressions.map { valueExpr in
+        let resolvedValueExprs = try switchCaseDecl.valueExpressions?.map { valueExpr in
             try resolve(expression: valueExpr)
         }
 
