@@ -1893,4 +1893,31 @@ final class ParserTests: XCTestCase {
             XCTAssertEqual(actualError as! ParseError, expectedError)
         }
     }
+
+    func testParseSwitchStatementWithStatementInsteadOfCase() throws {
+        // switch (foo) {
+        //     print "boom!";
+        // }
+        let tokens: [Token] = [
+            Token(type: .switch, lexeme: "switch", line: 1),
+            Token(type: .leftParen, lexeme: "(", line: 1),
+            Token(type: .identifier, lexeme: "foo", line: 1),
+            Token(type: .rightParen, lexeme: ")", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .print, lexeme: "print", line: 2),
+            Token(type: .string, lexeme: "\"boom!\"", line: 2),
+            Token(type: .semicolon, lexeme: ";", line: 2),
+
+            Token(type: .rightBrace, lexeme: "}", line: 3),
+            Token(type: .eof, lexeme: "", line: 3),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .print, lexeme: "print", line: 2)
+        let expectedError = ParseError.missingCaseOrDefault(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
 }

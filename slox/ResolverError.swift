@@ -61,7 +61,7 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
         case .switchMustHaveAtLeastOneCaseOrDefault:
             return "`switch` statement must have at least one `case` or `default` block"
         case .switchMustHaveAtLeastOneStatementPerCaseOrDefault:
-            return "`switch` statement must have at least one `case` or `default` block"
+            return "`Each `case` or `default` block must have at least one statement"
         }
     }
 }

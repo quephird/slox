@@ -122,7 +122,7 @@ class Interpreter {
                 try evaluate(expr: valueExpr)
             }
 
-            if caseValues == nil || caseValues!.contains(testValue) {
+            if caseValues?.contains(testValue) ?? true {
                 do {
                     try execute(statement: switchCaseDecl.statement)
                 } catch JumpType.break {
