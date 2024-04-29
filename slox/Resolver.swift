@@ -40,7 +40,7 @@ struct Resolver {
     private var currentArgumentListType: ArgumentListType = .none
 
     // Main point of entry
-    mutating func resolve(statements: [Statement]) throws -> [ResolvedStatement] {
+    mutating func resolve(statements: [Statement<UnresolvedDepth>]) throws -> [Statement<Int>] {
         let resolvedStatements = try statements.map { statement in
             return try resolve(statement: statement)
         }
@@ -48,7 +48,7 @@ struct Resolver {
     }
 
     // Resolver for statements
-    private mutating func resolve(statement: Statement) throws -> ResolvedStatement {
+    private mutating func resolve(statement: Statement<UnresolvedDepth>) throws -> Statement<Int> {
         switch statement {
         case .block(let statements):
             return try handleBlock(statements: statements)
@@ -93,7 +93,7 @@ struct Resolver {
         }
     }
 
-    mutating private func handleBlock(statements: [Statement]) throws -> ResolvedStatement {
+    mutating private func handleBlock(statements: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
         beginScope()
         defer {
             endScope()
@@ -104,10 +104,11 @@ struct Resolver {
         return .block(resolvedStatements)
     }
 
-    mutating private func handleVariableDeclaration(nameToken: Token, initializeExpr: Expression?) throws -> ResolvedStatement {
+    mutating private func handleVariableDeclaration(nameToken: Token,
+                                                    initializeExpr: Expression<UnresolvedDepth>?) throws -> Statement<Int> {
         try declareVariable(name: nameToken.lexeme)
 
-        var resolvedInitializerExpr: ResolvedExpression? = nil
+        var resolvedInitializerExpr: Expression<Int>? = nil
         if let initializeExpr {
             resolvedInitializerExpr = try resolve(expression: initializeExpr)
         }
@@ -117,9 +118,9 @@ struct Resolver {
     }
 
     mutating private func handleClassDeclaration(nameToken: Token,
-                                                 superclassExpr: Expression?,
-                                                 methods: [Statement],
-                                                 staticMethods: [Statement]) throws -> ResolvedStatement {
+                                                 superclassExpr: Expression<UnresolvedDepth>?,
+                                                 methods: [Statement<UnresolvedDepth>],
+                                                 staticMethods: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
         let previousClassType = currentClassType
         let previousJumpableType = currentJumpableType
         currentClassType = .class
@@ -134,8 +135,8 @@ struct Resolver {
 
         // ACHTUNG! We need to attmept to resolve the superclass _before_
         // pushing `this` onto the stack, otherwise we won't find it!
-        var resolvedSuperclassExpr: ResolvedExpression? = nil
-        if case .variable(let superclassName) = superclassExpr {
+        var resolvedSuperclassExpr: Expression<Int>? = nil
+        if case .variable(let superclassName, _) = superclassExpr {
             currentClassType = .subclass
 
             if superclassName.lexeme == nameToken.lexeme {
@@ -196,8 +197,8 @@ struct Resolver {
 
     mutating private func handleEnumDeclaration(nameToken: Token,
                                                 caseTokens: [Token],
-                                                methods: [Statement],
-                                                staticMethods: [Statement]) throws -> ResolvedStatement {
+                                                methods: [Statement<UnresolvedDepth>],
+                                                staticMethods: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
         let previousClassType = currentClassType
         currentClassType = .enum
         defer {
@@ -250,8 +251,8 @@ struct Resolver {
 
 
     mutating private func handleFunctionDeclaration(nameToken: Token,
-                                                    lambdaExpr: Expression,
-                                                    functionType: FunctionType) throws -> ResolvedStatement {
+                                                    lambdaExpr: Expression<UnresolvedDepth>,
+                                                    functionType: FunctionType) throws -> Statement<Int> {
         guard case .lambda(let parameterList, let statements) = lambdaExpr else {
             throw ResolverError.notAFunction
         }
@@ -266,18 +267,18 @@ struct Resolver {
         return .function(nameToken, resolvedLambda)
     }
 
-    mutating private func handleExpressionStatement(expr: Expression) throws -> ResolvedStatement {
+    mutating private func handleExpressionStatement(expr: Expression<UnresolvedDepth>) throws -> Statement<Int> {
         let resolvedExpression = try resolve(expression: expr)
         return .expression(resolvedExpression)
     }
 
-    mutating private func handleIf(testExpr: Expression,
-                                   consequentStmt: Statement,
-                                   alternativeStmt: Statement?) throws -> ResolvedStatement {
+    mutating private func handleIf(testExpr: Expression<UnresolvedDepth>,
+                                   consequentStmt: Statement<UnresolvedDepth>,
+                                   alternativeStmt: Statement<UnresolvedDepth>?) throws -> Statement<Int> {
         let resolvedTestExpr = try resolve(expression: testExpr)
         let resolvedConsequentStmt = try resolve(statement: consequentStmt)
 
-        var resolvedAlternativeStmt: ResolvedStatement? = nil
+        var resolvedAlternativeStmt: Statement<Int>? = nil
         if let alternativeStmt {
             resolvedAlternativeStmt = try resolve(statement: alternativeStmt)
         }
@@ -285,8 +286,8 @@ struct Resolver {
         return .if(resolvedTestExpr, resolvedConsequentStmt, resolvedAlternativeStmt)
     }
 
-    mutating private func handleSwitch(testExpr: Expression,
-                                       switchCaseDecls: [SwitchCaseDeclaration]) throws -> ResolvedStatement {
+    mutating private func handleSwitch(testExpr: Expression<UnresolvedDepth>,
+                                       switchCaseDecls: [SwitchCaseDeclaration<UnresolvedDepth>]) throws -> Statement<Int> {
         let previousJumpableType = currentJumpableType
         currentJumpableType = .switch
         defer {
@@ -305,7 +306,7 @@ struct Resolver {
         return .switch(resolvedTestExpr, resolvedSwitchCaseDecls)
     }
 
-    mutating private func handleSwitchCaseDeclaration(switchCaseDecl: SwitchCaseDeclaration) throws -> ResolvedSwitchCaseDeclaration {
+    mutating private func handleSwitchCaseDeclaration(switchCaseDecl: SwitchCaseDeclaration<UnresolvedDepth>) throws -> SwitchCaseDeclaration<Int> {
         let resolvedValueExprs = try switchCaseDecl.valueExpressions?.map { valueExpr in
             try resolve(expression: valueExpr)
         }
@@ -317,15 +318,15 @@ struct Resolver {
 
         let resolvedStmt = try resolve(statement: switchCaseDecl.statement)
 
-        return ResolvedSwitchCaseDeclaration(valueExpressions: resolvedValueExprs, statement: resolvedStmt)
+        return SwitchCaseDeclaration(valueExpressions: resolvedValueExprs, statement: resolvedStmt)
     }
 
-    mutating private func handlePrintStatement(expr: Expression) throws -> ResolvedStatement {
+    mutating private func handlePrintStatement(expr: Expression<UnresolvedDepth>) throws -> Statement<Int> {
         let resolvedExpression = try resolve(expression: expr)
         return .print(resolvedExpression)
     }
 
-    mutating private func handleReturnStatement(returnToken: Token, expr: Expression?) throws -> ResolvedStatement {
+    mutating private func handleReturnStatement(returnToken: Token, expr: Expression<UnresolvedDepth>?) throws -> Statement<Int> {
         if currentFunctionType == .none {
             throw ResolverError.cannotReturnOutsideFunction
         }
@@ -344,7 +345,7 @@ struct Resolver {
         return .return(returnToken, nil)
     }
 
-    mutating private func handleBreak(breakToken: Token) throws -> ResolvedStatement {
+    mutating private func handleBreak(breakToken: Token) throws -> Statement<Int> {
         if currentJumpableType == .none {
             throw ResolverError.cannotBreakOutsideLoopOrSwitch
         }
@@ -352,7 +353,7 @@ struct Resolver {
         return .break(breakToken)
     }
 
-    mutating private func handleContinue(continueToken: Token) throws -> ResolvedStatement {
+    mutating private func handleContinue(continueToken: Token) throws -> Statement<Int> {
         if currentJumpableType != .loop {
             throw ResolverError.cannotContinueOutsideLoop
         }
@@ -360,7 +361,8 @@ struct Resolver {
         return .continue(continueToken)
     }
 
-    mutating private func handleWhile(conditionExpr: Expression, bodyStmt: Statement) throws -> ResolvedStatement {
+    mutating private func handleWhile(conditionExpr: Expression<UnresolvedDepth>,
+                                      bodyStmt: Statement<UnresolvedDepth>) throws -> Statement<Int> {
         let previousLoopType = currentJumpableType
         currentJumpableType = .loop
         defer {
@@ -373,24 +375,24 @@ struct Resolver {
         return .while(resolvedConditionExpr, resolvedBodyStmt)
     }
 
-    mutating private func handleFor(initializerStmt: Statement?,
-                                    testExpr: Expression,
-                                    incrementExpr: Expression?,
-                                    bodyStmt: Statement) throws -> ResolvedStatement {
+    mutating private func handleFor(initializerStmt: Statement<UnresolvedDepth>?,
+                                    testExpr: Expression<UnresolvedDepth>,
+                                    incrementExpr: Expression<UnresolvedDepth>?,
+                                    bodyStmt: Statement<UnresolvedDepth>) throws -> Statement<Int> {
         let previousJumpableType = currentJumpableType
         currentJumpableType = .loop
         defer {
             currentJumpableType = previousJumpableType
         }
 
-        var resolvedInitializerStmt: ResolvedStatement? = nil
+        var resolvedInitializerStmt: Statement<Int>? = nil
         if let initializerStmt {
             resolvedInitializerStmt = try resolve(statement: initializerStmt)
         }
 
         let resolvedTestExpr = try resolve(expression: testExpr)
 
-        var resolvedIncrementExpr: ResolvedExpression? = nil
+        var resolvedIncrementExpr: Expression<Int>? = nil
         if let incrementExpr {
             resolvedIncrementExpr = try resolve(expression: incrementExpr)
         }
@@ -404,11 +406,11 @@ struct Resolver {
     }
 
     // Resolver for expressions
-    mutating private func resolve(expression: Expression) throws -> ResolvedExpression {
+    mutating private func resolve(expression: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         switch expression {
-        case .variable(let nameToken):
+        case .variable(let nameToken, _):
             return try handleVariable(nameToken: nameToken)
-        case .assignment(let nameToken, let valueExpr):
+        case .assignment(let nameToken, let valueExpr, _):
             return try handleAssignment(nameToken: nameToken, valueExpr: valueExpr)
         case .binary(let leftExpr, let operToken, let rightExpr):
             return try handleBinary(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
@@ -422,7 +424,7 @@ struct Resolver {
             return try handleSet(instanceExpr: instanceExpr,
                                  propertyNameToken: propertyNameToken,
                                  valueExpr: valueExpr)
-        case .this(let thisToken):
+        case .this(let thisToken, _):
             return try handleThis(thisToken: thisToken)
         case .literal(let value):
             return .literal(value)
@@ -433,7 +435,7 @@ struct Resolver {
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
         case .lambda(let parameterList, let statements):
             return try handleLambda(parameterList: parameterList, statements: statements, functionType: .lambda)
-        case .super(let superToken, let methodToken):
+        case .super(let superToken, let methodToken, _):
             return try handleSuper(superToken: superToken, methodToken: methodToken)
         case .string(let stringToken):
             return .string(stringToken)
@@ -450,7 +452,7 @@ struct Resolver {
         }
     }
 
-    mutating private func handleVariable(nameToken: Token) throws -> ResolvedExpression {
+    mutating private func handleVariable(nameToken: Token) throws -> Expression<Int> {
         if !scopeStack.isEmpty && scopeStack.lastMutable[nameToken.lexeme] == false {
             throw ResolverError.variableAccessedBeforeInitialization
         }
@@ -459,31 +461,32 @@ struct Resolver {
         return .variable(nameToken, depth)
     }
 
-    mutating private func handleAssignment(nameToken: Token, valueExpr: Expression) throws -> ResolvedExpression {
+    mutating private func handleAssignment(nameToken: Token, valueExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolveValueExpr = try resolve(expression: valueExpr)
         let depth = getDepth(name: nameToken.lexeme)
 
         return .assignment(nameToken, resolveValueExpr, depth)
     }
 
-    mutating private func handleBinary(leftExpr: Expression,
+    mutating private func handleBinary(leftExpr: Expression<UnresolvedDepth>,
                                        operToken: Token,
-                                       rightExpr: Expression) throws -> ResolvedExpression {
+                                       rightExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedLeftExpr = try resolve(expression: leftExpr)
         let resolvedRightExpr = try resolve(expression: rightExpr)
 
         return .binary(resolvedLeftExpr, operToken, resolvedRightExpr)
     }
 
-    mutating private func handleUnary(operToken: Token, rightExpr: Expression) throws -> ResolvedExpression {
+    mutating private func handleUnary(operToken: Token,
+                                      rightExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedRightExpr = try resolve(expression: rightExpr)
 
         return .unary(operToken, resolvedRightExpr)
     }
 
-    mutating private func handleCall(calleeExpr: Expression,
+    mutating private func handleCall(calleeExpr: Expression<UnresolvedDepth>,
                                      rightParenToken: Token,
-                                     args: [Expression]) throws -> ResolvedExpression {
+                                     args: [Expression<UnresolvedDepth>]) throws -> Expression<Int> {
         let previousArgumentListType = currentArgumentListType
         currentArgumentListType = .functionCall
         defer {
@@ -499,8 +502,8 @@ struct Resolver {
         return .call(resolvedCalleeExpr, rightParenToken, resolvedArgs)
     }
 
-    mutating private func handleGet(instanceExpr: Expression,
-                                    propertyNameToken: Token) throws -> ResolvedExpression {
+    mutating private func handleGet(instanceExpr: Expression<UnresolvedDepth>,
+                                    propertyNameToken: Token) throws -> Expression<Int> {
         // Note that we don't attempt to resolve property names
         // because they are defined and looked up at _runtime_.
         let resolvedInstanceExpr = try resolve(expression: instanceExpr)
@@ -508,9 +511,9 @@ struct Resolver {
         return .get(resolvedInstanceExpr, propertyNameToken)
     }
 
-    mutating private func handleSet(instanceExpr: Expression,
+    mutating private func handleSet(instanceExpr: Expression<UnresolvedDepth>,
                                     propertyNameToken: Token,
-                                    valueExpr: Expression) throws -> ResolvedExpression {
+                                    valueExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         // As with `get` expressions, we do _not_ try to
         // resolve property names.
         let resolvedInstanceExpr = try resolve(expression: instanceExpr)
@@ -519,7 +522,7 @@ struct Resolver {
         return .set(resolvedInstanceExpr, propertyNameToken, resolvedValueExpr)
     }
 
-    mutating private func handleThis(thisToken: Token) throws -> ResolvedExpression {
+    mutating private func handleThis(thisToken: Token) throws -> Expression<Int> {
         guard currentClassType != .none else {
             throw ResolverError.cannotReferenceThisOutsideClass
         }
@@ -528,9 +531,9 @@ struct Resolver {
         return .this(thisToken, depth)
     }
 
-    mutating private func handleLogical(leftExpr: Expression,
+    mutating private func handleLogical(leftExpr: Expression<UnresolvedDepth>,
                                         operToken: Token,
-                                        rightExpr: Expression) throws -> ResolvedExpression {
+                                        rightExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedLeftExpr = try resolve(expression: leftExpr)
         let resolvedRightExpr = try resolve(expression: rightExpr)
 
@@ -538,8 +541,8 @@ struct Resolver {
     }
 
     mutating private func handleLambda(parameterList: ParameterList?,
-                                       statements: [Statement],
-                                       functionType: FunctionType) throws -> ResolvedExpression {
+                                       statements: [Statement<UnresolvedDepth>],
+                                       functionType: FunctionType) throws -> Expression<Int> {
         beginScope()
         let previousFunctionType = currentFunctionType
         let previousLoopType = currentJumpableType
@@ -572,7 +575,7 @@ struct Resolver {
         return .lambda(parameterList, resolvedStatements)
     }
 
-    mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> ResolvedExpression {
+    mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> Expression<Int> {
         switch currentClassType {
         case .none:
             throw ResolverError.cannotReferenceSuperOutsideClass
@@ -586,7 +589,7 @@ struct Resolver {
         return .super(superToken, methodToken, depth)
     }
 
-    mutating private func handleList(elements: [Expression]) throws -> ResolvedExpression {
+    mutating private func handleList(elements: [Expression<UnresolvedDepth>]) throws -> Expression<Int> {
         let previousArgumentListType = currentArgumentListType
         currentArgumentListType = .listInitializer
         defer {
@@ -600,16 +603,17 @@ struct Resolver {
         return .list(resolvedElements)
     }
 
-    mutating private func handleSubscriptGet(listExpr: Expression, indexExpr: Expression) throws -> ResolvedExpression {
+    mutating private func handleSubscriptGet(listExpr: Expression<UnresolvedDepth>,
+                                             indexExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedListExpr = try resolve(expression: listExpr)
         let resolvedIndexExpr = try resolve(expression: indexExpr)
 
         return .subscriptGet(resolvedListExpr, resolvedIndexExpr)
     }
 
-    mutating private func handleSubscriptSet(listExpr: Expression,
-                                             indexExpr: Expression,
-                                             valueExpr: Expression) throws -> ResolvedExpression {
+    mutating private func handleSubscriptSet(listExpr: Expression<UnresolvedDepth>,
+                                             indexExpr: Expression<UnresolvedDepth>,
+                                             valueExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedListExpr = try resolve(expression: listExpr)
         let resolvedIndexExpr = try resolve(expression: indexExpr)
         let resolvedValueExpr = try resolve(expression: valueExpr)
@@ -617,7 +621,7 @@ struct Resolver {
         return .subscriptSet(resolvedListExpr, resolvedIndexExpr, resolvedValueExpr)
     }
 
-    mutating private func handleSplat(listExpr: Expression) throws -> ResolvedExpression {
+    mutating private func handleSplat(listExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         if currentArgumentListType == .none {
             throw ResolverError.cannotUseSplatOperatorOutOfContext
         }
@@ -627,8 +631,8 @@ struct Resolver {
         return .splat(resolvedListExpr)
     }
 
-    mutating private func handleDictionary(kvPairs: [(Expression, Expression)]) throws -> ResolvedExpression {
-        var resolvedKVPairs: [(ResolvedExpression, ResolvedExpression)] = []
+    mutating private func handleDictionary(kvPairs: [(Expression<UnresolvedDepth>, Expression<UnresolvedDepth>)]) throws -> Expression<Int> {
+        var resolvedKVPairs: [(Expression<Int>, Expression<Int>)] = []
 
         for (keyExpr, valueExpr) in kvPairs {
             let resolvedKey = try resolve(expression: keyExpr)

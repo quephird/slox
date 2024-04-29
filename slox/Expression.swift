@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 2/25/24.
 //
 
-indirect enum Expression<Depth>: Equatable {
+indirect enum Expression<Depth: Equatable>: Equatable {
     case binary(Expression, Token, Expression)
     case unary(Token, Expression)
     case literal(LoxValue)
@@ -14,7 +14,7 @@ indirect enum Expression<Depth>: Equatable {
     case assignment(Token, Expression, Depth)
     case logical(Expression, Token, Expression)
     case call(Expression, Token, [Expression])
-    case lambda(ParameterList?, [Statement])
+    case lambda(ParameterList?, [Statement<Depth>])
     case get(Expression, Token)
     case set(Expression, Token, Expression)
     case this(Token, Depth)
@@ -36,10 +36,10 @@ indirect enum Expression<Depth>: Equatable {
             return lhsValue == rhsValue
         case (.grouping(let lhsExpr), .grouping(let rhsExpr)):
             return lhsExpr == rhsExpr
-        case (.variable(let lhsToken), .variable(let rhsToken)):
-            return lhsToken == rhsToken
-        case (.assignment(let lhsName, let lhsExpr), .assignment(let rhsName, let rhsExpr)):
-            return lhsName == rhsName && lhsExpr == rhsExpr
+        case (.variable(let lhsToken, let lhsDepth), .variable(let rhsToken, let rhsDepth)):
+            return lhsToken == rhsToken && lhsDepth == rhsDepth
+        case (.assignment(let lhsName, let lhsExpr, let lhsDepth), .assignment(let rhsName, let rhsExpr, let rhsDepth)):
+            return lhsName == rhsName && lhsExpr == rhsExpr && lhsDepth == rhsDepth
         case (.logical(let lhsExpr1, let lhsOper, let lhsExpr2), .logical(let rhsExpr1, let rhsOper, let rhsExpr2)):
             return lhsExpr1 == rhsExpr1 && lhsOper == rhsOper && lhsExpr2 == rhsExpr2
         case (.call(let lhsCallee, let lhsToken, let lhsArgs), .call(let rhsCallee, let rhsToken, let rhsArgs)):
@@ -50,10 +50,10 @@ indirect enum Expression<Depth>: Equatable {
             return lhsExpr == rhsExpr && lhsName == rhsName
         case (.set(let lhsExpr1, let lhsName, let lhsExpr2), .set(let rhsExpr1, let rhsName, let rhsExpr2)):
             return lhsExpr1 == rhsExpr1 && lhsName == rhsName && lhsExpr2 == rhsExpr2
-        case (.this(let lhsToken), .this(let rhsToken)):
-            return lhsToken == rhsToken
-        case (.super(let lhsSuper, let lhsMethod), .super(let rhsSuper, let rhsMethod)):
-            return lhsSuper == rhsSuper && lhsMethod == rhsMethod
+        case (.this(let lhsToken, let lhsDepth), .this(let rhsToken, let rhsDepth)):
+            return lhsToken == rhsToken && lhsDepth == rhsDepth
+        case (.super(let lhsSuper, let lhsMethod, let lhsDepth), .super(let rhsSuper, let rhsMethod, let rhsDepth)):
+            return lhsSuper == rhsSuper && lhsMethod == rhsMethod && lhsDepth == rhsDepth
         case (.string(let lhsString), .string(let rhsString)):
             return lhsString == rhsString
         case (.list(let lhsExprs), .list(let rhsExprs)):

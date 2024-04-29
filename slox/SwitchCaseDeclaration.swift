@@ -5,7 +5,7 @@
 //  Created by Danielle Kefford on 4/26/24.
 //
 
-struct SwitchCaseDeclaration<Depth>: Equatable {
+struct SwitchCaseDeclaration<Depth: Equatable>: Equatable {
     var valueExpressions: [Expression<Depth>]?
     var statement: Statement<Depth>
 }

@@ -5,10 +5,10 @@
 //  Created by Danielle Kefford on 2/27/24.
 //
 
-indirect enum Statement<Depth>: Equatable {
+indirect enum Statement<Depth: Equatable>: Equatable {
     case expression(Expression<Depth>)
     case `if`(Expression<Depth>, Statement, Statement?)
-    case `switch`(Expression<Depth>, [SwitchCaseDeclaration])
+    case `switch`(Expression<Depth>, [SwitchCaseDeclaration<Depth>])
     case print(Expression<Depth>)
     case variableDeclaration(Token, Expression<Depth>?)
     case block([Statement])
