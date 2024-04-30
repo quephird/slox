@@ -837,6 +837,31 @@ sum
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretConsecutiveForLoopsWithSameInitializerClauses() throws {
+        // This tests whether `i` is scoped properly locally within
+        // both `for` loops and no errors occur. Previously, there was
+        // a bug; see https://github.com/quephird/slox/issues/69
+        let input = """
+var sum = 0;
+{
+    for (var i = 1; i <= 3; i += 1) {
+        sum += i;
+    }
+
+    for (var i = 1; i <= 3; i += 1) {
+        sum += i;
+    }
+}
+
+sum
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(12)
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretWhileLoopWithBreakStatement() throws {
         let input = """
 var sum = 0;
