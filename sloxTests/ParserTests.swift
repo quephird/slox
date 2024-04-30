@@ -17,7 +17,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(.string(Token(type: .string, lexeme: "\"forty-two\"", line: 1))),
         ]
         XCTAssertEqual(actual, expected)
@@ -32,7 +32,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(.literal(.double(123.456)))
         ]
         XCTAssertEqual(actual, expected)
@@ -47,7 +47,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(.literal(.boolean(true)))
         ]
         XCTAssertEqual(actual, expected)
@@ -62,7 +62,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(.literal(.nil))
         ]
         XCTAssertEqual(actual, expected)
@@ -79,7 +79,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(.grouping(.literal(.int(42))))
         ]
         XCTAssertEqual(actual, expected)
@@ -128,7 +128,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .unary(
                     Token(type: .bang, lexeme: "!", line: 1),
@@ -148,7 +148,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
                     .literal(.int(21)),
@@ -169,7 +169,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
                     .literal(.int(5)),
@@ -190,7 +190,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
                     .string(Token(type: .string, lexeme: "\"forty-\"", line: 1)),
@@ -211,7 +211,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
                     .literal(.int(1)),
@@ -232,7 +232,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
                     .string(Token(type: .string, lexeme: "\"forty-two\"", line: 1)),
@@ -252,7 +252,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .logical(.literal(.boolean(true)),
                          Token(type: .or, lexeme: "or", line: 1),
@@ -271,7 +271,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .logical(.literal(.boolean(true)),
                          Token(type: .and, lexeme: "and", line: 1),
@@ -292,7 +292,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .logical(.logical(.literal(.boolean(true)),
                                   Token(type: .and, lexeme: "and", line: 1),
@@ -314,11 +314,12 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .assignment(
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
-                    .literal(.int(42))))
+                    .literal(.int(42)),
+                    UnresolvedDepth()))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -335,14 +336,17 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .assignment(
                     Token(type: .identifier, lexeme: "foo", line: 1),
                     .binary(
-                        .variable(Token(type: .identifier, lexeme: "foo", line: 1)),
+                        .variable(
+                            Token(type: .identifier, lexeme: "foo", line: 1),
+                            UnresolvedDepth()),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.int(42)))))
+                        .literal(.int(42))),
+                    UnresolvedDepth()))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -367,7 +371,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
                     .grouping(.unary(
@@ -417,23 +421,30 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .for(
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "i", line: 1),
                     .literal(.int(0))),
                 .binary(
-                    .variable(Token(type: .identifier, lexeme: "i", line: 1)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "i", line: 1),
+                        UnresolvedDepth()),
                     Token(type: .less, lexeme: "<", line: 1),
                     .literal(.int(5))),
                 .assignment(
                     Token(type: .identifier, lexeme: "i", line: 1),
                     .binary(
-                        .variable(Token(type: .identifier, lexeme: "i", line: 1)),
+                        .variable(
+                            Token(type: .identifier, lexeme: "i", line: 1),
+                            UnresolvedDepth()),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.int(1)))),
+                        .literal(.int(1))),
+                    UnresolvedDepth()),
                 .print(
-                    .variable(Token(type: .identifier, lexeme: "i", line: 2)))),
+                    .variable(
+                        Token(type: .identifier, lexeme: "i", line: 2),
+                        UnresolvedDepth()))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -457,13 +468,15 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .for(
                 nil,
                 .literal(.boolean(true)),
                 nil,
                 .print(
-                    .variable(Token(type: .identifier, lexeme: "i", line: 2))))
+                    .variable(
+                        Token(type: .identifier, lexeme: "i", line: 2),
+                        UnresolvedDepth())))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -523,7 +536,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .if(
                 .literal(.boolean(true)),
                 .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
@@ -559,7 +572,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .if(
                 .literal(.boolean(true)),
                 .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
@@ -601,7 +614,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .print(
                 .string(Token(type: .string, lexeme: "\"forty-two\"", line: 1)))
         ]
@@ -618,7 +631,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
                 nil)
@@ -638,7 +651,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
                 .literal(.int(42)))
@@ -692,7 +705,7 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "the", line: 1),
                 .literal(.int(2))),
@@ -701,9 +714,13 @@ final class ParserTests: XCTestCase {
                 .literal(.int(21))),
             .print(
                 .binary(
-                    .variable(Token(type: .identifier, lexeme: "the", line: 3)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "the", line: 3),
+                        UnresolvedDepth()),
                     Token(type: .star, lexeme: "*", line: 3),
-                    .variable(Token(type: .identifier, lexeme: "answer", line: 3)))),
+                    .variable(
+                        Token(type: .identifier, lexeme: "answer", line: 3),
+                        UnresolvedDepth()))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -734,13 +751,15 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .block([
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "theAnswer", line: 2),
                     .literal(.int(42))),
                 .print(
-                    .variable(Token(type: .identifier, lexeme: "theAnswer", line: 3))),
+                    .variable(
+                        Token(type: .identifier, lexeme: "theAnswer", line: 3),
+                        UnresolvedDepth())),
             ]),
         ]
         XCTAssertEqual(actual, expected)
@@ -803,21 +822,29 @@ final class ParserTests: XCTestCase {
         var parser = Parser(tokens: tokens)
 
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .while(
                 .binary(
-                    .variable(Token(type: .identifier, lexeme: "x", line: 1)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "x", line: 1),
+                        UnresolvedDepth()),
                     Token(type: .lessEqual, lexeme: "<=", line: 1),
                     .literal(.int(5))),
                 .block([
-                    .print(.variable(Token(type: .identifier, lexeme: "x", line: 2))),
+                    .print(
+                        .variable(
+                            Token(type: .identifier, lexeme: "x", line: 2),
+                            UnresolvedDepth())),
                     .expression(
                         .assignment(
                             Token(type: .identifier, lexeme: "x", line: 3),
                             .binary(
-                                .variable(Token(type: .identifier, lexeme: "x", line: 3)),
+                                .variable(
+                                    Token(type: .identifier, lexeme: "x", line: 3),
+                                    UnresolvedDepth()),
                                 Token(type: .plus, lexeme: "+", line: 3),
-                                .literal(.int(1))))),
+                                .literal(.int(1))),
+                            UnresolvedDepth())),
                 ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -867,7 +894,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
                 .lambda(
@@ -905,7 +932,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
@@ -917,9 +944,13 @@ final class ParserTests: XCTestCase {
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
                             .binary(
-                                .variable(Token(type: .identifier, lexeme: "a", line: 2)),
+                                .variable(
+                                    Token(type: .identifier, lexeme: "a", line: 2),
+                                    UnresolvedDepth()),
                                 Token(type: .plus, lexeme: "+", line: 2),
-                                .variable(Token(type: .identifier, lexeme: "b", line: 2))))
+                                .variable(
+                                    Token(type: .identifier, lexeme: "b", line: 2),
+                                    UnresolvedDepth())))
                     ])
             )
         ]
@@ -951,7 +982,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
                 .lambda(
@@ -963,7 +994,9 @@ final class ParserTests: XCTestCase {
                     [
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
-                            .variable(Token(type: .identifier, lexeme: "b", line: 2)))
+                            .variable(
+                                Token(type: .identifier, lexeme: "b", line: 2),
+                                UnresolvedDepth()))
                     ])
             )
         ]
@@ -1051,10 +1084,12 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .call(
-                    .variable(Token(type: .identifier, lexeme: "add", line: 1)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "add", line: 1),
+                        UnresolvedDepth()),
                     Token(type: .rightParen, lexeme: ")", line: 1),
                     [
                         .literal(.int(1)),
@@ -1083,10 +1118,12 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .call(
-                    .variable(Token(type: .identifier, lexeme: "add", line: 1)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "add", line: 1),
+                        UnresolvedDepth()),
                     Token(type: .rightParen, lexeme: ")", line: 1),
                     [
                         .splat(
@@ -1122,7 +1159,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .lambda(
                     ParameterList(normalParameters: [
@@ -1133,9 +1170,13 @@ final class ParserTests: XCTestCase {
                         .return(
                             Token(type: .return, lexeme: "return", line: 1),
                             .binary(
-                                .variable(Token(type: .identifier, lexeme: "a", line: 1)),
+                                .variable(
+                                    Token(type: .identifier, lexeme: "a", line: 1),
+                                    UnresolvedDepth()),
                                 Token(type: .plus, lexeme: "+", line: 1),
-                                .variable(Token(type: .identifier, lexeme: "b", line: 1)))),
+                                .variable(
+                                    Token(type: .identifier, lexeme: "b", line: 1),
+                                    UnresolvedDepth()))),
                     ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1171,7 +1212,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
                 nil,
@@ -1183,7 +1224,9 @@ final class ParserTests: XCTestCase {
                             [
                                 .print(
                                     .get(
-                                        .this(Token(type: .this, lexeme: "this", line: 3)),
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .identifier, lexeme: "name", line: 3)))
                             ]))
                 ],
@@ -1204,10 +1247,12 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .get(
-                    .variable(Token(type: .identifier, lexeme: "person", line: 1)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "person", line: 1),
+                        UnresolvedDepth()),
                     Token(type: .identifier, lexeme: "name", line: 1)))
         ]
         XCTAssertEqual(actual, expected)
@@ -1227,10 +1272,12 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .set(
-                    .variable(Token(type: .identifier, lexeme: "person", line: 1)),
+                    .variable(
+                        Token(type: .identifier, lexeme: "person", line: 1),
+                        UnresolvedDepth()),
                     Token(type: .identifier, lexeme: "name", line: 1),
                     .string(Token(type: .string, lexeme: "\"Danielle\"", line: 1)))),
         ]
@@ -1271,7 +1318,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
@@ -1288,9 +1335,13 @@ final class ParserTests: XCTestCase {
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
                                     .binary(
-                                        .variable(Token(type: .identifier, lexeme: "a", line: 3)),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "a", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .plus, lexeme: "+", line: 3),
-                                        .variable(Token(type: .identifier, lexeme: "b", line: 3))))
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "b", line: 3),
+                                            UnresolvedDepth())))
                             ]))
                 ])
         ]
@@ -1333,10 +1384,12 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "B", line: 1),
-                .variable(Token(type: .identifier, lexeme: "A", line: 1)),
+                .variable(
+                    Token(type: .identifier, lexeme: "A", line: 1),
+                    UnresolvedDepth()),
                 [
                     .function(
                         Token(type: .identifier, lexeme: "someMethod", line: 2),
@@ -1350,10 +1403,13 @@ final class ParserTests: XCTestCase {
                                     .call(
                                         .super(
                                             Token(type: .super, lexeme: "super", line: 3),
-                                            Token(type: .identifier, lexeme: "someMethod", line: 3)),
+                                            Token(type: .identifier, lexeme: "someMethod", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .rightParen, lexeme: ")", line: 3),
                                         [
-                                            .variable(Token(type: .identifier, lexeme: "arg", line: 3))
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "arg", line: 3),
+                                                UnresolvedDepth())
                                         ]))
                             ]))
                 ],
@@ -1396,7 +1452,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Circle", line: 1),
                 nil,
@@ -1413,11 +1469,15 @@ final class ParserTests: XCTestCase {
                                             .literal(.double(3.14159)),
                                             Token(type: .star, lexeme: "*", line: 3),
                                             .get(
-                                                .this(Token(type: .this, lexeme: "this", line: 3)),
+                                                .this(
+                                                    Token(type: .this, lexeme: "this", line: 3),
+                                                    UnresolvedDepth()),
                                                 Token(type: .identifier, lexeme: "radius", line: 3))),
                                         Token(type: .star, lexeme: "*", line: 3),
                                         .get(
-                                            .this(Token(type: .this, lexeme: "this", line: 3)),
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 3),
+                                                UnresolvedDepth()),
                                             Token(type: .identifier, lexeme: "radius", line: 3)))),
                             ]))
                 ],
@@ -1441,7 +1501,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .list([
                     .literal(.int(1)),
@@ -1482,7 +1542,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .list([
                 ]))
@@ -1501,7 +1561,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .dictionary([]))
         ]
@@ -1521,7 +1581,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .dictionary([
                     (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(.int(1))),
@@ -1551,7 +1611,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .dictionary([
                     (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(.int(1))),
@@ -1618,7 +1678,7 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .enum(
                 Token(type: .identifier, lexeme: "Foo", line: 1),
                 [
@@ -1636,10 +1696,14 @@ final class ParserTests: XCTestCase {
                             [
                                 .if(
                                     .binary(
-                                        .this(Token(type: .this, lexeme: "this", line: 4)),
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 4),
+                                            UnresolvedDepth()),
                                         Token(type: .equalEqual, lexeme: "==", line: 4),
                                         .get(
-                                            .variable(Token(type: .identifier, lexeme: "Foo", line: 4)),
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "Foo", line: 4),
+                                                UnresolvedDepth()),
                                             Token(type: .identifier, lexeme: "bar", line: 4))),
                                     .block([
                                         .return(
@@ -1716,9 +1780,11 @@ final class ParserTests: XCTestCase {
 
         var parser = Parser(tokens: tokens)
         let actual = try parser.parse()
-        let expected: [Statement] = [
+        let expected: [Statement<UnresolvedDepth>] = [
             .switch(
-                .variable(Token(type: .identifier, lexeme: "foo", line: 1)),
+                .variable(
+                    Token(type: .identifier, lexeme: "foo", line: 1),
+                    UnresolvedDepth()),
                 [
                     SwitchCaseDeclaration(
                         valueExpressions: [

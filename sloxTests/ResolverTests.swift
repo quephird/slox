@@ -10,7 +10,7 @@ import XCTest
 final class ResolverTests: XCTestCase {
     func testResolveLiteralExpression() throws {
         // "forty-two"
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .expression(
                 .literal(
                     .int(42))),
@@ -18,7 +18,7 @@ final class ResolverTests: XCTestCase {
 
         var resolver = Resolver()
         let actual = try resolver.resolve(statements: statements)
-        let expected: [ResolvedStatement] = [
+        let expected: [Statement<Int>] = [
             .expression(
                 .literal(
                     .int(42))),
@@ -28,7 +28,7 @@ final class ResolverTests: XCTestCase {
 
     func testResolveVariableDeclaration() throws {
         // var answer = 42;
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 1),
                 .literal(.int(42))),
@@ -36,7 +36,7 @@ final class ResolverTests: XCTestCase {
 
         var resolver = Resolver()
         let actual = try resolver.resolve(statements: statements)
-        let expected: [ResolvedStatement] = [
+        let expected: [Statement<Int>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 1),
                 .literal(.int(42))),
@@ -48,7 +48,7 @@ final class ResolverTests: XCTestCase {
         // fun add(a, b) {
         //     return a + b;
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
@@ -61,16 +61,18 @@ final class ResolverTests: XCTestCase {
                             Token(type: .return, lexeme: "return", line: 2),
                             .binary(
                                 .variable(
-                                    Token(type: .identifier, lexeme: "a", line: 2)),
+                                    Token(type: .identifier, lexeme: "a", line: 2),
+                                    UnresolvedDepth()),
                                 Token(type: .plus, lexeme: "+", line: 2),
                                 .variable(
-                                    Token(type: .identifier, lexeme: "b", line: 2)))),
+                                    Token(type: .identifier, lexeme: "b", line: 2),
+                                    UnresolvedDepth()))),
                     ])),
         ]
 
         var resolver = Resolver()
         let actual = try resolver.resolve(statements: statements)
-        let expected: [ResolvedStatement] = [
+        let expected: [Statement<Int>] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
@@ -98,7 +100,7 @@ final class ResolverTests: XCTestCase {
         // fun answer {
         //     return 42;
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "answer", line: 1),
                 .lambda(
@@ -119,7 +121,7 @@ final class ResolverTests: XCTestCase {
 
     func testResolveVariableExpressionInDeeplyNestedBlock() throws {
         // var becca; {{{ becca = "awesome"; }}}
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "becca", line: 1),
                 nil),
@@ -129,7 +131,8 @@ final class ResolverTests: XCTestCase {
                         .expression(
                             .assignment(
                                 Token(type: .identifier, lexeme: "becca", line: 1),
-                                .string(Token(type: .string, lexeme: "\"answer\"", line: 1))))
+                                .string(Token(type: .string, lexeme: "\"answer\"", line: 1)),
+                                UnresolvedDepth()))
                     ])
                 ])
             ])
@@ -137,7 +140,7 @@ final class ResolverTests: XCTestCase {
 
         var resolver = Resolver()
         let actual = try resolver.resolve(statements: statements)
-        let expected: [ResolvedStatement] = [
+        let expected: [Statement<Int>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "becca", line: 1),
                 nil),
@@ -158,7 +161,7 @@ final class ResolverTests: XCTestCase {
 
     func testResolveReturnStatementOutsideFunctionBody() throws {
         // { return 42; }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .block([
                 .return(
                     Token(type: .return, lexeme: "return", line: 1),
@@ -178,7 +181,7 @@ final class ResolverTests: XCTestCase {
         // {
         //     var a = a;
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "x", line: 1),
                 .string(Token(type: .string, lexeme: "\"outer\"", line: 1))),
@@ -186,7 +189,8 @@ final class ResolverTests: XCTestCase {
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "x", line: 3),
                     .variable(
-                        Token(type: .identifier, lexeme: "x", line: 3))),
+                        Token(type: .identifier, lexeme: "x", line: 3),
+                        UnresolvedDepth())),
             ])
         ]
 
@@ -202,7 +206,7 @@ final class ResolverTests: XCTestCase {
         //     var a = "first";
         //     var a = "second";
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .block([
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "a", line: 2),
@@ -226,7 +230,7 @@ final class ResolverTests: XCTestCase {
         //         print this.name;
         //     }
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
                 nil,
@@ -238,7 +242,9 @@ final class ResolverTests: XCTestCase {
                             [
                                 .print(
                                     .get(
-                                        .this(Token(type: .this, lexeme: "this", line: 3)),
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .identifier, lexeme: "name", line: 3)))
                             ]))
                 ],
@@ -247,7 +253,7 @@ final class ResolverTests: XCTestCase {
 
         var resolver = Resolver()
         let actual = try resolver.resolve(statements: statements)
-        let expected: [ResolvedStatement] = [
+        let expected: [Statement<Int>] = [
             .class(
                 Token(type: .identifier, lexeme: "Person", line: 1),
                 nil,
@@ -274,7 +280,7 @@ final class ResolverTests: XCTestCase {
         // fun foo() {
         //     return this;
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
                 .lambda(
@@ -282,7 +288,9 @@ final class ResolverTests: XCTestCase {
                     [
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
-                            .this(Token(type: .this, lexeme: "this", line: 2)))
+                            .this(
+                                Token(type: .this, lexeme: "this", line: 2),
+                                UnresolvedDepth()))
                     ])),
         ]
 
@@ -299,7 +307,7 @@ final class ResolverTests: XCTestCase {
         //         return 42;
         //     }
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Answer", line: 1),
                 nil,
@@ -330,7 +338,7 @@ final class ResolverTests: XCTestCase {
         //         return a + b;
         //     }
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
@@ -347,16 +355,20 @@ final class ResolverTests: XCTestCase {
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
                                     .binary(
-                                        .variable(Token(type: .identifier, lexeme: "a", line: 3)),
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "a", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .plus, lexeme: "+", line: 3),
-                                        .variable(Token(type: .identifier, lexeme: "b", line: 3))))
+                                        .variable(
+                                            Token(type: .identifier, lexeme: "b", line: 3),
+                                            UnresolvedDepth())))
                             ]))
                 ])
         ]
 
         var resolver = Resolver()
         let actual = try resolver.resolve(statements: statements)
-        let expected: [ResolvedStatement] = [
+        let expected: [Statement<Int>] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
@@ -392,7 +404,7 @@ final class ResolverTests: XCTestCase {
         //         this.name = "bad";
         //     }
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
@@ -405,7 +417,9 @@ final class ResolverTests: XCTestCase {
                             [
                                 .expression(
                                     .set(
-                                        .this(Token(type: .this, lexeme: "this", line: 3)),
+                                        .this(
+                                            Token(type: .this, lexeme: "this", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .identifier, lexeme: "name", line: 3),
                                         .string(Token(type: .string, lexeme: "\"bad\"", line: 1))))
                             ]))
@@ -421,11 +435,12 @@ final class ResolverTests: XCTestCase {
 
     func testResolveInvocationOfSuperAtTopLevel() throws {
         // super.someMethod()
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .expression(
                 .super(
                     Token(type: .super, lexeme: "super", line: 1),
-                    Token(type: .identifier, lexeme: "someMethod", line: 1)))
+                    Token(type: .identifier, lexeme: "someMethod", line: 1),
+                    UnresolvedDepth()))
         ]
 
         var resolver = Resolver()
@@ -441,7 +456,7 @@ final class ResolverTests: XCTestCase {
         //         super.someMethod();
         //     }
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .class(
                 Token(type: .identifier, lexeme: "A", line: 1),
                 nil,
@@ -455,7 +470,8 @@ final class ResolverTests: XCTestCase {
                                     .call(
                                         .super(
                                             Token(type: .super, lexeme: "super", line: 3),
-                                            Token(type: .identifier, lexeme: "someMethod", line: 3)),
+                                            Token(type: .identifier, lexeme: "someMethod", line: 3),
+                                            UnresolvedDepth()),
                                         Token(type: .rightParen, lexeme: ")", line: 3),
                                         [])
                                 )
@@ -475,7 +491,7 @@ final class ResolverTests: XCTestCase {
         // if (true) {
         //     break;
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .if(
                 .literal(.boolean(true)),
                 .break(Token(type: .break, lexeme: "break", line: 2)),
@@ -496,7 +512,7 @@ final class ResolverTests: XCTestCase {
         //     }
         //     foo();
         //}
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .while(
                 .literal(.boolean(true)),
                 .block([
@@ -509,7 +525,9 @@ final class ResolverTests: XCTestCase {
                             ])),
                     .expression(
                         .call(
-                            .variable(Token(type: .identifier, lexeme: "foo", line: 5)),
+                            .variable(
+                                Token(type: .identifier, lexeme: "foo", line: 5),
+                                UnresolvedDepth()),
                             Token(type: .rightParen, lexeme: ")", line: 5),
                             []))
                 ]))
@@ -524,7 +542,7 @@ final class ResolverTests: XCTestCase {
 
     func testResolveTopLevelExpressionWithSplatOperator() throws {
         // *[1, 2, 3]
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .expression(
                 .splat(
                     .list([
@@ -546,7 +564,7 @@ final class ResolverTests: XCTestCase {
         //     case red, green, blue, violet;
         //     case orange, yellow, green, indigo;
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .enum(
                 Token(type: .identifier, lexeme: "color", line: 1),
                 [
@@ -575,7 +593,7 @@ final class ResolverTests: XCTestCase {
     func testResolveSwitchWithEmptyBody() throws {
         // switch (42) {
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .switch(.literal(.int(42)), [])
         ]
 
@@ -590,7 +608,7 @@ final class ResolverTests: XCTestCase {
         // switch (42) {
         // case 42:
         // }
-        let statements: [Statement] = [
+        let statements: [Statement<UnresolvedDepth>] = [
             .switch(
                 .literal(.int(42)),
                 [

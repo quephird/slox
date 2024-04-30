@@ -10,7 +10,7 @@ import Foundation
 struct UserDefinedFunction: LoxCallable, Equatable {
     var name: String
     var enclosingEnvironment: Environment
-    var body: [ResolvedStatement]
+    var body: [Statement<Int>]
     var isInitializer: Bool
     var objectId: UUID
     var parameterList: ParameterList? = nil
@@ -22,7 +22,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
     init(name: String,
          parameterList: ParameterList?,
          enclosingEnvironment: Environment,
-         body: [ResolvedStatement],
+         body: [Statement<Int>],
          isInitializer: Bool) {
         self.name = name
         self.parameterList = parameterList
