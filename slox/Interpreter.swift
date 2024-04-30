@@ -280,6 +280,13 @@ class Interpreter {
                                     testExpr: Expression<Int>,
                                     incrementExpr: Expression<Int>?,
                                     bodyStmt: Statement<Int>) throws {
+        let environmentBeforeBlock = self.environment
+        self.environment = Environment(enclosingEnvironment: environmentBeforeBlock)
+
+        defer {
+            self.environment = environmentBeforeBlock
+        }
+
         if let initializerStmt {
             try execute(statement: initializerStmt)
         }
