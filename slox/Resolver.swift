@@ -385,6 +385,11 @@ struct Resolver {
             currentJumpableType = previousJumpableType
         }
 
+        beginScope()
+        defer {
+            endScope()
+        }
+
         var resolvedInitializerStmt: Statement<Int>? = nil
         if let initializerStmt {
             resolvedInitializerStmt = try resolve(statement: initializerStmt)
