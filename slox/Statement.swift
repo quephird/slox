@@ -8,7 +8,7 @@
 indirect enum Statement<Depth: Equatable>: Equatable {
     case expression(Expression<Depth>)
     case `if`(Expression<Depth>, Statement, Statement?)
-    case `switch`(Expression<Depth>, [SwitchCaseDeclaration<Depth>])
+    case `switch`(Token, Expression<Depth>, [SwitchCaseDeclaration<Depth>])
     case print(Expression<Depth>)
     case variableDeclaration(Token, Expression<Depth>?)
     case block([Statement])

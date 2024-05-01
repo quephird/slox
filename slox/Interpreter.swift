@@ -63,7 +63,7 @@ class Interpreter {
             try handleIfStatement(testExpr: testExpr,
                                   consequentStmt: consequentStmt,
                                   alternativeStmt: alternativeStmt)
-        case .switch(let testExpr, let switchCaseDecls):
+        case .switch(_, let testExpr, let switchCaseDecls):
             try handleSwitchStatement(testExpr: testExpr,
                                       switchCaseDecls: switchCaseDecls)
         case .print(let expr):
@@ -209,7 +209,7 @@ class Interpreter {
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: Expression<Int>) throws {
-        guard case .lambda(let parameterList, let body) = lambda else {
+        guard case .lambda(_, let parameterList, let body) = lambda else {
             throw RuntimeError.notALambda
         }
 
@@ -335,7 +335,7 @@ class Interpreter {
                                            valueExpr: valueExpr)
         case .this(let thisToken, let depth):
             return try handleThis(thisToken: thisToken, depth: depth)
-        case .lambda(let parameterList, let statements):
+        case .lambda(_, let parameterList, let statements):
             return try handleLambdaExpression(parameterList: parameterList, statements: statements)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
@@ -349,7 +349,7 @@ class Interpreter {
             return try handleSubscriptSetExpression(collectionExpr: listExpr,
                                                     indexExpr: indexExpr,
                                                     valueExpr: valueExpr)
-        case .splat(let listExpr):
+        case .splat(_, let listExpr):
             return try handleSplatExpression(listExpr: listExpr)
         case .dictionary(let kvPairs):
             return try handleDictionary(kvExprPairs: kvPairs)
@@ -666,7 +666,7 @@ class Interpreter {
                 throw RuntimeError.notAFunctionDeclaration
             }
 
-            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
+            guard case .lambda(_, let parameterList, let methodBody) = lambdaExpr else {
                 throw RuntimeError.notALambda
             }
 

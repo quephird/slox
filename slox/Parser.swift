@@ -223,7 +223,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
 
-        return .function(functionName, .lambda(parameterList, functionBody))
+        return .function(functionName, .lambda(functionName, parameterList, functionBody))
     }
 
     mutating private func parseVariableDeclaration() throws -> Statement<UnresolvedDepth>? {
@@ -346,6 +346,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.switch]) else {
             return nil
         }
+        let switchToken = previousToken
 
         guard currentTokenMatchesAny(types: [.leftParen]) else {
             throw ParseError.missingOpenParenForSwitchStatement(currentToken)
@@ -381,13 +382,14 @@ struct Parser {
             throw ParseError.missingClosingBrace(currentToken)
         }
 
-        return .switch(switchExpr, switchCaseDecls)
+        return .switch(switchToken, switchExpr, switchCaseDecls)
     }
 
     mutating private func parseSwitchCaseDeclaration() throws -> SwitchCaseDeclaration<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.case]) else {
             return nil
         }
+        let caseToken = previousToken
 
         let firstValueExpr = try parseExpression()
         let valueExprs = try parseRemainingExpressions(firstExpr: firstValueExpr)
@@ -402,13 +404,16 @@ struct Parser {
             statements.append(statement)
         }
 
-        return SwitchCaseDeclaration(valueExpressions: valueExprs, statement: .block(statements))
+        return SwitchCaseDeclaration(caseToken: caseToken,
+                                     valueExpressions: valueExprs,
+                                     statement: .block(statements))
     }
 
     mutating private func parseSwitchDefaultDeclaration() throws -> SwitchCaseDeclaration<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.default]) else {
             return nil
         }
+        let defaultToken = previousToken
 
         guard currentTokenMatchesAny(types: [.colon]) else {
             throw ParseError.missingColon(currentToken)
@@ -420,7 +425,8 @@ struct Parser {
             statements.append(statement)
         }
 
-        let switchCaseDecl = SwitchCaseDeclaration(statement: .block(statements))
+        let switchCaseDecl = SwitchCaseDeclaration(caseToken: defaultToken,
+                                                   statement: .block(statements))
         return switchCaseDecl
     }
 
@@ -701,8 +707,9 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.star]) {
+            let starToken = previousToken
             let expr = try parseUnary()
-            return .splat(expr)
+            return .splat(starToken, expr)
         }
 
         return try parsePostfix()
@@ -890,6 +897,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.fun]) else {
             return nil
         }
+        let funToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
@@ -903,7 +911,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
 
-        return .lambda(parameters, functionBody)
+        return .lambda(funToken, parameters, functionBody)
     }
 
     // Utility grammar rules:

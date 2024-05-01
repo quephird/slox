@@ -8,60 +8,60 @@
 import Foundation
 
 enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
-    case variableAccessedBeforeInitialization
+    case variableAccessedBeforeInitialization(Token)
     case notAFunction
-    case variableAlreadyDefined(String)
-    case cannotReturnOutsideFunction
-    case cannotReferenceThisOutsideClass
-    case cannotReturnValueFromInitializer
-    case staticInitsNotAllowed
-    case classCannotInheritFromItself
-    case cannotReferenceSuperOutsideClass
-    case cannotReferenceSuperWithoutSubclassing
-    case cannotBreakOutsideLoopOrSwitch
-    case cannotContinueOutsideLoop
-    case functionsMustHaveAParameterList
-    case cannotUseSplatOperatorOutOfContext
+    case variableAlreadyDefined(Token)
+    case cannotReturnOutsideFunction(Token)
+    case cannotReferenceThisOutsideClass(Token)
+    case cannotReturnValueFromInitializer(Token)
+    case staticInitsNotAllowed(Token)
+    case classCannotInheritFromItself(Token)
+    case cannotReferenceSuperOutsideClass(Token)
+    case cannotReferenceSuperWithoutSubclassing(Token)
+    case cannotBreakOutsideLoopOrSwitch(Token)
+    case cannotContinueOutsideLoop(Token)
+    case functionsMustHaveAParameterList(Token)
+    case cannotUseSplatOperatorOutOfContext(Token)
     case duplicateCaseNamesNotAllowed(Token)
-    case switchMustHaveAtLeastOneCaseOrDefault
-    case switchMustHaveAtLeastOneStatementPerCaseOrDefault
+    case switchMustHaveAtLeastOneCaseOrDefault(Token)
+    case switchMustHaveAtLeastOneStatementPerCaseOrDefault(Token)
 
     var description: String {
         switch self {
-        case .variableAccessedBeforeInitialization:
-            return "Can't read local variable in its own initializer"
+        case .variableAccessedBeforeInitialization(let token):
+            return "[Line \(token.line)] Error: cannot read local variable in its own initializer"
         case .notAFunction:
             return "Expected lambda as body of function declaration"
-        case .variableAlreadyDefined(let name):
-            return "Variable \(name) already defined in this scope"
-        case .cannotReturnOutsideFunction:
-            return "Cannot return from outside a function"
-        case .cannotReferenceThisOutsideClass:
-            return "Cannot use `this` from outside a class"
-        case .cannotReturnValueFromInitializer:
-            return "Cannot return value from an initializer"
-        case .staticInitsNotAllowed:
-            return "Cannot have class-level init function"
-        case .classCannotInheritFromItself:
-            return "Class cannot inherit from itself"
-        case .cannotReferenceSuperOutsideClass:
-            return "Cannot use `super` from outside a class"
-        case .cannotReferenceSuperWithoutSubclassing:
-            return "Cannot use `super` without subclassing"
-        case .cannotBreakOutsideLoopOrSwitch:
-            return "Can only `break` from inside a loop or switch statement"
-        case .cannotContinueOutsideLoop:
-            return "Can only `continue` from inside a `while` or `for` loop"
-        case .functionsMustHaveAParameterList:
-            return "Functions must have a parameter list"
-        case .cannotUseSplatOperatorOutOfContext:
-            return "Cannot use splat operator in this context"
+        case .variableAlreadyDefined(let token):
+            return "[Line \(token.line)] Error: variable \(token.lexeme) already defined in this scope"
+        case .cannotReturnOutsideFunction(let token):
+            return "[Line \(token.line)] Error: cannot return from outside a function"
+        case .cannotReferenceThisOutsideClass(let token):
+            return "[Line \(token.line)] Error: cannot use `this` from outside a class"
+        case .cannotReturnValueFromInitializer(let token):
+            return "[Line \(token.line)] Error: cannot return value from an initializer"
+        case .staticInitsNotAllowed(let token):
+            return "[Line \(token.line)] Error: cannot have class-level init function"
+        case .classCannotInheritFromItself(let token):
+            return "[Line \(token.line)] Error: class cannot inherit from itself"
+        case .cannotReferenceSuperOutsideClass(let token):
+            return "[Line \(token.line)] Error: cannot use `super` from outside a class"
+        case .cannotReferenceSuperWithoutSubclassing(let token):
+            return "[Line \(token.line)] Error: cannot use `super` without subclassing"
+        case .cannotBreakOutsideLoopOrSwitch(let token):
+            return "[Line \(token.line)] Error: can only `break` from inside a loop or switch statement"
+        case .cannotContinueOutsideLoop(let token):
+            return "[Line \(token.line)] Error: can only `continue` from inside a `while` or `for` loop"
+        case .functionsMustHaveAParameterList(let token):
+            return "[Line \(token.line)] Error: functions must have a parameter list"
+        case .cannotUseSplatOperatorOutOfContext(let token):
+            return "[Line \(token.line)] Error: cannot use splat operator in this context"
         case .duplicateCaseNamesNotAllowed(let token):
-            return "Cannot use duplicate case names in enum: \(token.lexeme)"
-        case .switchMustHaveAtLeastOneCaseOrDefault:
-            return "`switch` statement must have at least one `case` or `default` block"
-        case .switchMustHaveAtLeastOneStatementPerCaseOrDefault:
-            return "`Each `case` or `default` block must have at least one statement"
+            return "[Line \(token.line)] Error: cannot use duplicate case names in enum: \(token.lexeme)"
+        case .switchMustHaveAtLeastOneCaseOrDefault(let token):
+            return "[Line \(token.line)] Error: `switch` statement must have at least one `case` or `default` block"
+        case .switchMustHaveAtLeastOneStatementPerCaseOrDefault(let token):
+            return "[Line \(token.line)] Error: `Each `case` or `default` block must have at least one statement"
         }
     }
 }

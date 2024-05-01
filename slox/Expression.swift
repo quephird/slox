@@ -14,7 +14,7 @@ indirect enum Expression<Depth: Equatable>: Equatable {
     case assignment(Token, Expression, Depth)
     case logical(Expression, Token, Expression)
     case call(Expression, Token, [Expression])
-    case lambda(ParameterList?, [Statement<Depth>])
+    case lambda(Token, ParameterList?, [Statement<Depth>])
     case get(Expression, Token)
     case set(Expression, Token, Expression)
     case this(Token, Depth)
@@ -24,7 +24,7 @@ indirect enum Expression<Depth: Equatable>: Equatable {
     case subscriptGet(Expression, Expression)
     case subscriptSet(Expression, Expression, Expression)
     case dictionary([(Expression, Expression)])
-    case splat(Expression)
+    case splat(Token, Expression)
 
     static func == (lhs: Expression, rhs: Expression) -> Bool {
         switch (lhs, rhs) {
@@ -44,8 +44,8 @@ indirect enum Expression<Depth: Equatable>: Equatable {
             return lhsExpr1 == rhsExpr1 && lhsOper == rhsOper && lhsExpr2 == rhsExpr2
         case (.call(let lhsCallee, let lhsToken, let lhsArgs), .call(let rhsCallee, let rhsToken, let rhsArgs)):
             return lhsCallee == rhsCallee && lhsToken == rhsToken && lhsArgs == rhsArgs
-        case (.lambda(let lhsParams, let lhsBody), .lambda(let rhsParams, let rhsBody)):
-            return lhsParams == rhsParams && lhsBody == rhsBody
+        case (.lambda(let lhsLocToken, let lhsParams, let lhsBody), .lambda(let rhsLocToken, let rhsParams, let rhsBody)):
+            return lhsParams == rhsParams && lhsBody == rhsBody && lhsLocToken == rhsLocToken
         case (.get(let lhsExpr, let lhsName), .get(let rhsExpr, let rhsName)):
             return lhsExpr == rhsExpr && lhsName == rhsName
         case (.set(let lhsExpr1, let lhsName, let lhsExpr2), .set(let rhsExpr1, let rhsName, let rhsExpr2)):
@@ -74,8 +74,8 @@ indirect enum Expression<Depth: Equatable>: Equatable {
             }
 
             return true
-        case (.splat(let lhsList), .splat(let rhsList)):
-            return lhsList == rhsList
+        case (.splat(let lhsStarToken, let lhsList), .splat(let rhsStarToken, let rhsList)):
+            return lhsStarToken == rhsStarToken && lhsList == rhsList
         default:
             return false
         }
