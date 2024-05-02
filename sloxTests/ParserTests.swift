@@ -898,6 +898,7 @@ final class ParserTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "theAnswer", line: 1),
                     ParameterList(normalParameters: []),
                     [
                         .print(.literal(.int(42)))
@@ -936,6 +937,7 @@ final class ParserTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "add", line: 1),
                     ParameterList(normalParameters: [
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
@@ -986,6 +988,7 @@ final class ParserTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "foo", line: 1),
                     ParameterList(
                         normalParameters: [
                             Token(type: .identifier, lexeme: "a", line: 1),
@@ -1127,6 +1130,7 @@ final class ParserTests: XCTestCase {
                     Token(type: .rightParen, lexeme: ")", line: 1),
                     [
                         .splat(
+                            Token(type: .star, lexeme: "*", line: 1),
                             .list([
                                 .literal(.int(1)),
                                 .literal(.int(2)),
@@ -1162,6 +1166,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .lambda(
+                    Token(type: .fun, lexeme: "fun", line: 1),
                     ParameterList(normalParameters: [
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
@@ -1220,6 +1225,7 @@ final class ParserTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .print(
@@ -1327,6 +1333,7 @@ final class ParserTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "add", line: 2),
                             ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
@@ -1394,6 +1401,7 @@ final class ParserTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "someMethod", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "someMethod", line: 2),
                             ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "arg", line: 2)
                             ]),
@@ -1460,6 +1468,7 @@ final class ParserTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "area", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "area", line: 2),
                             nil,
                             [
                                 .return(
@@ -1690,6 +1699,7 @@ final class ParserTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "isBar", line: 3),
                         .lambda(
+                            Token(type: .identifier, lexeme: "isBar", line: 3),
                             ParameterList(
                                 normalParameters: [],
                                 variadicParameter: nil),
@@ -1782,11 +1792,13 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .switch(
+                Token(type: .switch, lexeme: "switch", line: 1),
                 .variable(
                     Token(type: .identifier, lexeme: "foo", line: 1),
                     UnresolvedDepth()),
                 [
                     SwitchCaseDeclaration(
+                        caseToken: Token(type: .case, lexeme: "case", line: 2),
                         valueExpressions: [
                             .literal(.int(1))
                         ],
@@ -1794,6 +1806,7 @@ final class ParserTests: XCTestCase {
                             .print(.string(Token(type: .string, lexeme: "\"one\"", line: 3)))
                         ])),
                     SwitchCaseDeclaration(
+                        caseToken: Token(type: .case, lexeme: "case", line: 4),
                         valueExpressions: [
                             .literal(.int(2)),
                             .literal(.int(3)),
@@ -1805,6 +1818,7 @@ final class ParserTests: XCTestCase {
                             .print(.string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
                         ])),
                     SwitchCaseDeclaration(
+                        caseToken: Token(type: .default, lexeme: "default", line: 8),
                         statement: .block([
                             .print(.string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
                         ])),

@@ -52,6 +52,7 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "add", line: 1),
                     ParameterList(normalParameters: [
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
@@ -76,6 +77,7 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "add", line: 1),
                     ParameterList(normalParameters: [
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
@@ -104,6 +106,7 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "answer", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "answer", line: 1),
                     nil,
                     [
                         .return(
@@ -113,7 +116,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.functionsMustHaveAParameterList
+        let locToken = Token(type: .identifier, lexeme: "answer", line: 1)
+        let expectedError = ResolverError.functionsMustHaveAParameterList(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -170,16 +174,17 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotReturnOutsideFunction
+        let locToken = Token(type: .return, lexeme: "return", line: 1)
+        let expectedError = ResolverError.cannotReturnOutsideFunction(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
     }
 
     func testResolveVariableReferencedInItsOwnInitializer() throws {
-        // var a = "outer";
+        // var x = "outer";
         // {
-        //     var a = a;
+        //     var x = x;
         // }
         let statements: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
@@ -195,7 +200,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.variableAccessedBeforeInitialization
+        let locToken = Token(type: .identifier, lexeme: "x", line: 3)
+        let expectedError = ResolverError.variableAccessedBeforeInitialization(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -218,7 +224,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.variableAlreadyDefined("a")
+        let nameToken = Token(type: .identifier, lexeme: "a", line: 3)
+        let expectedError = ResolverError.variableAlreadyDefined(nameToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -238,6 +245,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .print(
@@ -261,6 +269,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .print(
@@ -284,6 +293,7 @@ final class ResolverTests: XCTestCase {
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
                 .lambda(
+                    Token(type: .identifier, lexeme: "foo", line: 1),
                     ParameterList(normalParameters: []),
                     [
                         .return(
@@ -295,7 +305,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotReferenceThisOutsideClass
+        let locToken = Token(type: .this, lexeme: "this", line: 2)
+        let expectedError = ResolverError.cannotReferenceThisOutsideClass(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -315,6 +326,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "init", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .return(
@@ -326,7 +338,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotReturnValueFromInitializer
+        let locToken = Token(type: .return, lexeme: "return", line: 3)
+        let expectedError = ResolverError.cannotReturnValueFromInitializer(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -347,6 +360,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "add", line: 2),
                             ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
@@ -377,6 +391,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "add", line: 2),
                             ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
@@ -413,6 +428,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "init", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .expression(
@@ -427,7 +443,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.staticInitsNotAllowed
+        let nameToken = Token(type: .identifier, lexeme: "init", line: 2)
+        let expectedError = ResolverError.staticInitsNotAllowed(nameToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -444,7 +461,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotReferenceSuperOutsideClass
+        let locToken = Token(type: .super, lexeme: "super", line: 1)
+        let expectedError = ResolverError.cannotReferenceSuperOutsideClass(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -464,6 +482,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "someMethod", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "someMethod", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .expression(
@@ -481,7 +500,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotReferenceSuperWithoutSubclassing
+        let locToken = Token(type: .super, lexeme: "super", line: 3)
+        let expectedError = ResolverError.cannotReferenceSuperWithoutSubclassing(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -499,7 +519,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch
+        let locToken = Token(type: .break, lexeme: "break", line: 2)
+        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -519,6 +540,7 @@ final class ResolverTests: XCTestCase {
                     .function(
                         Token(type: .identifier, lexeme: "foo", line: 2),
                         .lambda(
+                            Token(type: .identifier, lexeme: "foo", line: 2),
                             ParameterList(normalParameters: []),
                             [
                                 .break(Token(type: .break, lexeme: "break", line: 3))
@@ -534,7 +556,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch
+        let locToken = Token(type: .break, lexeme: "break", line: 3)
+        let expectedError = ResolverError.cannotBreakOutsideLoopOrSwitch(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -545,6 +568,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .expression(
                 .splat(
+                    Token(type: .star, lexeme: "*", line: 1),
                     .list([
                         .literal(.int(1)),
                         .literal(.int(2)),
@@ -553,7 +577,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.cannotUseSplatOperatorOutOfContext
+        let locToken = Token(type: .star, lexeme: "*", line: 1)
+        let expectedError = ResolverError.cannotUseSplatOperatorOutOfContext(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -594,11 +619,15 @@ final class ResolverTests: XCTestCase {
         // switch (42) {
         // }
         let statements: [Statement<UnresolvedDepth>] = [
-            .switch(.literal(.int(42)), [])
+            .switch(
+                Token(type: .switch, lexeme: "switch", line: 1),
+                .literal(.int(42)),
+                [])
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.switchMustHaveAtLeastOneCaseOrDefault
+        let locToken = Token(type: .switch, lexeme: "switch", line: 1)
+        let expectedError = ResolverError.switchMustHaveAtLeastOneCaseOrDefault(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
@@ -610,9 +639,11 @@ final class ResolverTests: XCTestCase {
         // }
         let statements: [Statement<UnresolvedDepth>] = [
             .switch(
+                Token(type: .switch, lexeme: "switch", line: 1),
                 .literal(.int(42)),
                 [
                     SwitchCaseDeclaration(
+                        caseToken: Token(type: .case, lexeme: "case", line: 2),
                         valueExpressions: [
                             .literal(.int(42))
                         ],
@@ -621,7 +652,8 @@ final class ResolverTests: XCTestCase {
         ]
 
         var resolver = Resolver()
-        let expectedError = ResolverError.switchMustHaveAtLeastOneStatementPerCaseOrDefault
+        let locToken = Token(type: .case, lexeme: "case", line: 2)
+        let expectedError = ResolverError.switchMustHaveAtLeastOneStatementPerCaseOrDefault(locToken)
         XCTAssertThrowsError(try resolver.resolve(statements: statements)) { actualError in
             XCTAssertEqual(actualError as! ResolverError, expectedError)
         }
