@@ -177,15 +177,16 @@ class Interpreter {
             environment = environment.enclosingEnvironment!
         }
 
-        try environment.assignAtDepth(name: nameToken.lexeme, value: .instance(newClass), depth: 0)
+        try environment.assignAtDepth(nameToken: nameToken, value: .instance(newClass), depth: 0)
     }
 
     private func handleEnumDeclaration(nameToken: Token,
                                        caseTokens: [Token],
                                        methods: [Statement<Int>],
                                        staticMethods: [Statement<Int>]) throws {
-        guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(name: "Enum") else {
-            fatalError()
+        let dummyEnumToken = Token(type: .identifier, lexeme: "Enum", line: 0)
+        guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(nameToken: dummyEnumToken) else {
+            throw RuntimeError.standardLibraryFailedToLoad
         }
 
         let enumClass = LoxEnum(name: nameToken.lexeme,
@@ -367,12 +368,12 @@ class Interpreter {
             case .int(let number):
                 return .int(-number)
             default:
-                throw RuntimeError.unaryOperandMustBeNumber
+                throw RuntimeError.unaryOperandMustBeNumber(oper)
             }
         case .bang:
             return .boolean(!value.isTruthy)
         default:
-            throw RuntimeError.unsupportedUnaryOperator
+            throw RuntimeError.unsupportedUnaryOperator(oper)
         }
     }
 
@@ -455,23 +456,23 @@ class Interpreter {
         case .equalEqual:
             return .boolean(leftValue.isEqual(to: rightValue))
         case .plus:
-            throw RuntimeError.binaryOperandsMustBeNumbersOrStringsOrLists
+            throw RuntimeError.binaryOperandsMustBeNumbersOrStringsOrLists(oper)
         case .minus, .star, .slash, .greater, .greaterEqual, .less, .lessEqual:
-            throw RuntimeError.binaryOperandsMustBeNumbers
+            throw RuntimeError.binaryOperandsMustBeNumbers(oper)
         default:
-            throw RuntimeError.unsupportedBinaryOperator
+            throw RuntimeError.unsupportedBinaryOperator(oper)
         }
     }
 
     private func handleVariableExpression(varToken: Token, depth: Int) throws -> LoxValue {
-        return try environment.getValueAtDepth(name: varToken.lexeme, depth: depth)
+        return try environment.getValueAtDepth(nameToken: varToken, depth: depth)
     }
 
     private func handleAssignmentExpression(name: Token,
                                             expr: Expression<Int>,
                                             depth: Int) throws -> LoxValue {
         let value = try evaluate(expr: expr)
-        try environment.assignAtDepth(name: name.lexeme, value: value, depth: depth)
+        try environment.assignAtDepth(nameToken: name, value: value, depth: depth)
         return value
     }
 
@@ -551,7 +552,7 @@ class Interpreter {
     }
 
     private func handleThis(thisToken: Token, depth: Int) throws -> LoxValue {
-        return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
+        return try environment.getValueAtDepth(nameToken: thisToken, depth: depth)
     }
 
     private func handleLambdaExpression(parameterList: ParameterList?, statements: [Statement<Int>]) throws -> LoxValue {
@@ -567,12 +568,13 @@ class Interpreter {
     }
 
     private func handleSuperExpression(superToken: Token, methodToken: Token, depth: Int) throws -> LoxValue {
-        guard case .instance(let superclass as LoxClass) = try environment.getValueAtDepth(name: "super", depth: depth) else {
+        guard case .instance(let superclass as LoxClass) = try environment.getValueAtDepth(nameToken: superToken, depth: depth) else {
             throw RuntimeError.superclassMustBeAClass
         }
 
-        guard case .instance(let thisInstance) = try environment.getValueAtDepth(name: "this", depth: depth - 1) else {
-            throw RuntimeError.notAnInstance
+        let dummyThisToken = Token(type: .identifier, lexeme: "this", line: 0)
+        guard case .instance(let thisInstance) = try environment.getValueAtDepth(nameToken: dummyThisToken, depth: depth - 1) else {
+            throw RuntimeError.thisNotResolved
         }
 
         if let method = superclass.findMethod(name: methodToken.lexeme) {
@@ -651,8 +653,9 @@ class Interpreter {
             kvPairs[key] = value
         }
 
-        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(name: "Dictionary") else {
-            fatalError()
+        let dummyDictionaryToken = Token(type: .identifier, lexeme: "Dictionary", line: 0)
+        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(nameToken: dummyDictionaryToken) else {
+            throw RuntimeError.standardLibraryFailedToLoad
         }
 
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
@@ -697,8 +700,9 @@ class Interpreter {
     }
 
     func makeString(string: String) throws -> LoxValue {
-        guard case .instance(let stringClass as LoxClass) = try environment.getValue(name: "String") else {
-            fatalError()
+        let dummyStringToken = Token(type: .identifier, lexeme: "String", line: 0)
+        guard case .instance(let stringClass as LoxClass) = try environment.getValue(nameToken: dummyStringToken) else {
+            throw RuntimeError.standardLibraryFailedToLoad
         }
 
         let list = LoxString(string: string, klass: stringClass)
@@ -706,8 +710,9 @@ class Interpreter {
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {
-        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
-            fatalError()
+        let dummyListToken = Token(type: .identifier, lexeme: "List", line: 0)
+        guard case .instance(let listClass as LoxClass) = try environment.getValue(nameToken: dummyListToken) else {
+            throw RuntimeError.standardLibraryFailedToLoad
         }
 
         let list = LoxList(elements: elements, klass: listClass)
@@ -715,8 +720,9 @@ class Interpreter {
     }
 
     func makeDictionary(kvPairs: [LoxValue: LoxValue]) throws -> LoxValue {
-        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(name: "Dictionary") else {
-            fatalError()
+        let dummyDictionaryToken = Token(type: .identifier, lexeme: "Dictionary", line: 0)
+        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(nameToken: dummyDictionaryToken) else {
+            throw RuntimeError.standardLibraryFailedToLoad
         }
 
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)

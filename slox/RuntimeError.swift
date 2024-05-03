@@ -8,12 +8,12 @@
 import Foundation
 
 enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
-    case unaryOperandMustBeNumber
-    case unsupportedUnaryOperator
-    case binaryOperandsMustBeNumbers
-    case binaryOperandsMustBeNumbersOrStringsOrLists
-    case unsupportedBinaryOperator
-    case undefinedVariable(String)
+    case unaryOperandMustBeNumber(Token)
+    case unsupportedUnaryOperator(Token)
+    case binaryOperandsMustBeNumbers(Token)
+    case binaryOperandsMustBeNumbersOrStringsOrLists(Token)
+    case unsupportedBinaryOperator(Token)
+    case undefinedVariable(Token)
     case notAFunctionDeclaration
     case notACallableObject
     case notAnInstance
@@ -31,21 +31,23 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case couldNotFindAncestorEnvironmentAtDepth(Int)
     case superclassMustBeAClass
     case indexMustBeAnInteger
+    case thisNotResolved
+    case standardLibraryFailedToLoad
 
     var description: String {
         switch self {
-        case .unaryOperandMustBeNumber:
-            return "Error: operand must be a number"
-        case .unsupportedUnaryOperator:
-            return "Error: unsupported unary operator"
-        case .binaryOperandsMustBeNumbers:
-            return "Error: operands must be both numbers"
-        case .binaryOperandsMustBeNumbersOrStringsOrLists:
-            return "Error: operands must be either both numbers, strings, or lists"
-        case .unsupportedBinaryOperator:
-            return "Error: unsupported binary operator"
-        case .undefinedVariable(let name):
-            return "Error: undefined variable '\(name)'"
+        case .unaryOperandMustBeNumber(let locToken):
+            return "[Line \(locToken.line)] Error: operand must be a number"
+        case .unsupportedUnaryOperator(let locToken):
+            return "[Line \(locToken.line)] Error: unsupported unary operator"
+        case .binaryOperandsMustBeNumbers(let locToken):
+            return "[Line \(locToken.line)] Error: operands must be both numbers"
+        case .binaryOperandsMustBeNumbersOrStringsOrLists(let locToken):
+            return "[Line \(locToken.line)] Error: operands must be either both numbers, strings, or lists"
+        case .unsupportedBinaryOperator(let locToken):
+            return "[Line \(locToken.line)] Error: unsupported binary operator"
+        case .undefinedVariable(let nameToken):
+            return "[Line \(nameToken.line)] Error: undefined variable '\(nameToken.lexeme)'"
         case .notAFunctionDeclaration:
             return "Error: expected function declaration in class"
         case .notACallableObject:
@@ -75,11 +77,15 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
         case .notALambda:
             return "Error: expected lambda as body of function declaration"
         case .couldNotFindAncestorEnvironmentAtDepth(let depth):
-            return "Error: could not find ancestor environment at depth \(depth)."
+            return "Fatal error: could not find ancestor environment at depth \(depth)."
         case .superclassMustBeAClass:
             return "Error: superclass must be a class"
         case .indexMustBeAnInteger:
             return "Error: index must be a number"
+        case .thisNotResolved:
+            return "Fatal error: `this` not able to be resolved"
+        case .standardLibraryFailedToLoad:
+            return "Fatal error: standard library failed to load properly"
         }
     }
 }

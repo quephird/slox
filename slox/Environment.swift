@@ -17,37 +17,48 @@ class Environment: Equatable {
         values[name] = value
     }
 
-    func assignAtDepth(name: String, value: LoxValue, depth: Int) throws {
+    func assignAtDepth(nameToken: Token, value: LoxValue, depth: Int) throws {
         let ancestor = try ancestor(depth: depth)
 
-        if ancestor.values.keys.contains(name) {
-            ancestor.values[name] = value
+        if ancestor.values.keys.contains(nameToken.lexeme) {
+            ancestor.values[nameToken.lexeme] = value
             return
         }
 
-        throw RuntimeError.undefinedVariable(name)
+        throw deriveRuntimeError(nameToken: nameToken)
     }
 
-    func getValueAtDepth(name: String, depth: Int) throws -> LoxValue {
+    func getValueAtDepth(nameToken: Token, depth: Int) throws -> LoxValue {
         let ancestor = try ancestor(depth: depth)
 
-        if let value = ancestor.values[name] {
+        if let value = ancestor.values[nameToken.lexeme] {
             return value
         }
 
-        throw RuntimeError.undefinedVariable(name)
+        throw deriveRuntimeError(nameToken: nameToken)
     }
 
-    func getValue(name: String) throws -> LoxValue {
-        if let value = values[name] {
+    func getValue(nameToken: Token) throws -> LoxValue {
+        if let value = values[nameToken.lexeme] {
             return value
         }
 
         if let enclosingEnvironment {
-            return try enclosingEnvironment.getValue(name: name)
+            return try enclosingEnvironment.getValue(nameToken: nameToken)
         }
 
-        throw RuntimeError.undefinedVariable(name)
+        throw deriveRuntimeError(nameToken: nameToken)
+    }
+
+    private func deriveRuntimeError(nameToken: Token) -> RuntimeError {
+        switch nameToken.lexeme {
+        case "this":
+            return RuntimeError.thisNotResolved
+        case "Dictionary", "Enum", "List", "String":
+            return RuntimeError.standardLibraryFailedToLoad
+        default:
+            return RuntimeError.undefinedVariable(nameToken)
+        }
     }
 
     private func ancestor(depth: Int) throws -> Environment {

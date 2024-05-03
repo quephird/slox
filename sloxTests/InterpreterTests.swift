@@ -44,7 +44,8 @@ final class InterpreterTests: XCTestCase {
         let input = "-\"forty-two\""
         let interpreter = Interpreter()
 
-        let expectedError = RuntimeError.unaryOperandMustBeNumber
+        let locToken = Token(type: .minus, lexeme: "-", line: 1)
+        let expectedError = RuntimeError.unaryOperandMustBeNumber(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -102,7 +103,8 @@ final class InterpreterTests: XCTestCase {
         let input = "\"twenty-one\" * 2"
         let interpreter = Interpreter()
 
-        let expectedError = RuntimeError.binaryOperandsMustBeNumbers
+        let locToken = Token(type: .star, lexeme: "*", line: 1)
+        let expectedError = RuntimeError.binaryOperandsMustBeNumbers(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -280,7 +282,8 @@ a
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.undefinedVariable("a")
+        let locToken = Token(type: .identifier, lexeme: "a", line: 3)
+        let expectedError = RuntimeError.undefinedVariable(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -1229,7 +1232,8 @@ answer
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.undefinedVariable("answer")
+        let locToken = Token(type: .identifier, lexeme: "answer", line: 6)
+        let expectedError = RuntimeError.undefinedVariable(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
