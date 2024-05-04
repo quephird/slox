@@ -49,9 +49,9 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
         case .undefinedVariable(let nameToken):
             return "[Line \(nameToken.line)] Error: undefined variable '\(nameToken.lexeme)'"
         case .notAFunctionDeclaration:
-            return "Error: expected function declaration in class"
+            return "Fatal error: expected function declaration in class"
         case .notACallableObject:
-            return "Error: expected a callable object"
+            return "Fatal error: expected a callable object"
         case .notAnInstance:
             return "Error: expected an instance"
         case .notAList:
@@ -75,11 +75,11 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
         case .wrongArity(let expected, let actual):
             return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
         case .notALambda:
-            return "Error: expected lambda as body of function declaration"
+            return "Fatal error: expected lambda as body of function declaration"
         case .couldNotFindAncestorEnvironmentAtDepth(let depth):
             return "Fatal error: could not find ancestor environment at depth \(depth)."
         case .superclassMustBeAClass:
-            return "Error: superclass must be a class"
+            return "Fatal error: superclass must be a class"
         case .indexMustBeAnInteger:
             return "Error: index must be a number"
         case .thisNotResolved:
