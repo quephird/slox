@@ -65,7 +65,7 @@ class Environment: Equatable {
         while i < depth {
             guard let parent = ancestor.enclosingEnvironment else {
                 // NOTA BENE: This should not happen but it _is_ possible
-                throw RuntimeError.couldNotFindAncestorEnvironmentAtDepth(depth)
+                fatalError("Fatal error: could not find ancestor environment at depth \(depth).")
             }
 
             ancestor = parent

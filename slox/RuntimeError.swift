@@ -14,8 +14,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case binaryOperandsMustBeNumbersOrStringsOrLists(Token)
     case unsupportedBinaryOperator(Token)
     case undefinedVariable(Token)
-    case notAFunctionDeclaration
-    case notACallableObject
+    case notACallableObject(Token)
     case notAnInstance
     case notAList
     case notADictionary
@@ -27,8 +26,6 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case onlyInstancesHaveProperties(Token)
     case undefinedProperty(Token)
     case wrongArity(Int, Int)
-    case notALambda
-    case couldNotFindAncestorEnvironmentAtDepth(Int)
     case superclassMustBeAClass
     case indexMustBeAnInteger
     case thisNotResolved
@@ -47,10 +44,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(locToken.line)] Error: unsupported binary operator"
         case .undefinedVariable(let nameToken):
             return "[Line \(nameToken.line)] Error: undefined variable '\(nameToken.lexeme)'"
-        case .notAFunctionDeclaration:
-            return "Fatal error: expected function declaration in class"
-        case .notACallableObject:
-            return "Fatal error: expected a callable object"
+        case .notACallableObject(let locToken):
+            return "[Line \(locToken.line)] Error: expected a callable object"
         case .notAnInstance:
             return "Error: expected an instance"
         case .notAList:
@@ -73,10 +68,6 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(nameToken.line)] Error: undefined property '\(nameToken.lexeme)'"
         case .wrongArity(let expected, let actual):
             return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
-        case .notALambda:
-            return "Fatal error: expected lambda as body of function declaration"
-        case .couldNotFindAncestorEnvironmentAtDepth(let depth):
-            return "Fatal error: could not find ancestor environment at depth \(depth)."
         case .superclassMustBeAClass:
             return "Fatal error: superclass must be a class"
         case .indexMustBeAnInteger:

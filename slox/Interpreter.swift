@@ -207,7 +207,7 @@ class Interpreter {
 
     private func handleFunctionDeclaration(name: Token, lambda: Expression<Int>) throws {
         guard case .lambda(_, let parameterList, let body) = lambda else {
-            throw RuntimeError.notALambda
+            fatalError("Fatal error: expected lambda as body of function declaration")
         }
 
         let environmentWhenDeclared = self.environment
@@ -508,7 +508,7 @@ class Interpreter {
         case .instance(let klass as LoxClass):
             klass
         default:
-            throw RuntimeError.notACallableObject
+            throw RuntimeError.notACallableObject(rightParen)
         }
 
         let argValues = try evaluateAndFlatten(exprs: args)
@@ -662,13 +662,13 @@ class Interpreter {
 
     // Utility functions
     private func makeMethodLookup(methodDecls: [Statement<Int>]) throws -> [String: UserDefinedFunction] {
-        return try methodDecls.reduce(into: [:]) { lookup, methodDecl in
+        return methodDecls.reduce(into: [:]) { lookup, methodDecl in
             guard case .function(let nameToken, let lambdaExpr) = methodDecl else {
-                throw RuntimeError.notAFunctionDeclaration
+                fatalError("Fatal error: expected function declaration in class")
             }
 
             guard case .lambda(_, let parameterList, let methodBody) = lambdaExpr else {
-                throw RuntimeError.notALambda
+                fatalError("Fatal error: expected lambda as body of function declaration")
             }
 
             let isInitializer = nameToken.lexeme == "init"
