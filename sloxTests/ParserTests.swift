@@ -1230,6 +1230,7 @@ final class ParserTests: XCTestCase {
                             [
                                 .print(
                                     .get(
+                                        Token(type: .dot, lexeme: ".", line: 3),
                                         .this(
                                             Token(type: .this, lexeme: "this", line: 3),
                                             UnresolvedDepth()),
@@ -1256,6 +1257,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .get(
+                    Token(type: .dot, lexeme: ".", line: 1),
                     .variable(
                         Token(type: .identifier, lexeme: "person", line: 1),
                         UnresolvedDepth()),
@@ -1281,6 +1283,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .set(
+                    Token(type: .dot, lexeme: ".", line: 1),
                     .variable(
                         Token(type: .identifier, lexeme: "person", line: 1),
                         UnresolvedDepth()),
@@ -1478,12 +1481,14 @@ final class ParserTests: XCTestCase {
                                             .literal(.double(3.14159)),
                                             Token(type: .star, lexeme: "*", line: 3),
                                             .get(
+                                                Token(type: .dot, lexeme: ".", line: 3),
                                                 .this(
                                                     Token(type: .this, lexeme: "this", line: 3),
                                                     UnresolvedDepth()),
                                                 Token(type: .identifier, lexeme: "radius", line: 3))),
                                         Token(type: .star, lexeme: "*", line: 3),
                                         .get(
+                                            Token(type: .dot, lexeme: ".", line: 3),
                                             .this(
                                                 Token(type: .this, lexeme: "this", line: 3),
                                                 UnresolvedDepth()),
@@ -1711,6 +1716,7 @@ final class ParserTests: XCTestCase {
                                             UnresolvedDepth()),
                                         Token(type: .equalEqual, lexeme: "==", line: 4),
                                         .get(
+                                            Token(type: .dot, lexeme: ".", line: 4),
                                             .variable(
                                                 Token(type: .identifier, lexeme: "Foo", line: 4),
                                                 UnresolvedDepth()),

@@ -618,8 +618,8 @@ struct Parser {
 
         if case .variable(let name, let depth) = expr {
             return .assignment(name, newValueExpr, depth)
-        } else if case .get(let instanceExpr, let propertyNameToken) = expr {
-            return .set(instanceExpr, propertyNameToken, newValueExpr)
+        } else if case .get(let locToken, let instanceExpr, let propertyNameToken) = expr {
+            return .set(locToken, instanceExpr, propertyNameToken, newValueExpr)
         } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
             return .subscriptSet(listExpr, indexExpr, newValueExpr)
         }
@@ -758,12 +758,13 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.dot]) else {
             return nil
         }
+        let locToken = previousToken
 
         guard currentTokenMatchesAny(types: [.identifier]) else {
             throw ParseError.missingIdentifierAfterDot(currentToken)
         }
 
-        return .get(expr, previousToken)
+        return .get(locToken, expr, previousToken)
     }
 
     mutating private func parseSubscript(expr: Expression<UnresolvedDepth>) throws -> Expression<UnresolvedDepth>? {

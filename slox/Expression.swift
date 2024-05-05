@@ -15,8 +15,8 @@ indirect enum Expression<Depth: Equatable>: Equatable {
     case logical(Expression, Token, Expression)
     case call(Expression, Token, [Expression])
     case lambda(Token, ParameterList?, [Statement<Depth>])
-    case get(Expression, Token)
-    case set(Expression, Token, Expression)
+    case get(Token, Expression, Token)
+    case set(Token, Expression, Token, Expression)
     case this(Token, Depth)
     case `super`(Token, Token, Depth)
     case string(Token)
@@ -46,10 +46,10 @@ indirect enum Expression<Depth: Equatable>: Equatable {
             return lhsCallee == rhsCallee && lhsToken == rhsToken && lhsArgs == rhsArgs
         case (.lambda(let lhsLocToken, let lhsParams, let lhsBody), .lambda(let rhsLocToken, let rhsParams, let rhsBody)):
             return lhsParams == rhsParams && lhsBody == rhsBody && lhsLocToken == rhsLocToken
-        case (.get(let lhsExpr, let lhsName), .get(let rhsExpr, let rhsName)):
-            return lhsExpr == rhsExpr && lhsName == rhsName
-        case (.set(let lhsExpr1, let lhsName, let lhsExpr2), .set(let rhsExpr1, let rhsName, let rhsExpr2)):
-            return lhsExpr1 == rhsExpr1 && lhsName == rhsName && lhsExpr2 == rhsExpr2
+        case (.get(let lhsLocToken, let lhsExpr, let lhsName), .get(let rhsLocToken, let rhsExpr, let rhsName)):
+            return lhsLocToken == rhsLocToken && lhsExpr == rhsExpr && lhsName == rhsName
+        case (.set(let lhsLocToken, let lhsExpr1, let lhsName, let lhsExpr2), .set(let rhsLocToken, let rhsExpr1, let rhsName, let rhsExpr2)):
+            return lhsLocToken == rhsLocToken && lhsExpr1 == rhsExpr1 && lhsName == rhsName && lhsExpr2 == rhsExpr2
         case (.this(let lhsToken, let lhsDepth), .this(let rhsToken, let rhsDepth)):
             return lhsToken == rhsToken && lhsDepth == rhsDepth
         case (.super(let lhsSuper, let lhsMethod, let lhsDepth), .super(let rhsSuper, let rhsMethod, let rhsDepth)):

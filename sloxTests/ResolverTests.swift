@@ -250,6 +250,7 @@ final class ResolverTests: XCTestCase {
                             [
                                 .print(
                                     .get(
+                                        Token(type: .dot, lexeme: ".", line: 3),
                                         .this(
                                             Token(type: .this, lexeme: "this", line: 3),
                                             UnresolvedDepth()),
@@ -274,6 +275,7 @@ final class ResolverTests: XCTestCase {
                             [
                                 .print(
                                     .get(
+                                        Token(type: .dot, lexeme: ".", line: 3),
                                         .this(
                                             Token(type: .this, lexeme: "this", line: 3),
                                             1),
@@ -433,6 +435,7 @@ final class ResolverTests: XCTestCase {
                             [
                                 .expression(
                                     .set(
+                                        Token(type: .dot, lexeme: ".", line: 3),
                                         .this(
                                             Token(type: .this, lexeme: "this", line: 3),
                                             UnresolvedDepth()),

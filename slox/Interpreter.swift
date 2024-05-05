@@ -328,10 +328,13 @@ class Interpreter {
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
             return try handleCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
-        case .get(let instanceExpr, let propertyNameToken):
-            return try handleGetExpression(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
-        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
-            return try handleSetExpression(instanceExpr: instanceExpr,
+        case .get(let locToken, let instanceExpr, let propertyNameToken):
+            return try handleGetExpression(locToken: locToken,
+                                           instanceExpr: instanceExpr,
+                                           propertyNameToken: propertyNameToken)
+        case .set(let locToken, let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSetExpression(locToken: locToken,
+                                           instanceExpr: instanceExpr,
                                            propertyNameToken: propertyNameToken,
                                            valueExpr: valueExpr)
         case .this(let thisToken, let depth):
@@ -522,13 +525,14 @@ class Interpreter {
         return try actualCallable.call(interpreter: self, args: argValues)
     }
 
-    private func handleGetExpression(instanceExpr: Expression<Int>,
+    private func handleGetExpression(locToken: Token,
+                                     instanceExpr: Expression<Int>,
                                      propertyNameToken: Token) throws -> LoxValue {
         guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
-            throw RuntimeError.onlyInstancesHaveProperties
+            throw RuntimeError.onlyInstancesHaveProperties(locToken)
         }
 
-        let property = try instance.get(propertyName: propertyNameToken.lexeme)
+        let property = try instance.get(propertyName: propertyNameToken)
 
         if case .userDefinedFunction(let userDefinedFunction) = property,
            userDefinedFunction.isComputedProperty {
@@ -538,16 +542,17 @@ class Interpreter {
         return property
     }
 
-    private func handleSetExpression(instanceExpr: Expression<Int>,
+    private func handleSetExpression(locToken: Token,
+                                     instanceExpr: Expression<Int>,
                                      propertyNameToken: Token,
                                      valueExpr: Expression<Int>) throws -> LoxValue {
         guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
-            throw RuntimeError.onlyInstancesHaveProperties
+            throw RuntimeError.onlyInstancesHaveProperties(locToken)
         }
 
         let propertyValue = try evaluate(expr: valueExpr)
 
-        try instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
+        try instance.set(propertyName: propertyNameToken, propertyValue: propertyValue)
         return propertyValue
     }
 
@@ -581,7 +586,7 @@ class Interpreter {
             return .userDefinedFunction(method.bind(instance: thisInstance))
         }
 
-        throw RuntimeError.undefinedProperty(methodToken.lexeme)
+        throw RuntimeError.undefinedProperty(methodToken)
     }
 
     private func handleStringExpression(stringToken: Token) throws -> LoxValue {

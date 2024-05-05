@@ -32,12 +32,12 @@ class LoxInstance {
         self._klass = klass
     }
 
-    func get(propertyName: String) throws -> LoxValue {
-        if let propertyValue = self.properties[propertyName] {
+    func get(propertyName: Token) throws -> LoxValue {
+        if let propertyValue = self.properties[propertyName.lexeme] {
             return propertyValue
         }
 
-        if let method = klass.findMethod(name: propertyName) {
+        if let method = klass.findMethod(name: propertyName.lexeme) {
             let boundMethod = method.bind(instance: self)
             return .userDefinedFunction(boundMethod)
         }
@@ -45,7 +45,7 @@ class LoxInstance {
         throw RuntimeError.undefinedProperty(propertyName)
     }
 
-    func set(propertyName: String, propertyValue: LoxValue) throws {
-        self.properties[propertyName] = propertyValue
+    func set(propertyName: Token, propertyValue: LoxValue) throws {
+        self.properties[propertyName.lexeme] = propertyValue
     }
 }

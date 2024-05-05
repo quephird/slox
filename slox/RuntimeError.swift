@@ -24,8 +24,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notAString
     case notAnInt
     case notADouble
-    case onlyInstancesHaveProperties
-    case undefinedProperty(String)
+    case onlyInstancesHaveProperties(Token)
+    case undefinedProperty(Token)
     case wrongArity(Int, Int)
     case notALambda
     case couldNotFindAncestorEnvironmentAtDepth(Int)
@@ -68,10 +68,10 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected an integer"
         case .notADouble:
             return "Error: expected a double"
-        case .onlyInstancesHaveProperties:
-            return "Error: can only get/set properties of instances"
-        case .undefinedProperty(let name):
-            return "Error: undefined property '\(name)'"
+        case .onlyInstancesHaveProperties(let locToken):
+            return "[Line \(locToken.line)] Error: can only get/set properties of instances"
+        case .undefinedProperty(let nameToken):
+            return "[Line \(nameToken.line)] Error: undefined property '\(nameToken.lexeme)'"
         case .wrongArity(let expected, let actual):
             return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
         case .notALambda:

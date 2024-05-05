@@ -434,7 +434,8 @@ person.name
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.undefinedProperty("name")
+        let nameToken = Token(type: .identifier, lexeme: "name", line: 3)
+        let expectedError = RuntimeError.undefinedProperty(nameToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }

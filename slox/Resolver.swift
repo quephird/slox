@@ -428,10 +428,13 @@ struct Resolver {
             return try handleUnary(operToken: operToken, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParenToken, let args):
             return try handleCall(calleeExpr: calleeExpr, rightParenToken: rightParenToken, args: args)
-        case .get(let instanceExpr, let propertyNameToken):
-            return try handleGet(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
-        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
-            return try handleSet(instanceExpr: instanceExpr,
+        case .get(let locToken, let instanceExpr, let propertyNameToken):
+            return try handleGet(locToken: locToken,
+                                 instanceExpr: instanceExpr,
+                                 propertyNameToken: propertyNameToken)
+        case .set(let locToken, let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSet(locToken: locToken,
+                                 instanceExpr: instanceExpr,
                                  propertyNameToken: propertyNameToken,
                                  valueExpr: valueExpr)
         case .this(let thisToken, _):
@@ -515,16 +518,18 @@ struct Resolver {
         return .call(resolvedCalleeExpr, rightParenToken, resolvedArgs)
     }
 
-    mutating private func handleGet(instanceExpr: Expression<UnresolvedDepth>,
+    mutating private func handleGet(locToken: Token,
+                                    instanceExpr: Expression<UnresolvedDepth>,
                                     propertyNameToken: Token) throws -> Expression<Int> {
         // Note that we don't attempt to resolve property names
         // because they are defined and looked up at _runtime_.
         let resolvedInstanceExpr = try resolve(expression: instanceExpr)
 
-        return .get(resolvedInstanceExpr, propertyNameToken)
+        return .get(locToken, resolvedInstanceExpr, propertyNameToken)
     }
 
-    mutating private func handleSet(instanceExpr: Expression<UnresolvedDepth>,
+    mutating private func handleSet(locToken: Token,
+                                    instanceExpr: Expression<UnresolvedDepth>,
                                     propertyNameToken: Token,
                                     valueExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         // As with `get` expressions, we do _not_ try to
@@ -532,7 +537,7 @@ struct Resolver {
         let resolvedInstanceExpr = try resolve(expression: instanceExpr)
         let resolvedValueExpr = try resolve(expression: valueExpr)
 
-        return .set(resolvedInstanceExpr, propertyNameToken, resolvedValueExpr)
+        return .set(locToken, resolvedInstanceExpr, propertyNameToken, resolvedValueExpr)
     }
 
     mutating private func handleThis(thisToken: Token) throws -> Expression<Int> {
