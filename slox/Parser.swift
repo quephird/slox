@@ -838,6 +838,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.leftParen]) else {
             return nil
         }
+        let leftParenToken = previousToken
 
         let expr = try parseExpression()
 
@@ -845,7 +846,7 @@ struct Parser {
             throw ParseError.missingClosingParenthesis(currentToken)
         }
 
-        return .grouping(expr)
+        return .grouping(leftParenToken, expr)
     }
 
     mutating private func parseCollectionExpression() throws -> Expression<UnresolvedDepth>? {

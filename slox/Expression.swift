@@ -9,7 +9,7 @@ indirect enum Expression<Depth: Equatable>: Equatable {
     case binary(Expression, Token, Expression)
     case unary(Token, Expression)
     case literal(Token, LoxValue)
-    case grouping(Expression)
+    case grouping(Token, Expression)
     case variable(Token, Depth)
     case assignment(Token, Expression, Depth)
     case logical(Expression, Token, Expression)
@@ -28,12 +28,14 @@ indirect enum Expression<Depth: Equatable>: Equatable {
 
     var locToken: Token {
         switch self {
-        case .literal(let valueToken, _):
-            return valueToken
         case .binary(_, let operToken, _):
             return operToken
         case .unary(let locToken, _):
             return locToken
+        case .literal(let valueToken, _):
+            return valueToken
+        case .grouping(let leftParenToken, _):
+            return leftParenToken
         case .variable(let nameToken, _):
             return nameToken
         case .assignment(let nameToken, _, _):
@@ -69,8 +71,8 @@ indirect enum Expression<Depth: Equatable>: Equatable {
             return lhsOper == rhsOper && lhsExpr == rhsExpr
         case (.literal(let lhsValueToken, let lhsValue), .literal(let rhsValueToken, let rhsValue)):
             return lhsValueToken == rhsValueToken && lhsValue == rhsValue
-        case (.grouping(let lhsExpr), .grouping(let rhsExpr)):
-            return lhsExpr == rhsExpr
+        case (.grouping(let lhsParenToken, let lhsExpr), .grouping(let rhsParenToken, let rhsExpr)):
+            return lhsParenToken == rhsParenToken && lhsExpr == rhsExpr
         case (.variable(let lhsToken, let lhsDepth), .variable(let rhsToken, let rhsDepth)):
             return lhsToken == rhsToken && lhsDepth == rhsDepth
         case (.assignment(let lhsName, let lhsExpr, let lhsDepth), .assignment(let rhsName, let rhsExpr, let rhsDepth)):

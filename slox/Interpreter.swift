@@ -310,7 +310,7 @@ class Interpreter {
         switch expr {
         case .literal(_, let literal):
             return literal
-        case .grouping(let expr):
+        case .grouping(_, let expr):
             return try evaluate(expr: expr)
         case .unary(let oper, let expr):
             return try handleUnaryExpression(oper: oper, expr: expr)

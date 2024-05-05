@@ -91,6 +91,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .grouping(
+                    Token(type: .leftParen, lexeme: "(", line: 1),
                     .literal(
                         Token(type: .int, lexeme: "42", line: 1),
                         .int(42))))
@@ -425,20 +426,24 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
-                    .grouping(.unary(
-                        Token(type: .minus, lexeme: "-", line: 1),
-                        .literal(
-                            Token(type: .int, lexeme: "2", line: 1),
-                            .int(2)))),
+                    .grouping(
+                        Token(type: .leftParen, lexeme: "(", line: 1),
+                        .unary(
+                            Token(type: .minus, lexeme: "-", line: 1),
+                            .literal(
+                                Token(type: .int, lexeme: "2", line: 1),
+                                .int(2)))),
                     Token(type: .star, lexeme: "*", line: 1),
-                    .grouping(.binary(
-                        .literal(
-                            Token(type: .int, lexeme: "3", line: 1),
-                            .int(3)),
-                        Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(
-                            Token(type: .int, lexeme: "4", line: 1),
-                            .int(4))))))
+                    .grouping(
+                        Token(type: .leftParen, lexeme: "(", line: 1),
+                        .binary(
+                            .literal(
+                                Token(type: .int, lexeme: "3", line: 1),
+                                .int(3)),
+                            Token(type: .plus, lexeme: "+", line: 1),
+                            .literal(
+                                Token(type: .int, lexeme: "4", line: 1),
+                                .int(4))))))
         ]
         XCTAssertEqual(actual, expected)
     }

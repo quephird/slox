@@ -441,9 +441,9 @@ struct Resolver {
             return try handleThis(thisToken: thisToken)
         case .literal(let valueToken, let value):
             return .literal(valueToken, value)
-        case .grouping(let expr):
+        case .grouping(let leftParenToken, let expr):
             let resolvedExpr = try resolve(expression: expr)
-            return .grouping(resolvedExpr)
+            return .grouping(leftParenToken, resolvedExpr)
         case .logical(let leftExpr, let operToken, let rightExpr):
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
         case .lambda(let locToken, let parameterList, let statements):
