@@ -54,8 +54,6 @@ class Environment: Equatable {
         switch nameToken.lexeme {
         case "this":
             return RuntimeError.thisNotResolved
-        case "Dictionary", "Enum", "List", "String":
-            return RuntimeError.standardLibraryFailedToLoad
         default:
             return RuntimeError.undefinedVariable(nameToken)
         }

@@ -184,11 +184,7 @@ class Interpreter {
                                        caseTokens: [Token],
                                        methods: [Statement<Int>],
                                        staticMethods: [Statement<Int>]) throws {
-        let dummyEnumToken = Token(type: .identifier, lexeme: "Enum", line: 0)
-        guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(nameToken: dummyEnumToken) else {
-            throw RuntimeError.standardLibraryFailedToLoad
-        }
-
+        let enumSuperclass = lookUpStandardLibraryClass(named: "Enum")
         let enumClass = LoxEnum(name: nameToken.lexeme,
                                 superclass: enumSuperclass,
                                 methods: [:])
@@ -658,12 +654,9 @@ class Interpreter {
             kvPairs[key] = value
         }
 
-        let dummyDictionaryToken = Token(type: .identifier, lexeme: "Dictionary", line: 0)
-        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(nameToken: dummyDictionaryToken) else {
-            throw RuntimeError.standardLibraryFailedToLoad
-        }
-
+        let dictionaryClass = lookUpStandardLibraryClass(named: "Dictionary")
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
+
         return .instance(dictionary)
     }
 
@@ -704,33 +697,33 @@ class Interpreter {
         return values
     }
 
-    func makeString(string: String) throws -> LoxValue {
-        let dummyStringToken = Token(type: .identifier, lexeme: "String", line: 0)
-        guard case .instance(let stringClass as LoxClass) = try environment.getValue(nameToken: dummyStringToken) else {
-            throw RuntimeError.standardLibraryFailedToLoad
+    private func lookUpStandardLibraryClass(named name: String) -> LoxClass {
+        let dummyToken = Token(type: .identifier, lexeme: name, line: 0)
+        guard case .instance(let klass as LoxClass)? = try? environment.getValue(nameToken: dummyToken) else {
+            fatalError("no class '\(name)' found in standard library")
         }
 
+        return klass
+    }
+
+    func makeString(string: String) throws -> LoxValue {
+        let stringClass = lookUpStandardLibraryClass(named: "String")
         let list = LoxString(string: string, klass: stringClass)
+
         return .instance(list)
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {
-        let dummyListToken = Token(type: .identifier, lexeme: "List", line: 0)
-        guard case .instance(let listClass as LoxClass) = try environment.getValue(nameToken: dummyListToken) else {
-            throw RuntimeError.standardLibraryFailedToLoad
-        }
-
+        let listClass = lookUpStandardLibraryClass(named: "List")
         let list = LoxList(elements: elements, klass: listClass)
+
         return .instance(list)
     }
 
     func makeDictionary(kvPairs: [LoxValue: LoxValue]) throws -> LoxValue {
-        let dummyDictionaryToken = Token(type: .identifier, lexeme: "Dictionary", line: 0)
-        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(nameToken: dummyDictionaryToken) else {
-            throw RuntimeError.standardLibraryFailedToLoad
-        }
-
+        let dictionaryClass = lookUpStandardLibraryClass(named: "Dictionary")
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
+
         return .instance(dictionary)
     }
 }

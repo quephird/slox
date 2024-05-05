@@ -32,7 +32,6 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case superclassMustBeAClass
     case indexMustBeAnInteger
     case thisNotResolved
-    case standardLibraryFailedToLoad
 
     var description: String {
         switch self {
@@ -84,8 +83,6 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: index must be a number"
         case .thisNotResolved:
             return "Fatal error: `this` not able to be resolved"
-        case .standardLibraryFailedToLoad:
-            return "Fatal error: standard library failed to load properly"
         }
     }
 }
