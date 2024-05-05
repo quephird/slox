@@ -435,6 +435,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.print]) else {
             return nil
         }
+        let printToken = previousToken
 
         let expr = try parseExpression()
 
@@ -442,7 +443,7 @@ struct Parser {
             throw ParseError.missingSemicolon(currentToken)
         }
 
-        return .print(expr)
+        return .print(printToken, expr)
     }
 
     mutating private func parseJumpStatement() throws -> Statement<UnresolvedDepth>? {

@@ -66,7 +66,7 @@ class Interpreter {
         case .switch(_, let testExpr, let switchCaseDecls):
             try handleSwitchStatement(testExpr: testExpr,
                                       switchCaseDecls: switchCaseDecls)
-        case .print(let expr):
+        case .print(_, let expr):
             try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
             try handleVariableDeclaration(name: name, expr: expr)

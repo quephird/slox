@@ -259,6 +259,7 @@ final class ResolverTests: XCTestCase {
                             ParameterList(normalParameters: []),
                             [
                                 .print(
+                                    Token(type: .print, lexeme: "print", line: 3),
                                     .get(
                                         Token(type: .dot, lexeme: ".", line: 3),
                                         .this(
@@ -284,6 +285,7 @@ final class ResolverTests: XCTestCase {
                             ParameterList(normalParameters: []),
                             [
                                 .print(
+                                    Token(type: .print, lexeme: "print", line: 3),
                                     .get(
                                         Token(type: .dot, lexeme: ".", line: 3),
                                         .this(

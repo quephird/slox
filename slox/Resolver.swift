@@ -79,8 +79,8 @@ struct Resolver {
             return try handleSwitch(switchToken: switchToken,
                                     testExpr: testExpr,
                                     switchCaseDecls: switchCaseDecls)
-        case .print(let expr):
-            return try handlePrintStatement(expr: expr)
+        case .print(let printToken, let expr):
+            return try handlePrintStatement(printToken: printToken, expr: expr)
         case .return(let returnToken, let expr):
             return try handleReturnStatement(returnToken: returnToken, expr: expr)
         case .while(let conditionExpr, let bodyStmt):
@@ -330,9 +330,10 @@ struct Resolver {
                                      statement: resolvedStmt)
     }
 
-    mutating private func handlePrintStatement(expr: Expression<UnresolvedDepth>) throws -> Statement<Int> {
+    mutating private func handlePrintStatement(printToken: Token,
+                                               expr: Expression<UnresolvedDepth>) throws -> Statement<Int> {
         let resolvedExpression = try resolve(expression: expr)
-        return .print(resolvedExpression)
+        return .print(printToken, resolvedExpression)
     }
 
     mutating private func handleReturnStatement(returnToken: Token, expr: Expression<UnresolvedDepth>?) throws -> Statement<Int> {

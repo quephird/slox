@@ -510,6 +510,7 @@ final class ParserTests: XCTestCase {
                             .int(1))),
                     UnresolvedDepth()),
                 .print(
+                    Token(type: .print, lexeme: "print", line: 2),
                     .variable(
                         Token(type: .identifier, lexeme: "i", line: 2),
                         UnresolvedDepth()))),
@@ -544,6 +545,7 @@ final class ParserTests: XCTestCase {
                     .boolean(true)),
                 nil,
                 .print(
+                    Token(type: .print, lexeme: "print", line: 2),
                     .variable(
                         Token(type: .identifier, lexeme: "i", line: 2),
                         UnresolvedDepth())))
@@ -612,7 +614,9 @@ final class ParserTests: XCTestCase {
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),
-                .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
+                .print(
+                    Token(type: .print, lexeme: "print", line: 2),
+                    .string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
                 nil)
         ]
         XCTAssertEqual(actual, expected)
@@ -651,8 +655,12 @@ final class ParserTests: XCTestCase {
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),
-                .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
-                .print(.string(Token(type: .string, lexeme: "\"Goodbye\"", line: 4))))
+                .print(
+                    Token(type: .print, lexeme: "print", line: 2),
+                    .string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
+                .print(
+                    Token(type: .print, lexeme: "print", line: 4),
+                    .string(Token(type: .string, lexeme: "\"Goodbye\"", line: 4))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -692,6 +700,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .print(
+                Token(type: .print, lexeme: "print", line: 1),
                 .string(Token(type: .string, lexeme: "\"forty-two\"", line: 1)))
         ]
         XCTAssertEqual(actual, expected)
@@ -795,6 +804,7 @@ final class ParserTests: XCTestCase {
                     Token(type: .int, lexeme: "21", line: 2),
                     .int(21))),
             .print(
+                Token(type: .print, lexeme: "print", line: 3),
                 .binary(
                     .variable(
                         Token(type: .identifier, lexeme: "the", line: 3),
@@ -841,6 +851,7 @@ final class ParserTests: XCTestCase {
                         Token(type: .int, lexeme: "42", line: 2),
                         .int(42))),
                 .print(
+                    Token(type: .print, lexeme: "print", line: 3),
                     .variable(
                         Token(type: .identifier, lexeme: "theAnswer", line: 3),
                         UnresolvedDepth())),
@@ -918,6 +929,7 @@ final class ParserTests: XCTestCase {
                         .int(5))),
                 .block([
                     .print(
+                        Token(type: .print, lexeme: "print", line: 2),
                         .variable(
                             Token(type: .identifier, lexeme: "x", line: 2),
                             UnresolvedDepth())),
@@ -990,6 +1002,7 @@ final class ParserTests: XCTestCase {
                     ParameterList(normalParameters: []),
                     [
                         .print(
+                            Token(type: .print, lexeme: "print", line: 2),
                             .literal(
                                 Token(type: .int, lexeme: "42", line: 2),
                                 .int(42)))
@@ -1332,6 +1345,7 @@ final class ParserTests: XCTestCase {
                             ParameterList(normalParameters: []),
                             [
                                 .print(
+                                    Token(type: .print, lexeme: "print", line: 3),
                                     .get(
                                         Token(type: .dot, lexeme: ".", line: 3),
                                         .this(
@@ -1934,7 +1948,9 @@ final class ParserTests: XCTestCase {
                                 .int(1))
                         ],
                         statement: .block([
-                            .print(.string(Token(type: .string, lexeme: "\"one\"", line: 3)))
+                            .print(
+                                Token(type: .print, lexeme: "print", line: 3),
+                                .string(Token(type: .string, lexeme: "\"one\"", line: 3)))
                         ])),
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .case, lexeme: "case", line: 4),
@@ -1950,14 +1966,22 @@ final class ParserTests: XCTestCase {
                                 .int(4)),
                         ],
                         statement: .block([
-                            .print(.string(Token(type: .string, lexeme: "\"two\"", line: 5))),
-                            .print(.string(Token(type: .string, lexeme: "\"three\"", line: 6))),
-                            .print(.string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
+                            .print(
+                                Token(type: .print, lexeme: "print", line: 5),
+                                .string(Token(type: .string, lexeme: "\"two\"", line: 5))),
+                            .print(
+                                Token(type: .print, lexeme: "print", line: 6),
+                                .string(Token(type: .string, lexeme: "\"three\"", line: 6))),
+                            .print(
+                                Token(type: .print, lexeme: "print", line: 7),
+                                .string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
                         ])),
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .default, lexeme: "default", line: 8),
                         statement: .block([
-                            .print(.string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
+                            .print(
+                                Token(type: .print, lexeme: "print", line: 9),
+                                .string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
                         ])),
                 ])
         ]
