@@ -55,7 +55,7 @@ class Interpreter {
         return nil
     }
 
-    private func execute(statement: Statement<Int>) throws {
+    func execute(statement: Statement<Int>) throws {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
@@ -335,8 +335,8 @@ class Interpreter {
                                            valueExpr: valueExpr)
         case .this(let thisToken, let depth):
             return try handleThis(thisToken: thisToken, depth: depth)
-        case .lambda(_, let parameterList, let statements):
-            return try handleLambdaExpression(parameterList: parameterList, statements: statements)
+        case .lambda(_, let parameterList, let body):
+            return try handleLambdaExpression(parameterList: parameterList, body: body)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
         case .string(let stringToken):
@@ -556,13 +556,13 @@ class Interpreter {
         return try environment.getValueAtDepth(nameToken: thisToken, depth: depth)
     }
 
-    private func handleLambdaExpression(parameterList: ParameterList?, statements: [Statement<Int>]) throws -> LoxValue {
+    private func handleLambdaExpression(parameterList: ParameterList?, body: Statement<Int>) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
         let function = UserDefinedFunction(name: "lambda",
                                            parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
-                                           body: statements,
+                                           body: body,
                                            isInitializer: false)
 
         return .userDefinedFunction(function)

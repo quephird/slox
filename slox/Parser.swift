@@ -272,8 +272,8 @@ struct Parser {
             return whileStmt
         }
 
-        if let blockStmts = try parseBlock() {
-            return .block(blockStmts)
+        if let blockStmt = try parseBlock() {
+            return blockStmt
         }
 
         return try parseExpressionStatement()
@@ -526,7 +526,7 @@ struct Parser {
         return .while(expr, stmt)
     }
 
-    mutating private func parseBlock() throws -> [Statement<UnresolvedDepth>]? {
+    mutating private func parseBlock() throws -> Statement<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.leftBrace]) else {
             return nil
         }
@@ -542,7 +542,7 @@ struct Parser {
             throw ParseError.missingClosingBrace(previousToken)
         }
 
-        return statements
+        return .block(statements)
     }
 
     mutating private func parseExpressionStatement() throws -> Statement<UnresolvedDepth> {

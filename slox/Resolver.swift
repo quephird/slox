@@ -257,7 +257,7 @@ struct Resolver {
     mutating private func handleFunctionDeclaration(nameToken: Token,
                                                     lambdaExpr: Expression<UnresolvedDepth>,
                                                     functionType: FunctionType) throws -> Statement<Int> {
-        guard case .lambda(let locToken, let parameterList, let statements) = lambdaExpr else {
+        guard case .lambda(let locToken, let parameterList, let body) = lambdaExpr else {
             throw ResolverError.notAFunction
         }
 
@@ -266,7 +266,7 @@ struct Resolver {
 
         let resolvedLambda = try handleLambda(locToken: locToken,
                                               parameterList: parameterList,
-                                              statements: statements,
+                                              body: body,
                                               functionType: functionType)
 
         return .function(nameToken, resolvedLambda)
@@ -451,10 +451,10 @@ struct Resolver {
             return .grouping(leftParenToken, resolvedExpr)
         case .logical(let leftExpr, let operToken, let rightExpr):
             return try handleLogical(leftExpr: leftExpr, operToken: operToken, rightExpr: rightExpr)
-        case .lambda(let locToken, let parameterList, let statements):
+        case .lambda(let locToken, let parameterList, let body):
             return try handleLambda(locToken: locToken,
                                     parameterList: parameterList,
-                                    statements: statements,
+                                    body: body,
                                     functionType: .lambda)
         case .super(let superToken, let methodToken, _):
             return try handleSuper(superToken: superToken, methodToken: methodToken)
@@ -570,7 +570,7 @@ struct Resolver {
 
     mutating private func handleLambda(locToken: Token,
                                        parameterList: ParameterList?,
-                                       statements: [Statement<UnresolvedDepth>],
+                                       body: Statement<UnresolvedDepth>,
                                        functionType: FunctionType) throws -> Expression<Int> {
         beginScope()
         let previousFunctionType = currentFunctionType
@@ -597,11 +597,9 @@ struct Resolver {
             throw ResolverError.functionsMustHaveAParameterList(locToken)
         }
 
-        let resolvedStatements = try statements.map { statement in
-            try resolve(statement: statement)
-        }
+        let resolvedBody = try resolve(statement: body)
 
-        return .lambda(locToken, parameterList, resolvedStatements)
+        return .lambda(locToken, parameterList, resolvedBody)
     }
 
     mutating private func handleSuper(superToken: Token, methodToken: Token) throws -> Expression<Int> {
