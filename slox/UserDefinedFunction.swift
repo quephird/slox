@@ -54,7 +54,6 @@ struct UserDefinedFunction: LoxCallable, Equatable {
             interpreter.environment = previousEnvironment
         }
         do {
-//            try interpreter.handleBlock(statements: statements, environment: newEnvironment)
             try interpreter.execute(statement: body)
         } catch JumpType.return(let value) {
             // This is for when we call `init()` explicitly from an instance

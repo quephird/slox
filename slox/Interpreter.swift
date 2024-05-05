@@ -71,8 +71,7 @@ class Interpreter {
         case .variableDeclaration(let name, let expr):
             try handleVariableDeclaration(name: name, expr: expr)
         case .block(let statements):
-            try handleBlock(statements: statements,
-                            environment: Environment(enclosingEnvironment: environment))
+            try handleBlock(statements: statements)
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
         case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
@@ -245,9 +244,9 @@ class Interpreter {
         environment.define(name: name.lexeme, value: value)
     }
 
-    func handleBlock(statements: [Statement<Int>], environment: Environment) throws {
+    func handleBlock(statements: [Statement<Int>]) throws {
         let environmentBeforeBlock = self.environment
-        self.environment = environment
+        self.environment = Environment(enclosingEnvironment: environmentBeforeBlock)
 
         // This ensures that the previous environment is restored
         // if the try below throws, which is what will happen if
