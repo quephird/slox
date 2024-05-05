@@ -343,9 +343,9 @@ class Interpreter {
             return try handleStringExpression(stringToken: stringToken)
         case .list(_, let elements):
             return try handleListExpression(elements: elements)
-        case .subscriptGet(let listExpr, let indexExpr):
+        case .subscriptGet(_, let listExpr, let indexExpr):
             return try handleSubscriptGetExpression(collectionExpr: listExpr, indexExpr: indexExpr)
-        case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
+        case .subscriptSet(_, let listExpr, let indexExpr, let valueExpr):
             return try handleSubscriptSetExpression(collectionExpr: listExpr,
                                                     indexExpr: indexExpr,
                                                     valueExpr: valueExpr)

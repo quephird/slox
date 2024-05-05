@@ -620,8 +620,8 @@ struct Parser {
             return .assignment(name, newValueExpr, depth)
         } else if case .get(let locToken, let instanceExpr, let propertyNameToken) = expr {
             return .set(locToken, instanceExpr, propertyNameToken, newValueExpr)
-        } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
-            return .subscriptSet(listExpr, indexExpr, newValueExpr)
+        } else if case .subscriptGet(let leftBracketToken, let listExpr, let indexExpr) = expr {
+            return .subscriptSet(leftBracketToken, listExpr, indexExpr, newValueExpr)
         }
 
         throw ParseError.invalidAssignmentTarget(assignmentOperToken)
@@ -771,6 +771,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
+        let leftBracketToken = previousToken
 
         let indexExpr = try parseLogicOr()
 
@@ -778,7 +779,7 @@ struct Parser {
             throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
         }
 
-        return .subscriptGet(expr, indexExpr)
+        return .subscriptGet(leftBracketToken, expr, indexExpr)
     }
 
     mutating private func parsePrimary() throws -> Expression<UnresolvedDepth> {

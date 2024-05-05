@@ -21,8 +21,8 @@ indirect enum Expression<Depth: Equatable>: Equatable {
     case `super`(Token, Token, Depth)
     case string(Token)
     case list(Token, [Expression])
-    case subscriptGet(Expression, Expression)
-    case subscriptSet(Expression, Expression, Expression)
+    case subscriptGet(Token, Expression, Expression)
+    case subscriptSet(Token, Expression, Expression, Expression)
     case dictionary(Token, [(Expression, Expression)])
     case splat(Token, Expression)
 
@@ -60,10 +60,12 @@ indirect enum Expression<Depth: Equatable>: Equatable {
             return leftBracketToken
         case .dictionary(let leftBracketToken, _):
             return leftBracketToken
+        case .subscriptGet(let leftBracketToken, _, _):
+            return leftBracketToken
+        case .subscriptSet(let leftBracketToken, _, _, _):
+            return leftBracketToken
         case .splat(let starToken, _):
             return starToken
-        default:
-            return Token(type: .eof, lexeme: "", line: 0)
         }
     }
 
@@ -99,10 +101,10 @@ indirect enum Expression<Depth: Equatable>: Equatable {
             return lhsString == rhsString
         case (.list(let lhsBracketToken, let lhsExprs), .list(let rhsBracketToken, let rhsExprs)):
             return lhsBracketToken == rhsBracketToken && lhsExprs == rhsExprs
-        case (.subscriptGet(let lhsList, let lhsIdx), .subscriptGet(let rhsList, let rhsIdx)):
-            return lhsList == rhsList && lhsIdx == rhsIdx
-        case (.subscriptSet(let lhsList, let lhsIdx, let lhsExpr), .subscriptSet(let rhsList, let rhsIdx, let rhsExpr)):
-            return lhsList == rhsList && lhsIdx == rhsIdx && lhsExpr == rhsExpr
+        case (.subscriptGet(let lhsBracketToken, let lhsList, let lhsIdx), .subscriptGet(let rhsBracketToken, let rhsList, let rhsIdx)):
+            return lhsBracketToken == rhsBracketToken && lhsList == rhsList && lhsIdx == rhsIdx
+        case (.subscriptSet(let lhsBracketToken, let lhsList, let lhsIdx, let lhsExpr), .subscriptSet(let rhsBracketToken, let rhsList, let rhsIdx, let rhsExpr)):
+            return lhsBracketToken == rhsBracketToken && lhsList == rhsList && lhsIdx == rhsIdx && lhsExpr == rhsExpr
         case (.dictionary(let lhsBracketToken, let lhsKVPairs), .dictionary(let rhsBracketToken, let rhsKVPairs)):
             if lhsBracketToken != rhsBracketToken {
                 return false

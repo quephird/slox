@@ -457,10 +457,15 @@ struct Resolver {
             return .string(stringToken)
         case .list(let leftBracketToken, let elements):
             return try handleList(leftBracketToken: leftBracketToken, elements: elements)
-        case .subscriptGet(let listExpr, let indexExpr):
-            return try handleSubscriptGet(listExpr: listExpr, indexExpr: indexExpr)
-        case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
-            return try handleSubscriptSet(listExpr: listExpr, indexExpr: indexExpr, valueExpr: valueExpr)
+        case .subscriptGet(let leftBracketToken, let listExpr, let indexExpr):
+            return try handleSubscriptGet(leftBracketToken: leftBracketToken,
+                                          listExpr: listExpr,
+                                          indexExpr: indexExpr)
+        case .subscriptSet(let leftBracketToken, let listExpr, let indexExpr, let valueExpr):
+            return try handleSubscriptSet(leftBracketToken: leftBracketToken,
+                                          listExpr: listExpr,
+                                          indexExpr: indexExpr,
+                                          valueExpr: valueExpr)
         case .splat(let starToken, let listExpr):
             return try handleSplat(starToken: starToken, listExpr: listExpr)
         case .dictionary(let leftBracketToken, let kvPairs):
@@ -623,22 +628,24 @@ struct Resolver {
         return .list(leftBracketToken, resolvedElements)
     }
 
-    mutating private func handleSubscriptGet(listExpr: Expression<UnresolvedDepth>,
+    mutating private func handleSubscriptGet(leftBracketToken: Token,
+                                             listExpr: Expression<UnresolvedDepth>,
                                              indexExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedListExpr = try resolve(expression: listExpr)
         let resolvedIndexExpr = try resolve(expression: indexExpr)
 
-        return .subscriptGet(resolvedListExpr, resolvedIndexExpr)
+        return .subscriptGet(leftBracketToken, resolvedListExpr, resolvedIndexExpr)
     }
 
-    mutating private func handleSubscriptSet(listExpr: Expression<UnresolvedDepth>,
+    mutating private func handleSubscriptSet(leftBracketToken: Token,
+                                             listExpr: Expression<UnresolvedDepth>,
                                              indexExpr: Expression<UnresolvedDepth>,
                                              valueExpr: Expression<UnresolvedDepth>) throws -> Expression<Int> {
         let resolvedListExpr = try resolve(expression: listExpr)
         let resolvedIndexExpr = try resolve(expression: indexExpr)
         let resolvedValueExpr = try resolve(expression: valueExpr)
 
-        return .subscriptSet(resolvedListExpr, resolvedIndexExpr, resolvedValueExpr)
+        return .subscriptSet(leftBracketToken, resolvedListExpr, resolvedIndexExpr, resolvedValueExpr)
     }
 
     mutating private func handleSplat(starToken: Token,
