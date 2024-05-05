@@ -8,7 +8,7 @@
 indirect enum Expression<Depth: Equatable>: Equatable {
     case binary(Expression, Token, Expression)
     case unary(Token, Expression)
-    case literal(LoxValue)
+    case literal(Token, LoxValue)
     case grouping(Expression)
     case variable(Token, Depth)
     case assignment(Token, Expression, Depth)
@@ -26,14 +26,49 @@ indirect enum Expression<Depth: Equatable>: Equatable {
     case dictionary([(Expression, Expression)])
     case splat(Token, Expression)
 
+    var locToken: Token {
+        switch self {
+        case .literal(let valueToken, _):
+            return valueToken
+        case .binary(_, let operToken, _):
+            return operToken
+        case .unary(let locToken, _):
+            return locToken
+        case .variable(let nameToken, _):
+            return nameToken
+        case .assignment(let nameToken, _, _):
+            return nameToken
+        case .logical(_, let operToken, _):
+            return operToken
+        case .call(_, let rightParenToken, _):
+            return rightParenToken
+        case .lambda(let locToken, _, _):
+            return locToken
+        case .get(let dotToken, _, _):
+            return dotToken
+        case .set(let dotToken, _, _, _):
+            return dotToken
+        case .this(let thisToken, _):
+            return thisToken
+        case .super(let superToken, _, _):
+            return superToken
+        case .string(let stringToken):
+            return stringToken
+        case .splat(let starToken, _):
+            return starToken
+        default:
+            return Token(type: .eof, lexeme: "", line: 0)
+        }
+    }
+
     static func == (lhs: Expression, rhs: Expression) -> Bool {
         switch (lhs, rhs) {
         case (.binary(let lhsExpr1, let lhsOper, let lhsExpr2), .binary(let rhsExpr1, let rhsOper, let rhsExpr2)):
             return lhsExpr1 == rhsExpr1 && lhsOper == rhsOper && lhsExpr2 == rhsExpr2
         case (.unary(let lhsOper, let lhsExpr), .unary(let rhsOper, let rhsExpr)):
             return lhsOper == rhsOper && lhsExpr == rhsExpr
-        case (.literal(let lhsValue), .literal(let rhsValue)):
-            return lhsValue == rhsValue
+        case (.literal(let lhsValueToken, let lhsValue), .literal(let rhsValueToken, let rhsValue)):
+            return lhsValueToken == rhsValueToken && lhsValue == rhsValue
         case (.grouping(let lhsExpr), .grouping(let rhsExpr)):
             return lhsExpr == rhsExpr
         case (.variable(let lhsToken, let lhsDepth), .variable(let rhsToken, let rhsDepth)):

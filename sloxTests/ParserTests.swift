@@ -33,7 +33,10 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
-            .expression(.literal(.double(123.456)))
+            .expression(
+                .literal(
+                    Token(type: .double, lexeme: "123.456", line: 1),
+                    .double(123.456)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -48,7 +51,10 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
-            .expression(.literal(.boolean(true)))
+            .expression(
+                .literal(
+                    Token(type: .true, lexeme: "true", line: 1),
+                    .boolean(true)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -63,7 +69,10 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
-            .expression(.literal(.nil))
+            .expression(
+                .literal(
+                    Token(type: .nil, lexeme: "nil", line: 1),
+                    .nil))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -80,7 +89,11 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
-            .expression(.grouping(.literal(.int(42))))
+            .expression(
+                .grouping(
+                    .literal(
+                        Token(type: .int, lexeme: "42", line: 1),
+                        .int(42))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -132,7 +145,9 @@ final class ParserTests: XCTestCase {
             .expression(
                 .unary(
                     Token(type: .bang, lexeme: "!", line: 1),
-                    .literal(.boolean(true))))
+                    .literal(
+                        Token(type: .true, lexeme: "true", line: 1),
+                        .boolean(true))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -151,9 +166,13 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
-                    .literal(.int(21)),
+                    .literal(
+                        Token(type: .int, lexeme: "21", line: 1),
+                        .int(21)),
                     Token(type: .star, lexeme: "*", line: 1),
-                    .literal(.int(2))))
+                    .literal(
+                        Token(type: .int, lexeme: "2", line: 1),
+                        .int(2))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -172,9 +191,13 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
-                    .literal(.int(5)),
+                    .literal(
+                        Token(type: .int, lexeme: "5", line: 1),
+                        .int(5)),
                     Token(type: .modulus, lexeme: "%", line: 1),
-                    .literal(.int(3))))
+                    .literal(
+                        Token(type: .int, lexeme: "3", line: 1),
+                        .int(3))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -214,9 +237,13 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .binary(
-                    .literal(.int(1)),
+                    .literal(
+                        Token(type: .int, lexeme: "1", line: 1),
+                        .int(1)),
                     Token(type: .lessEqual, lexeme: "<=", line: 1),
-                    .literal(.int(2))))
+                    .literal(
+                        Token(type: .int, lexeme: "2", line: 1),
+                        .int(2))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -237,7 +264,9 @@ final class ParserTests: XCTestCase {
                 .binary(
                     .string(Token(type: .string, lexeme: "\"forty-two\"", line: 1)),
                     Token(type: .equalEqual, lexeme: "==", line: 1),
-                    .literal(.nil)))
+                    .literal(
+                        Token(type: .nil, lexeme: "nil", line: 1),
+                        .nil)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -254,9 +283,14 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .logical(.literal(.boolean(true)),
-                         Token(type: .or, lexeme: "or", line: 1),
-                         .literal(.boolean(false))))
+                .logical(
+                    .literal(
+                        Token(type: .true, lexeme: "true", line: 1),
+                        .boolean(true)),
+                    Token(type: .or, lexeme: "or", line: 1),
+                    .literal(
+                        Token(type: .false, lexeme: "false", line: 1),
+                        .boolean(false))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -273,9 +307,14 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .logical(.literal(.boolean(true)),
-                         Token(type: .and, lexeme: "and", line: 1),
-                         .literal(.boolean(false))))
+                .logical(
+                    .literal(
+                        Token(type: .true, lexeme: "true", line: 1),
+                        .boolean(true)),
+                    Token(type: .and, lexeme: "and", line: 1),
+                    .literal(
+                        Token(type: .false, lexeme: "false", line: 1),
+                        .boolean(false))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -294,11 +333,19 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .logical(.logical(.literal(.boolean(true)),
-                                  Token(type: .and, lexeme: "and", line: 1),
-                                  .literal(.boolean(false))),
-                         Token(type: .or, lexeme: "or", line: 1),
-                         .literal(.boolean(true))))
+                .logical(
+                    .logical(
+                        .literal(
+                            Token(type: .true, lexeme: "true", line: 1),
+                            .boolean(true)),
+                        Token(type: .and, lexeme: "and", line: 1),
+                        .literal(
+                            Token(type: .false, lexeme: "false", line: 1),
+                            .boolean(false))),
+                    Token(type: .or, lexeme: "or", line: 1),
+                    .literal(
+                        Token(type: .true, lexeme: "true", line: 1),
+                        .boolean(true))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -318,7 +365,9 @@ final class ParserTests: XCTestCase {
             .expression(
                 .assignment(
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
-                    .literal(.int(42)),
+                    .literal(
+                        Token(type: .int, lexeme: "42", line: 1),
+                        .int(42)),
                     UnresolvedDepth()))
         ]
         XCTAssertEqual(actual, expected)
@@ -345,7 +394,9 @@ final class ParserTests: XCTestCase {
                             Token(type: .identifier, lexeme: "foo", line: 1),
                             UnresolvedDepth()),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.int(42))),
+                        .literal(
+                            Token(type: .int, lexeme: "42", line: 1),
+                            .int(42))),
                     UnresolvedDepth()))
         ]
         XCTAssertEqual(actual, expected)
@@ -376,12 +427,18 @@ final class ParserTests: XCTestCase {
                 .binary(
                     .grouping(.unary(
                         Token(type: .minus, lexeme: "-", line: 1),
-                        .literal(.int(2)))),
+                        .literal(
+                            Token(type: .int, lexeme: "2", line: 1),
+                            .int(2)))),
                     Token(type: .star, lexeme: "*", line: 1),
                     .grouping(.binary(
-                        .literal(.int(3)),
+                        .literal(
+                            Token(type: .int, lexeme: "3", line: 1),
+                            .int(3)),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.int(4))))))
+                        .literal(
+                            Token(type: .int, lexeme: "4", line: 1),
+                            .int(4))))))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -425,13 +482,17 @@ final class ParserTests: XCTestCase {
             .for(
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "i", line: 1),
-                    .literal(.int(0))),
+                    .literal(
+                        Token(type: .int, lexeme: "0", line: 1),
+                        .int(0))),
                 .binary(
                     .variable(
                         Token(type: .identifier, lexeme: "i", line: 1),
                         UnresolvedDepth()),
                     Token(type: .less, lexeme: "<", line: 1),
-                    .literal(.int(5))),
+                    .literal(
+                        Token(type: .int, lexeme: "5", line: 1),
+                        .int(5))),
                 .assignment(
                     Token(type: .identifier, lexeme: "i", line: 1),
                     .binary(
@@ -439,7 +500,9 @@ final class ParserTests: XCTestCase {
                             Token(type: .identifier, lexeme: "i", line: 1),
                             UnresolvedDepth()),
                         Token(type: .plus, lexeme: "+", line: 1),
-                        .literal(.int(1))),
+                        .literal(
+                            Token(type: .int, lexeme: "1", line: 1),
+                            .int(1))),
                     UnresolvedDepth()),
                 .print(
                     .variable(
@@ -471,7 +534,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .for(
                 nil,
-                .literal(.boolean(true)),
+                .literal(
+                    Token(type: .true, lexeme: "true", line: 0),
+                    .boolean(true)),
                 nil,
                 .print(
                     .variable(
@@ -538,7 +603,9 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .if(
-                .literal(.boolean(true)),
+                .literal(
+                    Token(type: .true, lexeme: "true", line: 1),
+                    .boolean(true)),
                 .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
                 nil)
         ]
@@ -574,7 +641,9 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .if(
-                .literal(.boolean(true)),
+                .literal(
+                    Token(type: .true, lexeme: "true", line: 1),
+                    .boolean(true)),
                 .print(.string(Token(type: .string, lexeme: "\"Hello!\"", line: 2))),
                 .print(.string(Token(type: .string, lexeme: "\"Goodbye\"", line: 4))))
         ]
@@ -654,7 +723,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
-                .literal(.int(42)))
+                .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
+                    .int(42)))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -708,10 +779,14 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "the", line: 1),
-                .literal(.int(2))),
+                .literal(
+                    Token(type: .int, lexeme: "2", line: 1),
+                    .int(2))),
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 2),
-                .literal(.int(21))),
+                .literal(
+                    Token(type: .int, lexeme: "21", line: 2),
+                    .int(21))),
             .print(
                 .binary(
                     .variable(
@@ -755,7 +830,9 @@ final class ParserTests: XCTestCase {
             .block([
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "theAnswer", line: 2),
-                    .literal(.int(42))),
+                    .literal(
+                        Token(type: .int, lexeme: "42", line: 2),
+                        .int(42))),
                 .print(
                     .variable(
                         Token(type: .identifier, lexeme: "theAnswer", line: 3),
@@ -829,7 +906,9 @@ final class ParserTests: XCTestCase {
                         Token(type: .identifier, lexeme: "x", line: 1),
                         UnresolvedDepth()),
                     Token(type: .lessEqual, lexeme: "<=", line: 1),
-                    .literal(.int(5))),
+                    .literal(
+                        Token(type: .int, lexeme: "5", line: 1),
+                        .int(5))),
                 .block([
                     .print(
                         .variable(
@@ -843,7 +922,9 @@ final class ParserTests: XCTestCase {
                                     Token(type: .identifier, lexeme: "x", line: 3),
                                     UnresolvedDepth()),
                                 Token(type: .plus, lexeme: "+", line: 3),
-                                .literal(.int(1))),
+                                .literal(
+                                    Token(type: .int, lexeme: "1", line: 3),
+                                    .int(1))),
                             UnresolvedDepth())),
                 ]))
         ]
@@ -901,7 +982,10 @@ final class ParserTests: XCTestCase {
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
                     ParameterList(normalParameters: []),
                     [
-                        .print(.literal(.int(42)))
+                        .print(
+                            .literal(
+                                Token(type: .int, lexeme: "42", line: 2),
+                                .int(42)))
                     ])),
         ]
         XCTAssertEqual(actual, expected)
@@ -1095,8 +1179,12 @@ final class ParserTests: XCTestCase {
                         UnresolvedDepth()),
                     Token(type: .rightParen, lexeme: ")", line: 1),
                     [
-                        .literal(.int(1)),
-                        .literal(.int(2)),
+                        .literal(
+                            Token(type: .int, lexeme: "1", line: 1),
+                            .int(1)),
+                        .literal(
+                            Token(type: .int, lexeme: "2", line: 1),
+                            .int(2)),
                     ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1132,9 +1220,15 @@ final class ParserTests: XCTestCase {
                         .splat(
                             Token(type: .star, lexeme: "*", line: 1),
                             .list([
-                                .literal(.int(1)),
-                                .literal(.int(2)),
-                                .literal(.int(3)),
+                                .literal(
+                                    Token(type: .int, lexeme: "1", line: 1),
+                                    .int(1)),
+                                .literal(
+                                    Token(type: .int, lexeme: "2", line: 1),
+                                    .int(2)),
+                                .literal(
+                                    Token(type: .int, lexeme: "3", line: 1),
+                                    .int(3)),
                             ])),
                     ])),
         ]
@@ -1478,7 +1572,9 @@ final class ParserTests: XCTestCase {
                                     Token(type: .return, lexeme: "return", line: 3),
                                     .binary(
                                         .binary(
-                                            .literal(.double(3.14159)),
+                                            .literal(
+                                                Token(type: .double, lexeme: "3.14159", line: 3),
+                                                .double(3.14159)),
                                             Token(type: .star, lexeme: "*", line: 3),
                                             .get(
                                                 Token(type: .dot, lexeme: ".", line: 3),
@@ -1518,9 +1614,13 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .list([
-                    .literal(.int(1)),
+                    .literal(
+                        Token(type: .int, lexeme: "1", line: 1),
+                        .int(1)),
                     .string(Token(type: .string, lexeme: "\"one\"", line: 1)),
-                    .literal(.boolean(true))
+                    .literal(
+                        Token(type: .true, lexeme: "true", line: 1),
+                        .boolean(true))
                 ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1598,7 +1698,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .dictionary([
-                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(.int(1))),
+                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(Token(type: .int, lexeme: "1", line: 1),.int(1))),
                 ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1628,9 +1728,9 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
                 .dictionary([
-                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(.int(1))),
-                    (.string(Token(type: .string, lexeme: "\"b\"", line: 1)), .literal(.int(2))),
-                    (.string(Token(type: .string, lexeme: "\"c\"", line: 1)), .literal(.int(3))),
+                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(Token(type: .int, lexeme: "1", line: 1),.int(1))),
+                    (.string(Token(type: .string, lexeme: "\"b\"", line: 1)), .literal(Token(type: .int, lexeme: "2", line: 1),.int(2))),
+                    (.string(Token(type: .string, lexeme: "\"c\"", line: 1)), .literal(Token(type: .int, lexeme: "3", line: 1),.int(3))),
                 ]))
         ]
         XCTAssertEqual(actual, expected)
@@ -1724,12 +1824,16 @@ final class ParserTests: XCTestCase {
                                     .block([
                                         .return(
                                             Token(type: .return, lexeme: "return", line: 5),
-                                            .literal(.boolean(true))),
+                                            .literal(
+                                                Token(type: .true, lexeme: "true", line: 5),
+                                                .boolean(true))),
                                     ]),
                                     nil),
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 7),
-                                    .literal(.boolean(false)))
+                                    .literal(
+                                        Token(type: .false, lexeme: "false", line: 7),
+                                        .boolean(false)))
                             ]))
                 ],
                 []),
@@ -1806,7 +1910,9 @@ final class ParserTests: XCTestCase {
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .case, lexeme: "case", line: 2),
                         valueExpressions: [
-                            .literal(.int(1))
+                            .literal(
+                                Token(type: .int, lexeme: "1", line: 2),
+                                .int(1))
                         ],
                         statement: .block([
                             .print(.string(Token(type: .string, lexeme: "\"one\"", line: 3)))
@@ -1814,9 +1920,15 @@ final class ParserTests: XCTestCase {
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .case, lexeme: "case", line: 4),
                         valueExpressions: [
-                            .literal(.int(2)),
-                            .literal(.int(3)),
-                            .literal(.int(4)),
+                            .literal(
+                                Token(type: .int, lexeme: "2", line: 4),
+                                .int(2)),
+                            .literal(
+                                Token(type: .int, lexeme: "3", line: 4),
+                                .int(3)),
+                            .literal(
+                                Token(type: .int, lexeme: "4", line: 4),
+                                .int(4)),
                         ],
                         statement: .block([
                             .print(.string(Token(type: .string, lexeme: "\"two\"", line: 5))),

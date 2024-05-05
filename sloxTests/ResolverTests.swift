@@ -9,10 +9,11 @@ import XCTest
 
 final class ResolverTests: XCTestCase {
     func testResolveLiteralExpression() throws {
-        // "forty-two"
+        // 42
         let statements: [Statement<UnresolvedDepth>] = [
             .expression(
                 .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
                     .int(42))),
         ]
 
@@ -21,6 +22,7 @@ final class ResolverTests: XCTestCase {
         let expected: [Statement<Int>] = [
             .expression(
                 .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
                     .int(42))),
         ]
         XCTAssertEqual(actual, expected)
@@ -31,7 +33,9 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 1),
-                .literal(.int(42))),
+                .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
+                    .int(42))),
         ]
 
         var resolver = Resolver()
@@ -39,7 +43,9 @@ final class ResolverTests: XCTestCase {
         let expected: [Statement<Int>] = [
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "answer", line: 1),
-                .literal(.int(42))),
+                .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
+                    .int(42))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -111,7 +117,9 @@ final class ResolverTests: XCTestCase {
                     [
                         .return(
                             Token(type: .return, lexeme: "return", line: 2),
-                            .literal(.int(42)))
+                            .literal(
+                                Token(type: .int, lexeme: "42", line: 2),
+                                .int(42)))
                     ])),
         ]
 
@@ -169,7 +177,9 @@ final class ResolverTests: XCTestCase {
             .block([
                 .return(
                     Token(type: .return, lexeme: "return", line: 1),
-                    .literal(.int(42))),
+                    .literal(
+                        Token(type: .int, lexeme: "42", line: 1),
+                        .int(42))),
             ])
         ]
 
@@ -333,7 +343,9 @@ final class ResolverTests: XCTestCase {
                             [
                                 .return(
                                     Token(type: .return, lexeme: "return", line: 3),
-                                    .literal(.int(42)))
+                                    .literal(
+                                        Token(type: .int, lexeme: "42", line: 3),
+                                        .int(42)))
                             ]))
                 ],
                 [])
@@ -516,7 +528,9 @@ final class ResolverTests: XCTestCase {
         // }
         let statements: [Statement<UnresolvedDepth>] = [
             .if(
-                .literal(.boolean(true)),
+                .literal(
+                    Token(type: .true, lexeme: "true", line: 1),
+                    .boolean(true)),
                 .break(Token(type: .break, lexeme: "break", line: 2)),
                 nil)
         ]
@@ -538,7 +552,9 @@ final class ResolverTests: XCTestCase {
         //}
         let statements: [Statement<UnresolvedDepth>] = [
             .while(
-                .literal(.boolean(true)),
+                .literal(
+                    Token(type: .true, lexeme: "true", line: 1),
+                    .boolean(true)),
                 .block([
                     .function(
                         Token(type: .identifier, lexeme: "foo", line: 2),
@@ -573,9 +589,15 @@ final class ResolverTests: XCTestCase {
                 .splat(
                     Token(type: .star, lexeme: "*", line: 1),
                     .list([
-                        .literal(.int(1)),
-                        .literal(.int(2)),
-                        .literal(.int(3)),
+                        .literal(
+                            Token(type: .int, lexeme: "1", line: 1),
+                            .int(1)),
+                        .literal(
+                            Token(type: .int, lexeme: "2", line: 1),
+                            .int(2)),
+                        .literal(
+                            Token(type: .int, lexeme: "3", line: 1),
+                            .int(3)),
                     ])))
         ]
 
@@ -624,7 +646,9 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .switch(
                 Token(type: .switch, lexeme: "switch", line: 1),
-                .literal(.int(42)),
+                .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
+                    .int(42)),
                 [])
         ]
 
@@ -643,12 +667,16 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .switch(
                 Token(type: .switch, lexeme: "switch", line: 1),
-                .literal(.int(42)),
+                .literal(
+                    Token(type: .int, lexeme: "42", line: 1),
+                    .int(42)),
                 [
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .case, lexeme: "case", line: 2),
                         valueExpressions: [
-                            .literal(.int(42))
+                            .literal(
+                                Token(type: .int, lexeme: "42", line: 2),
+                                .int(42))
                         ],
                         statement: .block([]))
                 ])

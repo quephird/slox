@@ -297,7 +297,7 @@ struct Parser {
             initializerStmt = try parseExpressionStatement()
         }
 
-        var testExpr: Expression<UnresolvedDepth> = .literal(.boolean(true))
+        var testExpr: Expression<UnresolvedDepth> = .literal(Token(type: .true, lexeme: "true", line: 0), .boolean(true))
         if !currentTokenMatches(type: .semicolon) {
             testExpr = try parseExpression()
         }
@@ -787,24 +787,24 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.false]) {
-            return .literal(.boolean(false))
+            return .literal(previousToken, .boolean(false))
         }
 
         if currentTokenMatchesAny(types: [.true]) {
-            return .literal(.boolean(true))
+            return .literal(previousToken, .boolean(true))
         }
 
         if currentTokenMatchesAny(types: [.nil]) {
-            return .literal(.nil)
+            return .literal(previousToken, .nil)
         }
 
         if currentTokenMatchesAny(types: [.double]) {
             let number = Double(previousToken.lexeme)!
-            return .literal(.double(number))
+            return .literal(previousToken, .double(number))
         }
         if currentTokenMatchesAny(types: [.int]) {
             let number = Int(previousToken.lexeme)!
-            return .literal(.int(number))
+            return .literal(previousToken, .int(number))
         }
 
         if currentTokenMatchesAny(types: [.string]) {
@@ -881,8 +881,8 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.super]) else {
             return nil
         }
-
         let superToken = previousToken
+
         if !currentTokenMatchesAny(types: [.dot]) {
             throw ParseError.missingDotAfterSuper(currentToken)
         }

@@ -308,7 +308,7 @@ class Interpreter {
 
     private func evaluate(expr: Expression<Int>) throws -> LoxValue {
         switch expr {
-        case .literal(let literal):
+        case .literal(_, let literal):
             return literal
         case .grouping(let expr):
             return try evaluate(expr: expr)

@@ -439,8 +439,8 @@ struct Resolver {
                                  valueExpr: valueExpr)
         case .this(let thisToken, _):
             return try handleThis(thisToken: thisToken)
-        case .literal(let value):
-            return .literal(value)
+        case .literal(let valueToken, let value):
+            return .literal(valueToken, value)
         case .grouping(let expr):
             let resolvedExpr = try resolve(expression: expr)
             return .grouping(resolvedExpr)
