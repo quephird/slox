@@ -528,6 +528,7 @@ final class ResolverTests: XCTestCase {
         // }
         let statements: [Statement<UnresolvedDepth>] = [
             .if(
+                Token(type: .if, lexeme: "if", line: 1),
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),

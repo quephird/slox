@@ -59,7 +59,7 @@ class Interpreter {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
-        case .if(let testExpr, let consequentStmt, let alternativeStmt):
+        case .if(_, let testExpr, let consequentStmt, let alternativeStmt):
             try handleIfStatement(testExpr: testExpr,
                                   consequentStmt: consequentStmt,
                                   alternativeStmt: alternativeStmt)

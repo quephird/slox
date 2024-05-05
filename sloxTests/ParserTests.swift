@@ -608,6 +608,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .if(
+                Token(type: .if, lexeme: "if", line: 1),
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),
@@ -646,6 +647,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .if(
+                Token(type: .if, lexeme: "if", line: 1),
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),
@@ -1826,6 +1828,7 @@ final class ParserTests: XCTestCase {
                                 variadicParameter: nil),
                             [
                                 .if(
+                                    Token(type: .if, lexeme: "if", line: 4),
                                     .binary(
                                         .this(
                                             Token(type: .this, lexeme: "this", line: 4),

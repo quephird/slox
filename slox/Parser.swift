@@ -322,6 +322,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.if]) else {
             return nil
         }
+        let ifToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForIfStatement(currentToken)
@@ -339,7 +340,7 @@ struct Parser {
             alternativeStmt = try parseStatement()
         }
 
-        return .if(testExpr, consequentStmt, alternativeStmt)
+        return .if(ifToken, testExpr, consequentStmt, alternativeStmt)
     }
 
     mutating private func parseSwitchStatement() throws -> Statement<UnresolvedDepth>? {
@@ -464,7 +465,6 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.return]) else {
             return nil
         }
-
         let returnToken = previousToken
 
         var expr: Expression<UnresolvedDepth>? = nil

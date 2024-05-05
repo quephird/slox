@@ -70,8 +70,11 @@ struct Resolver {
                                                  functionType: .function)
         case .expression(let expr):
             return try handleExpressionStatement(expr: expr)
-        case .if(let testExpr, let consequentStmt, let alternativeStmt):
-            return try handleIf(testExpr: testExpr, consequentStmt: consequentStmt, alternativeStmt: alternativeStmt)
+        case .if(let ifToken, let testExpr, let consequentStmt, let alternativeStmt):
+            return try handleIf(ifToken: ifToken,
+                                testExpr: testExpr,
+                                consequentStmt: consequentStmt,
+                                alternativeStmt: alternativeStmt)
         case .switch(let switchToken, let testExpr, let switchCaseDecls):
             return try handleSwitch(switchToken: switchToken,
                                     testExpr: testExpr,
@@ -274,7 +277,8 @@ struct Resolver {
         return .expression(resolvedExpression)
     }
 
-    mutating private func handleIf(testExpr: Expression<UnresolvedDepth>,
+    mutating private func handleIf(ifToken: Token,
+                                   testExpr: Expression<UnresolvedDepth>,
                                    consequentStmt: Statement<UnresolvedDepth>,
                                    alternativeStmt: Statement<UnresolvedDepth>?) throws -> Statement<Int> {
         let resolvedTestExpr = try resolve(expression: testExpr)
@@ -285,7 +289,7 @@ struct Resolver {
             resolvedAlternativeStmt = try resolve(statement: alternativeStmt)
         }
 
-        return .if(resolvedTestExpr, resolvedConsequentStmt, resolvedAlternativeStmt)
+        return .if(ifToken, resolvedTestExpr, resolvedConsequentStmt, resolvedAlternativeStmt)
     }
 
     mutating private func handleSwitch(switchToken: Token,
