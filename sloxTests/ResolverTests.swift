@@ -588,17 +588,19 @@ final class ResolverTests: XCTestCase {
             .expression(
                 .splat(
                     Token(type: .star, lexeme: "*", line: 1),
-                    .list([
-                        .literal(
-                            Token(type: .int, lexeme: "1", line: 1),
-                            .int(1)),
-                        .literal(
-                            Token(type: .int, lexeme: "2", line: 1),
-                            .int(2)),
-                        .literal(
-                            Token(type: .int, lexeme: "3", line: 1),
-                            .int(3)),
-                    ])))
+                    .list(
+                        Token(type: .leftBracket, lexeme: "[", line: 1),
+                        [
+                            .literal(
+                                Token(type: .int, lexeme: "1", line: 1),
+                                .int(1)),
+                            .literal(
+                                Token(type: .int, lexeme: "2", line: 1),
+                                .int(2)),
+                            .literal(
+                                Token(type: .int, lexeme: "3", line: 1),
+                                .int(3)),
+                        ])))
         ]
 
         var resolver = Resolver()

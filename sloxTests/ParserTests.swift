@@ -436,7 +436,7 @@ final class ParserTests: XCTestCase {
                     Token(type: .star, lexeme: "*", line: 1),
                     .grouping(
                         Token(type: .leftParen, lexeme: "(", line: 1),
-                        .binary(
+                            .binary(
                             .literal(
                                 Token(type: .int, lexeme: "3", line: 1),
                                 .int(3)),
@@ -1224,17 +1224,19 @@ final class ParserTests: XCTestCase {
                     [
                         .splat(
                             Token(type: .star, lexeme: "*", line: 1),
-                            .list([
-                                .literal(
-                                    Token(type: .int, lexeme: "1", line: 1),
-                                    .int(1)),
-                                .literal(
-                                    Token(type: .int, lexeme: "2", line: 1),
-                                    .int(2)),
-                                .literal(
-                                    Token(type: .int, lexeme: "3", line: 1),
-                                    .int(3)),
-                            ])),
+                            .list(
+                                Token(type: .leftBracket, lexeme: "[", line: 1),
+                                [
+                                    .literal(
+                                        Token(type: .int, lexeme: "1", line: 1),
+                                        .int(1)),
+                                    .literal(
+                                        Token(type: .int, lexeme: "2", line: 1),
+                                        .int(2)),
+                                    .literal(
+                                        Token(type: .int, lexeme: "3", line: 1),
+                                        .int(3)),
+                                ])),
                     ])),
         ]
         XCTAssertEqual(actual, expected)
@@ -1618,15 +1620,17 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .list([
-                    .literal(
-                        Token(type: .int, lexeme: "1", line: 1),
-                        .int(1)),
-                    .string(Token(type: .string, lexeme: "\"one\"", line: 1)),
-                    .literal(
-                        Token(type: .true, lexeme: "true", line: 1),
-                        .boolean(true))
-                ]))
+                .list(
+                    Token(type: .leftBracket, lexeme: "[", line: 1),
+                    [
+                        .literal(
+                            Token(type: .int, lexeme: "1", line: 1),
+                            .int(1)),
+                        .string(Token(type: .string, lexeme: "\"one\"", line: 1)),
+                        .literal(
+                            Token(type: .true, lexeme: "true", line: 1),
+                            .boolean(true))
+                    ]))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1663,8 +1667,9 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .list([
-                ]))
+                .list(
+                    Token(type: .leftBracket, lexeme: "[", line: 1),
+                    []))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1682,7 +1687,9 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .dictionary([]))
+                .dictionary(
+                    Token(type: .leftBracket, lexeme: "[", line: 1),
+                    []))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1702,9 +1709,11 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .dictionary([
-                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(Token(type: .int, lexeme: "1", line: 1),.int(1))),
-                ]))
+                .dictionary(
+                    Token(type: .leftBracket, lexeme: "[", line: 1),
+                    [
+                        (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(Token(type: .int, lexeme: "1", line: 1),.int(1))),
+                    ]))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1732,11 +1741,13 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .expression(
-                .dictionary([
-                    (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(Token(type: .int, lexeme: "1", line: 1),.int(1))),
-                    (.string(Token(type: .string, lexeme: "\"b\"", line: 1)), .literal(Token(type: .int, lexeme: "2", line: 1),.int(2))),
-                    (.string(Token(type: .string, lexeme: "\"c\"", line: 1)), .literal(Token(type: .int, lexeme: "3", line: 1),.int(3))),
-                ]))
+                .dictionary(
+                    Token(type: .leftBracket, lexeme: "[", line: 1),
+                    [
+                        (.string(Token(type: .string, lexeme: "\"a\"", line: 1)), .literal(Token(type: .int, lexeme: "1", line: 1),.int(1))),
+                        (.string(Token(type: .string, lexeme: "\"b\"", line: 1)), .literal(Token(type: .int, lexeme: "2", line: 1),.int(2))),
+                        (.string(Token(type: .string, lexeme: "\"c\"", line: 1)), .literal(Token(type: .int, lexeme: "3", line: 1),.int(3))),
+                    ]))
         ]
         XCTAssertEqual(actual, expected)
     }

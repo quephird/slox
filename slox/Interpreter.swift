@@ -341,7 +341,7 @@ class Interpreter {
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
         case .string(let stringToken):
             return try handleStringExpression(stringToken: stringToken)
-        case .list(let elements):
+        case .list(_, let elements):
             return try handleListExpression(elements: elements)
         case .subscriptGet(let listExpr, let indexExpr):
             return try handleSubscriptGetExpression(collectionExpr: listExpr, indexExpr: indexExpr)
@@ -351,7 +351,7 @@ class Interpreter {
                                                     valueExpr: valueExpr)
         case .splat(_, let listExpr):
             return try handleSplatExpression(listExpr: listExpr)
-        case .dictionary(let kvPairs):
+        case .dictionary(_, let kvPairs):
             return try handleDictionary(kvExprPairs: kvPairs)
         }
     }

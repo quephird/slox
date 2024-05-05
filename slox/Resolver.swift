@@ -455,16 +455,16 @@ struct Resolver {
             return try handleSuper(superToken: superToken, methodToken: methodToken)
         case .string(let stringToken):
             return .string(stringToken)
-        case .list(let elements):
-            return try handleList(elements: elements)
+        case .list(let leftBracketToken, let elements):
+            return try handleList(leftBracketToken: leftBracketToken, elements: elements)
         case .subscriptGet(let listExpr, let indexExpr):
             return try handleSubscriptGet(listExpr: listExpr, indexExpr: indexExpr)
         case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
             return try handleSubscriptSet(listExpr: listExpr, indexExpr: indexExpr, valueExpr: valueExpr)
         case .splat(let starToken, let listExpr):
             return try handleSplat(starToken: starToken, listExpr: listExpr)
-        case .dictionary(let kvPairs):
-            return try handleDictionary(kvPairs: kvPairs)
+        case .dictionary(let leftBracketToken, let kvPairs):
+            return try handleDictionary(leftBracketToken: leftBracketToken, kvPairs: kvPairs)
         }
     }
 
@@ -608,7 +608,8 @@ struct Resolver {
         return .super(superToken, methodToken, depth)
     }
 
-    mutating private func handleList(elements: [Expression<UnresolvedDepth>]) throws -> Expression<Int> {
+    mutating private func handleList(leftBracketToken: Token,
+                                     elements: [Expression<UnresolvedDepth>]) throws -> Expression<Int> {
         let previousArgumentListType = currentArgumentListType
         currentArgumentListType = .listInitializer
         defer {
@@ -619,7 +620,7 @@ struct Resolver {
             return try resolve(expression: element)
         }
 
-        return .list(resolvedElements)
+        return .list(leftBracketToken, resolvedElements)
     }
 
     mutating private func handleSubscriptGet(listExpr: Expression<UnresolvedDepth>,
@@ -651,7 +652,8 @@ struct Resolver {
         return .splat(starToken, resolvedListExpr)
     }
 
-    mutating private func handleDictionary(kvPairs: [(Expression<UnresolvedDepth>, Expression<UnresolvedDepth>)]) throws -> Expression<Int> {
+    mutating private func handleDictionary(leftBracketToken: Token,
+                                           kvPairs: [(Expression<UnresolvedDepth>, Expression<UnresolvedDepth>)]) throws -> Expression<Int> {
         var resolvedKVPairs: [(Expression<Int>, Expression<Int>)] = []
 
         for (keyExpr, valueExpr) in kvPairs {
@@ -660,7 +662,7 @@ struct Resolver {
             resolvedKVPairs.append((resolvedKey, resolvedValue))
         }
 
-        return .dictionary(resolvedKVPairs)
+        return .dictionary(leftBracketToken, resolvedKVPairs)
     }
 
 

@@ -853,20 +853,21 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
+        let leftBracketToken = previousToken
 
         if currentTokenMatchesAny(types: [.rightBracket]) {
-            return .list([])
+            return .list(leftBracketToken, [])
         }
 
         if currentTokenMatchesAny(types: [.colon]) && currentTokenMatchesAny(types: [.rightBracket]) {
-            return .dictionary([])
+            return .dictionary(leftBracketToken, [])
         }
 
         let firstExpr = try parseExpression()
 
         if currentTokenMatchesAny(types: [.colon]) {
             let kvPairs = try parseKeyValuePairs(firstKeyExpr: firstExpr)
-            return .dictionary(kvPairs)
+            return .dictionary(leftBracketToken, kvPairs)
         }
 
         let elements = try parseRemainingExpressions(firstExpr: firstExpr)
@@ -875,7 +876,7 @@ struct Parser {
             throw ParseError.missingClosingBracket(previousToken)
         }
 
-        return .list(elements)
+        return .list(leftBracketToken, elements)
     }
 
     mutating private func parseSuperExpression() throws -> Expression<UnresolvedDepth>? {
