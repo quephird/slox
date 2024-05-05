@@ -844,18 +844,20 @@ final class ParserTests: XCTestCase {
 
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
-            .block([
-                .variableDeclaration(
-                    Token(type: .identifier, lexeme: "theAnswer", line: 2),
-                    .literal(
-                        Token(type: .int, lexeme: "42", line: 2),
-                        .int(42))),
-                .print(
-                    Token(type: .print, lexeme: "print", line: 3),
-                    .variable(
-                        Token(type: .identifier, lexeme: "theAnswer", line: 3),
-                        UnresolvedDepth())),
-            ]),
+            .block(
+                Token(type: .leftBrace, lexeme: "{", line: 1),
+                [
+                    .variableDeclaration(
+                        Token(type: .identifier, lexeme: "theAnswer", line: 2),
+                        .literal(
+                            Token(type: .int, lexeme: "42", line: 2),
+                            .int(42))),
+                    .print(
+                        Token(type: .print, lexeme: "print", line: 3),
+                        .variable(
+                            Token(type: .identifier, lexeme: "theAnswer", line: 3),
+                            UnresolvedDepth())),
+                ]),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -927,25 +929,27 @@ final class ParserTests: XCTestCase {
                     .literal(
                         Token(type: .int, lexeme: "5", line: 1),
                         .int(5))),
-                .block([
-                    .print(
-                        Token(type: .print, lexeme: "print", line: 2),
-                        .variable(
-                            Token(type: .identifier, lexeme: "x", line: 2),
-                            UnresolvedDepth())),
-                    .expression(
-                        .assignment(
-                            Token(type: .identifier, lexeme: "x", line: 3),
-                            .binary(
-                                .variable(
-                                    Token(type: .identifier, lexeme: "x", line: 3),
-                                    UnresolvedDepth()),
-                                Token(type: .plus, lexeme: "+", line: 3),
-                                .literal(
-                                    Token(type: .int, lexeme: "1", line: 3),
-                                    .int(1))),
-                            UnresolvedDepth())),
-                ]))
+                .block(
+                    Token(type: .leftBrace, lexeme: "{", line: 1),
+                    [
+                        .print(
+                            Token(type: .print, lexeme: "print", line: 2),
+                            .variable(
+                                Token(type: .identifier, lexeme: "x", line: 2),
+                                UnresolvedDepth())),
+                        .expression(
+                            .assignment(
+                                Token(type: .identifier, lexeme: "x", line: 3),
+                                .binary(
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "x", line: 3),
+                                        UnresolvedDepth()),
+                                    Token(type: .plus, lexeme: "+", line: 3),
+                                    .literal(
+                                        Token(type: .int, lexeme: "1", line: 3),
+                                        .int(1))),
+                                UnresolvedDepth())),
+                    ]))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1000,13 +1004,15 @@ final class ParserTests: XCTestCase {
                 .lambda(
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
                     ParameterList(normalParameters: []),
-                    .block([
-                        .print(
-                            Token(type: .print, lexeme: "print", line: 2),
-                            .literal(
-                                Token(type: .int, lexeme: "42", line: 2),
-                                .int(42)))
-                    ]))),
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .print(
+                                Token(type: .print, lexeme: "print", line: 2),
+                                .literal(
+                                    Token(type: .int, lexeme: "42", line: 2),
+                                    .int(42)))
+                        ]))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1046,18 +1052,20 @@ final class ParserTests: XCTestCase {
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
                     ]),
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 2),
-                            .binary(
-                                .variable(
-                                    Token(type: .identifier, lexeme: "a", line: 2),
-                                    UnresolvedDepth()),
-                                Token(type: .plus, lexeme: "+", line: 2),
-                                .variable(
-                                    Token(type: .identifier, lexeme: "b", line: 2),
-                                    UnresolvedDepth())))
-                    ]))
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 2),
+                                .binary(
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "a", line: 2),
+                                        UnresolvedDepth()),
+                                    Token(type: .plus, lexeme: "+", line: 2),
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "b", line: 2),
+                                        UnresolvedDepth())))
+                        ]))
             )
         ]
         XCTAssertEqual(actual, expected)
@@ -1098,13 +1106,15 @@ final class ParserTests: XCTestCase {
                             Token(type: .identifier, lexeme: "a", line: 1),
                         ],
                         variadicParameter: Token(type: .identifier, lexeme: "b", line: 1)),
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 2),
-                            .variable(
-                                Token(type: .identifier, lexeme: "b", line: 2),
-                                UnresolvedDepth()))
-                    ]))
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 2),
+                                .variable(
+                                    Token(type: .identifier, lexeme: "b", line: 2),
+                                    UnresolvedDepth()))
+                        ]))
             )
         ]
         XCTAssertEqual(actual, expected)
@@ -1287,18 +1297,20 @@ final class ParserTests: XCTestCase {
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
                     ]),
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 1),
-                            .binary(
-                                .variable(
-                                    Token(type: .identifier, lexeme: "a", line: 1),
-                                    UnresolvedDepth()),
-                                Token(type: .plus, lexeme: "+", line: 1),
-                                .variable(
-                                    Token(type: .identifier, lexeme: "b", line: 1),
-                                    UnresolvedDepth()))),
-                    ])))
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 1),
+                                .binary(
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "a", line: 1),
+                                        UnresolvedDepth()),
+                                    Token(type: .plus, lexeme: "+", line: 1),
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "b", line: 1),
+                                        UnresolvedDepth()))),
+                        ])))
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1343,16 +1355,18 @@ final class ParserTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
-                            .block([
-                                .print(
-                                    Token(type: .print, lexeme: "print", line: 3),
-                                    .get(
-                                        Token(type: .dot, lexeme: ".", line: 3),
-                                        .this(
-                                            Token(type: .this, lexeme: "this", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .identifier, lexeme: "name", line: 3)))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 3),
+                                        .get(
+                                            Token(type: .dot, lexeme: ".", line: 3),
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .identifier, lexeme: "name", line: 3)))
+                                ])))
                 ],
                 [])
         ]
@@ -1458,18 +1472,20 @@ final class ParserTests: XCTestCase {
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
                             ]),
-                            .block([
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 3),
-                                    .binary(
-                                        .variable(
-                                            Token(type: .identifier, lexeme: "a", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .plus, lexeme: "+", line: 3),
-                                        .variable(
-                                            Token(type: .identifier, lexeme: "b", line: 3),
-                                            UnresolvedDepth())))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 3),
+                                        .binary(
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "a", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .plus, lexeme: "+", line: 3),
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "b", line: 3),
+                                                UnresolvedDepth())))
+                                ])))
                 ])
         ]
         XCTAssertEqual(actual, expected)
@@ -1525,21 +1541,23 @@ final class ParserTests: XCTestCase {
                             ParameterList(normalParameters: [
                                 Token(type: .identifier, lexeme: "arg", line: 2)
                             ]),
-                            .block([
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 3),
-                                    .call(
-                                        .super(
-                                            Token(type: .super, lexeme: "super", line: 3),
-                                            Token(type: .identifier, lexeme: "someMethod", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .rightParen, lexeme: ")", line: 3),
-                                        [
-                                            .variable(
-                                                Token(type: .identifier, lexeme: "arg", line: 3),
-                                                UnresolvedDepth())
-                                        ]))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 3),
+                                        .call(
+                                            .super(
+                                                Token(type: .super, lexeme: "super", line: 3),
+                                                Token(type: .identifier, lexeme: "someMethod", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .rightParen, lexeme: ")", line: 3),
+                                            [
+                                                .variable(
+                                                    Token(type: .identifier, lexeme: "arg", line: 3),
+                                                    UnresolvedDepth())
+                                            ]))
+                                ])))
                 ],
                 []),
         ]
@@ -1590,29 +1608,31 @@ final class ParserTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "area", line: 2),
                             nil,
-                            .block([
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 3),
-                                    .binary(
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 3),
                                         .binary(
-                                            .literal(
-                                                Token(type: .double, lexeme: "3.14159", line: 3),
-                                                .double(3.14159)),
+                                            .binary(
+                                                .literal(
+                                                    Token(type: .double, lexeme: "3.14159", line: 3),
+                                                    .double(3.14159)),
+                                                Token(type: .star, lexeme: "*", line: 3),
+                                                .get(
+                                                    Token(type: .dot, lexeme: ".", line: 3),
+                                                    .this(
+                                                        Token(type: .this, lexeme: "this", line: 3),
+                                                        UnresolvedDepth()),
+                                                    Token(type: .identifier, lexeme: "radius", line: 3))),
                                             Token(type: .star, lexeme: "*", line: 3),
                                             .get(
                                                 Token(type: .dot, lexeme: ".", line: 3),
                                                 .this(
                                                     Token(type: .this, lexeme: "this", line: 3),
                                                     UnresolvedDepth()),
-                                                Token(type: .identifier, lexeme: "radius", line: 3))),
-                                        Token(type: .star, lexeme: "*", line: 3),
-                                        .get(
-                                            Token(type: .dot, lexeme: ".", line: 3),
-                                            .this(
-                                                Token(type: .this, lexeme: "this", line: 3),
-                                                UnresolvedDepth()),
-                                            Token(type: .identifier, lexeme: "radius", line: 3)))),
-                            ])))
+                                                Token(type: .identifier, lexeme: "radius", line: 3)))),
+                                ])))
                 ],
                 [])
         ]
@@ -1840,34 +1860,38 @@ final class ParserTests: XCTestCase {
                             ParameterList(
                                 normalParameters: [],
                                 variadicParameter: nil),
-                            .block([
-                                .if(
-                                    Token(type: .if, lexeme: "if", line: 4),
-                                    .binary(
-                                        .this(
-                                            Token(type: .this, lexeme: "this", line: 4),
-                                            UnresolvedDepth()),
-                                        Token(type: .equalEqual, lexeme: "==", line: 4),
-                                        .get(
-                                            Token(type: .dot, lexeme: ".", line: 4),
-                                            .variable(
-                                                Token(type: .identifier, lexeme: "Foo", line: 4),
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 3),
+                                [
+                                    .if(
+                                        Token(type: .if, lexeme: "if", line: 4),
+                                        .binary(
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 4),
                                                 UnresolvedDepth()),
-                                            Token(type: .identifier, lexeme: "bar", line: 4))),
-                                    .block([
-                                        .return(
-                                            Token(type: .return, lexeme: "return", line: 5),
-                                            .literal(
-                                                Token(type: .true, lexeme: "true", line: 5),
-                                                .boolean(true))),
-                                    ]),
-                                    nil),
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 7),
-                                    .literal(
-                                        Token(type: .false, lexeme: "false", line: 7),
-                                        .boolean(false)))
-                            ])))
+                                            Token(type: .equalEqual, lexeme: "==", line: 4),
+                                            .get(
+                                                Token(type: .dot, lexeme: ".", line: 4),
+                                                .variable(
+                                                    Token(type: .identifier, lexeme: "Foo", line: 4),
+                                                    UnresolvedDepth()),
+                                                Token(type: .identifier, lexeme: "bar", line: 4))),
+                                        .block(
+                                            Token(type: .leftBrace, lexeme: "{", line: 4),
+                                            [
+                                                .return(
+                                                    Token(type: .return, lexeme: "return", line: 5),
+                                                    .literal(
+                                                        Token(type: .true, lexeme: "true", line: 5),
+                                                        .boolean(true))),
+                                            ]),
+                                        nil),
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 7),
+                                        .literal(
+                                            Token(type: .false, lexeme: "false", line: 7),
+                                            .boolean(false)))
+                                ])))
                 ],
                 []),
         ]
@@ -1947,11 +1971,13 @@ final class ParserTests: XCTestCase {
                                 Token(type: .int, lexeme: "1", line: 2),
                                 .int(1))
                         ],
-                        statement: .block([
-                            .print(
-                                Token(type: .print, lexeme: "print", line: 3),
-                                .string(Token(type: .string, lexeme: "\"one\"", line: 3)))
-                        ])),
+                        statement: .block(
+                            Token(type: .colon, lexeme: ":", line: 2),
+                            [
+                                .print(
+                                    Token(type: .print, lexeme: "print", line: 3),
+                                    .string(Token(type: .string, lexeme: "\"one\"", line: 3)))
+                            ])),
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .case, lexeme: "case", line: 4),
                         valueExpressions: [
@@ -1965,24 +1991,28 @@ final class ParserTests: XCTestCase {
                                 Token(type: .int, lexeme: "4", line: 4),
                                 .int(4)),
                         ],
-                        statement: .block([
-                            .print(
-                                Token(type: .print, lexeme: "print", line: 5),
-                                .string(Token(type: .string, lexeme: "\"two\"", line: 5))),
-                            .print(
-                                Token(type: .print, lexeme: "print", line: 6),
-                                .string(Token(type: .string, lexeme: "\"three\"", line: 6))),
-                            .print(
-                                Token(type: .print, lexeme: "print", line: 7),
-                                .string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
-                        ])),
+                        statement: .block(
+                            Token(type: .colon, lexeme: ":", line: 4),
+                            [
+                                .print(
+                                    Token(type: .print, lexeme: "print", line: 5),
+                                    .string(Token(type: .string, lexeme: "\"two\"", line: 5))),
+                                .print(
+                                    Token(type: .print, lexeme: "print", line: 6),
+                                    .string(Token(type: .string, lexeme: "\"three\"", line: 6))),
+                                .print(
+                                    Token(type: .print, lexeme: "print", line: 7),
+                                    .string(Token(type: .string, lexeme: "\"or four\"", line: 7)))
+                            ])),
                     SwitchCaseDeclaration(
                         caseToken: Token(type: .default, lexeme: "default", line: 8),
-                        statement: .block([
-                            .print(
-                                Token(type: .print, lexeme: "print", line: 9),
-                                .string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
-                        ])),
+                        statement: .block(
+                            Token(type: .colon, lexeme: ":", line: 8),
+                            [
+                                .print(
+                                    Token(type: .print, lexeme: "print", line: 9),
+                                    .string(Token(type: .string, lexeme: "\"unhandled\"", line: 9))),
+                            ])),
                 ])
         ]
         XCTAssertEqual(actual, expected)

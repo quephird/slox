@@ -63,18 +63,20 @@ final class ResolverTests: XCTestCase {
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
                     ]),
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 2),
-                            .binary(
-                                .variable(
-                                    Token(type: .identifier, lexeme: "a", line: 2),
-                                    UnresolvedDepth()),
-                                Token(type: .plus, lexeme: "+", line: 2),
-                                .variable(
-                                    Token(type: .identifier, lexeme: "b", line: 2),
-                                    UnresolvedDepth()))),
-                    ]))),
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 2),
+                                .binary(
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "a", line: 2),
+                                        UnresolvedDepth()),
+                                    Token(type: .plus, lexeme: "+", line: 2),
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "b", line: 2),
+                                        UnresolvedDepth()))),
+                        ]))),
         ]
 
         var resolver = Resolver()
@@ -88,18 +90,20 @@ final class ResolverTests: XCTestCase {
                         Token(type: .identifier, lexeme: "a", line: 1),
                         Token(type: .identifier, lexeme: "b", line: 1),
                     ]),
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 2),
-                            .binary(
-                                .variable(
-                                    Token(type: .identifier, lexeme: "a", line: 2),
-                                    1),
-                                Token(type: .plus, lexeme: "+", line: 2),
-                                .variable(
-                                    Token(type: .identifier, lexeme: "b", line: 2),
-                                    1))),
-                    ]))),
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 2),
+                                .binary(
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "a", line: 2),
+                                        1),
+                                    Token(type: .plus, lexeme: "+", line: 2),
+                                    .variable(
+                                        Token(type: .identifier, lexeme: "b", line: 2),
+                                        1))),
+                        ]))),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -114,13 +118,15 @@ final class ResolverTests: XCTestCase {
                 .lambda(
                     Token(type: .identifier, lexeme: "answer", line: 1),
                     nil,
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 2),
-                            .literal(
-                                Token(type: .int, lexeme: "42", line: 2),
-                                .int(42)))
-                    ]))),
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 2),
+                                .literal(
+                                    Token(type: .int, lexeme: "42", line: 2),
+                                    .int(42)))
+                        ]))),
         ]
 
         var resolver = Resolver()
@@ -137,17 +143,23 @@ final class ResolverTests: XCTestCase {
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "becca", line: 1),
                 nil),
-            .block([
-                .block([
-                    .block([
-                        .expression(
-                            .assignment(
-                                Token(type: .identifier, lexeme: "becca", line: 1),
-                                .string(Token(type: .string, lexeme: "\"answer\"", line: 1)),
-                                UnresolvedDepth()))
+            .block(
+                Token(type: .leftBrace, lexeme: "{", line: 1),
+                [
+                .block(
+                    Token(type: .leftBrace, lexeme: "{", line: 1),
+                    [
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .expression(
+                                .assignment(
+                                    Token(type: .identifier, lexeme: "becca", line: 1),
+                                    .string(Token(type: .string, lexeme: "\"answer\"", line: 1)),
+                                    UnresolvedDepth()))
+                        ])
                     ])
                 ])
-            ])
         ]
 
         var resolver = Resolver()
@@ -156,17 +168,23 @@ final class ResolverTests: XCTestCase {
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "becca", line: 1),
                 nil),
-            .block([
-                .block([
-                    .block([
-                        .expression(
-                            .assignment(
-                                Token(type: .identifier, lexeme: "becca", line: 1),
-                                .string(Token(type: .string, lexeme: "\"answer\"", line: 1)),
-                                3))
+            .block(
+                Token(type: .leftBrace, lexeme: "{", line: 1),
+                [
+                .block(
+                    Token(type: .leftBrace, lexeme: "{", line: 1),
+                    [
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .expression(
+                                .assignment(
+                                    Token(type: .identifier, lexeme: "becca", line: 1),
+                                    .string(Token(type: .string, lexeme: "\"answer\"", line: 1)),
+                                    3))
+                        ])
                     ])
                 ])
-            ])
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -174,13 +192,15 @@ final class ResolverTests: XCTestCase {
     func testResolveReturnStatementOutsideFunctionBody() throws {
         // { return 42; }
         let statements: [Statement<UnresolvedDepth>] = [
-            .block([
-                .return(
-                    Token(type: .return, lexeme: "return", line: 1),
-                    .literal(
-                        Token(type: .int, lexeme: "42", line: 1),
-                        .int(42))),
-            ])
+            .block(
+                Token(type: .leftBrace, lexeme: "{", line: 1),
+                [
+                    .return(
+                        Token(type: .return, lexeme: "return", line: 1),
+                        .literal(
+                            Token(type: .int, lexeme: "42", line: 1),
+                            .int(42))),
+                ])
         ]
 
         var resolver = Resolver()
@@ -200,13 +220,15 @@ final class ResolverTests: XCTestCase {
             .variableDeclaration(
                 Token(type: .identifier, lexeme: "x", line: 1),
                 .string(Token(type: .string, lexeme: "\"outer\"", line: 1))),
-            .block([
-                .variableDeclaration(
-                    Token(type: .identifier, lexeme: "x", line: 3),
-                    .variable(
+            .block(
+                Token(type: .leftBrace, lexeme: "{", line: 2),
+                [
+                    .variableDeclaration(
                         Token(type: .identifier, lexeme: "x", line: 3),
-                        UnresolvedDepth())),
-            ])
+                        .variable(
+                            Token(type: .identifier, lexeme: "x", line: 3),
+                            UnresolvedDepth())),
+                ])
         ]
 
         var resolver = Resolver()
@@ -223,14 +245,16 @@ final class ResolverTests: XCTestCase {
         //     var a = "second";
         // }
         let statements: [Statement<UnresolvedDepth>] = [
-            .block([
-                .variableDeclaration(
-                    Token(type: .identifier, lexeme: "a", line: 2),
-                    .string(Token(type: .string, lexeme: "\"first\"", line: 1))),
-                .variableDeclaration(
-                    Token(type: .identifier, lexeme: "a", line: 3),
-                    .string(Token(type: .string, lexeme: "\"second\"", line: 1))),
-            ])
+            .block(
+                Token(type: .leftBrace, lexeme: "{", line: 1),
+                [
+                    .variableDeclaration(
+                        Token(type: .identifier, lexeme: "a", line: 2),
+                        .string(Token(type: .string, lexeme: "\"first\"", line: 1))),
+                    .variableDeclaration(
+                        Token(type: .identifier, lexeme: "a", line: 3),
+                        .string(Token(type: .string, lexeme: "\"second\"", line: 1))),
+                ])
         ]
 
         var resolver = Resolver()
@@ -257,16 +281,18 @@ final class ResolverTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
-                            .block([
-                                .print(
-                                    Token(type: .print, lexeme: "print", line: 3),
-                                    .get(
-                                        Token(type: .dot, lexeme: ".", line: 3),
-                                        .this(
-                                            Token(type: .this, lexeme: "this", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .identifier, lexeme: "name", line: 3)))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 3),
+                                        .get(
+                                            Token(type: .dot, lexeme: ".", line: 3),
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .identifier, lexeme: "name", line: 3)))
+                                ])))
                 ],
                 [])
         ]
@@ -283,16 +309,18 @@ final class ResolverTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
-                            .block([
-                                .print(
-                                    Token(type: .print, lexeme: "print", line: 3),
-                                    .get(
-                                        Token(type: .dot, lexeme: ".", line: 3),
-                                        .this(
-                                            Token(type: .this, lexeme: "this", line: 3),
-                                            2),
-                                        Token(type: .identifier, lexeme: "name", line: 3)))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 3),
+                                        .get(
+                                            Token(type: .dot, lexeme: ".", line: 3),
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 3),
+                                                2),
+                                            Token(type: .identifier, lexeme: "name", line: 3)))
+                                ])))
                 ],
                 [])
         ]
@@ -309,13 +337,15 @@ final class ResolverTests: XCTestCase {
                 .lambda(
                     Token(type: .identifier, lexeme: "foo", line: 1),
                     ParameterList(normalParameters: []),
-                    .block([
-                        .return(
-                            Token(type: .return, lexeme: "return", line: 2),
-                            .this(
-                                Token(type: .this, lexeme: "this", line: 2),
-                                UnresolvedDepth()))
-                    ]))),
+                    .block(
+                        Token(type: .leftBrace, lexeme: "{", line: 1),
+                        [
+                            .return(
+                                Token(type: .return, lexeme: "return", line: 2),
+                                .this(
+                                    Token(type: .this, lexeme: "this", line: 2),
+                                    UnresolvedDepth()))
+                        ]))),
         ]
 
         var resolver = Resolver()
@@ -342,13 +372,15 @@ final class ResolverTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "init", line: 2),
                             ParameterList(normalParameters: []),
-                            .block([
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 3),
-                                    .literal(
-                                        Token(type: .int, lexeme: "42", line: 3),
-                                        .int(42)))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 3),
+                                        .literal(
+                                            Token(type: .int, lexeme: "42", line: 3),
+                                            .int(42)))
+                                ])))
                 ],
                 [])
         ]
@@ -381,18 +413,20 @@ final class ResolverTests: XCTestCase {
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
                             ]),
-                            .block([
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 3),
-                                    .binary(
-                                        .variable(
-                                            Token(type: .identifier, lexeme: "a", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .plus, lexeme: "+", line: 3),
-                                        .variable(
-                                            Token(type: .identifier, lexeme: "b", line: 3),
-                                            UnresolvedDepth())))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 3),
+                                        .binary(
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "a", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .plus, lexeme: "+", line: 3),
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "b", line: 3),
+                                                UnresolvedDepth())))
+                                ])))
                 ])
         ]
 
@@ -412,18 +446,20 @@ final class ResolverTests: XCTestCase {
                                 Token(type: .identifier, lexeme: "a", line: 2),
                                 Token(type: .identifier, lexeme: "b", line: 2),
                             ]),
-                            .block([
-                                .return(
-                                    Token(type: .return, lexeme: "return", line: 3),
-                                    .binary(
-                                        .variable(
-                                            Token(type: .identifier, lexeme: "a", line: 3),
-                                            1),
-                                        Token(type: .plus, lexeme: "+", line: 3),
-                                        .variable(
-                                            Token(type: .identifier, lexeme: "b", line: 3),
-                                            1)))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .return(
+                                        Token(type: .return, lexeme: "return", line: 3),
+                                        .binary(
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "a", line: 3),
+                                                1),
+                                            Token(type: .plus, lexeme: "+", line: 3),
+                                            .variable(
+                                                Token(type: .identifier, lexeme: "b", line: 3),
+                                                1)))
+                                ])))
                 ])
         ]
         XCTAssertEqual(actual, expected)
@@ -446,16 +482,18 @@ final class ResolverTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "init", line: 2),
                             ParameterList(normalParameters: []),
-                            .block([
-                                .expression(
-                                    .set(
-                                        Token(type: .dot, lexeme: ".", line: 3),
-                                        .this(
-                                            Token(type: .this, lexeme: "this", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .identifier, lexeme: "name", line: 3),
-                                        .string(Token(type: .string, lexeme: "\"bad\"", line: 1))))
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .expression(
+                                        .set(
+                                            Token(type: .dot, lexeme: ".", line: 3),
+                                            .this(
+                                                Token(type: .this, lexeme: "this", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .identifier, lexeme: "name", line: 3),
+                                            .string(Token(type: .string, lexeme: "\"bad\"", line: 1))))
+                                ])))
                 ])
         ]
 
@@ -501,17 +539,19 @@ final class ResolverTests: XCTestCase {
                         .lambda(
                             Token(type: .identifier, lexeme: "someMethod", line: 2),
                             ParameterList(normalParameters: []),
-                            .block([
-                                .expression(
-                                    .call(
-                                        .super(
-                                            Token(type: .super, lexeme: "super", line: 3),
-                                            Token(type: .identifier, lexeme: "someMethod", line: 3),
-                                            UnresolvedDepth()),
-                                        Token(type: .rightParen, lexeme: ")", line: 3),
-                                        [])
-                                )
-                            ])))
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .expression(
+                                        .call(
+                                            .super(
+                                                Token(type: .super, lexeme: "super", line: 3),
+                                                Token(type: .identifier, lexeme: "someMethod", line: 3),
+                                                UnresolvedDepth()),
+                                            Token(type: .rightParen, lexeme: ")", line: 3),
+                                            [])
+                                    )
+                                ])))
                 ],
                 [])
         ]
@@ -558,23 +598,27 @@ final class ResolverTests: XCTestCase {
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),
-                .block([
-                    .function(
-                        Token(type: .identifier, lexeme: "foo", line: 2),
-                        .lambda(
+                .block(
+                    Token(type: .leftBrace, lexeme: "{", line: 1),
+                    [
+                        .function(
                             Token(type: .identifier, lexeme: "foo", line: 2),
-                            ParameterList(normalParameters: []),
-                            .block([
-                                .break(Token(type: .break, lexeme: "break", line: 3))
-                            ]))),
-                    .expression(
-                        .call(
-                            .variable(
-                                Token(type: .identifier, lexeme: "foo", line: 5),
-                                UnresolvedDepth()),
-                            Token(type: .rightParen, lexeme: ")", line: 5),
-                            []))
-                ]))
+                            .lambda(
+                                Token(type: .identifier, lexeme: "foo", line: 2),
+                                ParameterList(normalParameters: []),
+                                .block(
+                                    Token(type: .leftBrace, lexeme: "{", line: 2),
+                                    [
+                                        .break(Token(type: .break, lexeme: "break", line: 3))
+                                    ]))),
+                        .expression(
+                            .call(
+                                .variable(
+                                    Token(type: .identifier, lexeme: "foo", line: 5),
+                                    UnresolvedDepth()),
+                                Token(type: .rightParen, lexeme: ")", line: 5),
+                                []))
+                    ]))
         ]
 
         var resolver = Resolver()
@@ -683,7 +727,9 @@ final class ResolverTests: XCTestCase {
                                 Token(type: .int, lexeme: "42", line: 2),
                                 .int(42))
                         ],
-                        statement: .block([]))
+                        statement: .block(
+                            Token(type: .colon, lexeme: ":", line: 2),
+                            []))
                 ])
         ]
 

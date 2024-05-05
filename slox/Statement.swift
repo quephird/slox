@@ -11,7 +11,7 @@ indirect enum Statement<Depth: Equatable>: Equatable {
     case `switch`(Token, Expression<Depth>, [SwitchCaseDeclaration<Depth>])
     case print(Token, Expression<Depth>)
     case variableDeclaration(Token, Expression<Depth>?)
-    case block([Statement])
+    case block(Token, [Statement])
     case `while`(Expression<Depth>, Statement)
     case `for`(Statement?, Expression<Depth>, Expression<Depth>?, Statement)
     case function(Token, Expression<Depth>)
@@ -33,6 +33,8 @@ indirect enum Statement<Depth: Equatable>: Equatable {
             return printToken
         case .variableDeclaration(let nameToken, _):
             return nameToken
+        case .block(let beginBlockToken, _):
+            return beginBlockToken
         case .function(let nameToken, _):
             return nameToken
         case .return(let returnToken, _):

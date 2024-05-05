@@ -70,7 +70,7 @@ class Interpreter {
             try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
             try handleVariableDeclaration(name: name, expr: expr)
-        case .block(let statements):
+        case .block(_, let statements):
             try handleBlock(statements: statements)
         case .while(let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)

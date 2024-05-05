@@ -50,8 +50,8 @@ struct Resolver {
     // Resolver for statements
     private mutating func resolve(statement: Statement<UnresolvedDepth>) throws -> Statement<Int> {
         switch statement {
-        case .block(let statements):
-            return try handleBlock(statements: statements)
+        case .block(let beginBlockToken, let statements):
+            return try handleBlock(beginBlockToken: beginBlockToken, statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
         case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
@@ -97,7 +97,8 @@ struct Resolver {
         }
     }
 
-    mutating private func handleBlock(statements: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
+    mutating private func handleBlock(beginBlockToken: Token,
+                                      statements: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
         beginScope()
         defer {
             endScope()
@@ -105,7 +106,7 @@ struct Resolver {
 
         let resolvedStatements = try resolve(statements: statements)
 
-        return .block(resolvedStatements)
+        return .block(beginBlockToken, resolvedStatements)
     }
 
     mutating private func handleVariableDeclaration(nameToken: Token,
@@ -318,7 +319,7 @@ struct Resolver {
             try resolve(expression: valueExpr)
         }
 
-        guard case .block(let statements) = switchCaseDecl.statement,
+        guard case .block(_, let statements) = switchCaseDecl.statement,
               statements.count > 0 else {
             throw ResolverError.switchMustHaveAtLeastOneStatementPerCaseOrDefault(switchCaseDecl.caseToken)
         }

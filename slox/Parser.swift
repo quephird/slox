@@ -398,6 +398,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.colon]) else {
             throw ParseError.missingColon(currentToken)
         }
+        let colonToken = previousToken
 
         var statements: [Statement<UnresolvedDepth>] = []
         while !currentTokenMatches(type: .case) && !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
@@ -407,7 +408,7 @@ struct Parser {
 
         return SwitchCaseDeclaration(caseToken: caseToken,
                                      valueExpressions: valueExprs,
-                                     statement: .block(statements))
+                                     statement: .block(colonToken, statements))
     }
 
     mutating private func parseSwitchDefaultDeclaration() throws -> SwitchCaseDeclaration<UnresolvedDepth>? {
@@ -419,6 +420,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.colon]) else {
             throw ParseError.missingColon(currentToken)
         }
+        let colonToken = previousToken
 
         var statements: [Statement<UnresolvedDepth>] = []
         while !currentTokenMatches(type: .rightBrace) && currentToken.type != .eof {
@@ -427,7 +429,7 @@ struct Parser {
         }
 
         let switchCaseDecl = SwitchCaseDeclaration(caseToken: defaultToken,
-                                                   statement: .block(statements))
+                                                   statement: .block(colonToken, statements))
         return switchCaseDecl
     }
 
@@ -530,6 +532,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.leftBrace]) else {
             return nil
         }
+        let leftBraceToken = previousToken
 
         var statements: [Statement<UnresolvedDepth>] = []
 
@@ -542,7 +545,7 @@ struct Parser {
             throw ParseError.missingClosingBrace(previousToken)
         }
 
-        return .block(statements)
+        return .block(leftBraceToken, statements)
     }
 
     mutating private func parseExpressionStatement() throws -> Statement<UnresolvedDepth> {
