@@ -87,8 +87,9 @@ struct Resolver {
             return try handleWhile(whileToken: whileToken,
                                    conditionExpr: conditionExpr,
                                    bodyStmt: bodyStmt)
-        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
-            return try handleFor(initializerStmt: initializerStmt,
+        case .for(let forToken, let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+            return try handleFor(forToken: forToken,
+                                 initializerStmt: initializerStmt,
                                  testExpr: testExpr,
                                  incrementExpr: incrementExpr,
                                  bodyStmt: bodyStmt)
@@ -389,7 +390,8 @@ struct Resolver {
         return .while(whileToken, resolvedConditionExpr, resolvedBodyStmt)
     }
 
-    mutating private func handleFor(initializerStmt: Statement<UnresolvedDepth>?,
+    mutating private func handleFor(forToken: Token,
+                                    initializerStmt: Statement<UnresolvedDepth>?,
                                     testExpr: Expression<UnresolvedDepth>,
                                     incrementExpr: Expression<UnresolvedDepth>?,
                                     bodyStmt: Statement<UnresolvedDepth>) throws -> Statement<Int> {
@@ -418,7 +420,8 @@ struct Resolver {
 
         let resolvedBodyStmt = try resolve(statement: bodyStmt)
 
-        return .for(resolvedInitializerStmt,
+        return .for(forToken,
+                    resolvedInitializerStmt,
                     resolvedTestExpr,
                     resolvedIncrementExpr,
                     resolvedBodyStmt)

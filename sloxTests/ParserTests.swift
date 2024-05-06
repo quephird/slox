@@ -485,6 +485,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .for(
+                Token(type: .for, lexeme: "for", line: 1),
                 .variableDeclaration(
                     Token(type: .identifier, lexeme: "i", line: 1),
                     .literal(
@@ -539,6 +540,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .for(
+                Token(type: .for, lexeme: "for", line: 1),
                 nil,
                 .literal(
                     Token(type: .true, lexeme: "true", line: 0),

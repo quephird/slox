@@ -74,7 +74,7 @@ class Interpreter {
             try handleBlock(statements: statements)
         case .while(_, let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
-        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+        case .for(_, let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
             try handleForStatement(initializerStmt: initializerStmt,
                                    testExpr: testExpr,
                                    incrementExpr: incrementExpr,

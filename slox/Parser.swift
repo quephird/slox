@@ -283,6 +283,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.for]) else {
             return nil
         }
+        let forToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForForStatement(currentToken)
@@ -315,7 +316,7 @@ struct Parser {
 
         let bodyStmt = try parseStatement()
 
-        return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
+        return .for(forToken, initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
 
     mutating private func parseIfStatement() throws -> Statement<UnresolvedDepth>? {
