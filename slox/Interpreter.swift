@@ -516,7 +516,11 @@ class Interpreter {
         guard let parameterList = actualCallable.parameterList else {
             fatalError()
         }
-        try parameterList.checkArity(argCount: argValues.count)
+        if !parameterList.checkArity(argCount: argValues.count) {
+            throw RuntimeError.wrongArity(calleeExpr.locToken,
+                                          parameterList.normalParameters.count,
+                                          argValues.count)
+        }
 
         do {
             return try actualCallable.call(interpreter: self, args: argValues)

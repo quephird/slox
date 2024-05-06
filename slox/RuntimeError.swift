@@ -15,9 +15,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case unsupportedBinaryOperator(Token)
     case undefinedVariable(Token)
     case notACallableObject(Token)
-    case notAnInstance
     case notAList(Token)
-    case notADictionary
     case notAListOrDictionary(Token)
     case notANumber
     case notAString
@@ -25,7 +23,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notADouble
     case onlyInstancesHaveProperties(Token)
     case undefinedProperty(Token)
-    case wrongArity(Int, Int)
+    case wrongArity(Token, Int, Int)
     case superclassMustBeAClass(Token)
     case indexMustBeAnInteger(Token?)
 
@@ -47,12 +45,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(nameToken.line)] Error: undefined variable '\(nameToken.lexeme)'"
         case .notACallableObject(let locToken):
             return "[Line \(locToken.line)] Error: expected a callable object"
-        case .notAnInstance:
-            return "Error: expected an instance"
         case .notAList(let locToken):
             return "[Line \(locToken.line)] Error: expected a list"
-        case .notADictionary:
-            return "Error: expected a dictionary"
         case .notAListOrDictionary(let locToken):
             return "[Line \(locToken.line)] Error: expected a list or dictionary"
         case .notANumber:
@@ -67,8 +61,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(locToken.line)] Error: can only get/set properties of instances"
         case .undefinedProperty(let nameToken):
             return "[Line \(nameToken.line)] Error: undefined property '\(nameToken.lexeme)'"
-        case .wrongArity(let expected, let actual):
-            return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
+        case .wrongArity(let locToken, let expected, let actual):
+            return "[Line \(locToken.line)] Error: incorrect number of arguments; expected \(expected), got \(actual)"
         case .superclassMustBeAClass(let locToken):
             return "[Line \(locToken.line)] Error: can only subclass from another class"
         case .indexMustBeAnInteger(let locToken?):

@@ -328,7 +328,8 @@ sum(*foo, 4, 5)
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.wrongArity(3, 5)
+        let locToken = Token(type: .identifier, lexeme: "sum", line: 5)
+        let expectedError = RuntimeError.wrongArity(locToken, 3, 5)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
