@@ -26,7 +26,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case onlyInstancesHaveProperties(Token)
     case undefinedProperty(Token)
     case wrongArity(Int, Int)
-    case superclassMustBeAClass
+    case superclassMustBeAClass(Token)
     case indexMustBeAnInteger
     case thisNotResolved
 
@@ -68,8 +68,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(nameToken.line)] Error: undefined property '\(nameToken.lexeme)'"
         case .wrongArity(let expected, let actual):
             return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
-        case .superclassMustBeAClass:
-            return "Fatal error: superclass must be a class"
+        case .superclassMustBeAClass(let locToken):
+            return "[Line \(locToken.line)] Error: can only subclass from another class"
         case .indexMustBeAnInteger:
             return "Error: index must be a number"
         case .thisNotResolved:

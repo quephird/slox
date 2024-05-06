@@ -148,8 +148,9 @@ class Interpreter {
         environment.define(name: nameToken.lexeme, value: .nil)
 
         let superclass = try superclassExpr.map { superclassExpr in
-            guard case .instance(let superclass as LoxClass) = try evaluate(expr: superclassExpr) else {
-                throw RuntimeError.superclassMustBeAClass
+            guard case .instance(let superclass as LoxClass) = try evaluate(expr: superclassExpr),
+                  !(superclass is LoxEnum) else {
+                throw RuntimeError.superclassMustBeAClass(superclassExpr.locToken)
             }
 
             environment = Environment(enclosingEnvironment: environment);
@@ -569,7 +570,7 @@ class Interpreter {
 
     private func handleSuperExpression(superToken: Token, methodToken: Token, depth: Int) throws -> LoxValue {
         guard case .instance(let superclass as LoxClass) = try environment.getValueAtDepth(nameToken: superToken, depth: depth) else {
-            throw RuntimeError.superclassMustBeAClass
+            fatalError("unable to find superclass at depth, \(depth)")
         }
 
         let dummyThisToken = Token(type: .identifier, lexeme: "this", line: 0)
