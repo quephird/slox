@@ -584,8 +584,8 @@ class Interpreter {
         }
 
         let dummyThisToken = Token(type: .identifier, lexeme: "this", line: 0)
-        guard case .instance(let thisInstance) = try environment.getValueAtDepth(nameToken: dummyThisToken, depth: depth - 1) else {
-            throw RuntimeError.thisNotResolved
+        guard case .instance(let thisInstance)? = try? environment.getValueAtDepth(nameToken: dummyThisToken, depth: depth - 1) else {
+            fatalError("unable to resolve `this` at depth, \(depth - 1)")
         }
 
         if let method = superclass.findMethod(name: methodToken.lexeme) {

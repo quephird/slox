@@ -25,7 +25,7 @@ class Environment: Equatable {
             return
         }
 
-        throw deriveRuntimeError(nameToken: nameToken)
+        throw RuntimeError.undefinedVariable(nameToken)
     }
 
     func getValueAtDepth(nameToken: Token, depth: Int) throws -> LoxValue {
@@ -35,7 +35,7 @@ class Environment: Equatable {
             return value
         }
 
-        throw deriveRuntimeError(nameToken: nameToken)
+        throw RuntimeError.undefinedVariable(nameToken)
     }
 
     func getValue(nameToken: Token) throws -> LoxValue {
@@ -47,16 +47,7 @@ class Environment: Equatable {
             return try enclosingEnvironment.getValue(nameToken: nameToken)
         }
 
-        throw deriveRuntimeError(nameToken: nameToken)
-    }
-
-    private func deriveRuntimeError(nameToken: Token) -> RuntimeError {
-        switch nameToken.lexeme {
-        case "this":
-            return RuntimeError.thisNotResolved
-        default:
-            return RuntimeError.undefinedVariable(nameToken)
-        }
+        throw RuntimeError.undefinedVariable(nameToken)
     }
 
     private func ancestor(depth: Int) throws -> Environment {

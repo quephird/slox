@@ -28,7 +28,6 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case wrongArity(Int, Int)
     case superclassMustBeAClass(Token)
     case indexMustBeAnInteger(Token?)
-    case thisNotResolved
 
     indirect case errorInCall(RuntimeError, Token)
 
@@ -76,8 +75,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(locToken.line)] Error: index must be an integer"
         case .indexMustBeAnInteger(nil):
             return "Error: index must be an integer"
-        case .thisNotResolved:
-            return "Fatal error: `this` not able to be resolved"
+
         case .errorInCall(let underlyingError, let nameToken):
             return underlyingError.description + "\n    [Line \(nameToken.line)] in call to \(nameToken.lexeme)()"
         }
