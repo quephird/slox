@@ -120,7 +120,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             }
 
             guard case .int(let index) = args[1] else {
-                throw RuntimeError.indexMustBeAnInteger
+                throw RuntimeError.indexMustBeAnInteger(nil)
             }
 
             return loxList.elements.remove(at: Int(index))

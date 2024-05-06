@@ -573,7 +573,8 @@ foo[2.0]
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.indexMustBeAnInteger
+        let locToken = Token(type: .double, lexeme: "2.0", line: 2)
+        let expectedError = RuntimeError.indexMustBeAnInteger(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }

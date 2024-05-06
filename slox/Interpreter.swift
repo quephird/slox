@@ -518,7 +518,17 @@ class Interpreter {
         }
         try parameterList.checkArity(argCount: argValues.count)
 
-        return try actualCallable.call(interpreter: self, args: argValues)
+        do {
+            return try actualCallable.call(interpreter: self, args: argValues)
+        } catch let error as RuntimeError {
+            let nameToken = if case .get(_, _, let name) = calleeExpr {
+                name
+            } else {
+                calleeExpr.locToken // Correct for variables; best guess otherwise
+            }
+
+            throw RuntimeError.errorInCall(error, nameToken)
+        }
     }
 
     private func handleGetExpression(locToken: Token,
@@ -604,7 +614,7 @@ class Interpreter {
         switch collection {
         case .instance(let list as LoxList):
             guard case .int(let index) = try evaluate(expr: indexExpr) else {
-                throw RuntimeError.indexMustBeAnInteger
+                throw RuntimeError.indexMustBeAnInteger(indexExpr.locToken)
             }
 
             return list[Int(index)]
@@ -626,7 +636,7 @@ class Interpreter {
         switch collection {
         case .instance(let list as LoxList):
             guard case .int(let index) = try evaluate(expr: indexExpr) else {
-                throw RuntimeError.indexMustBeAnInteger
+                throw RuntimeError.indexMustBeAnInteger(indexExpr.locToken)
             }
 
             list[Int(index)] = value

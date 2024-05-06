@@ -27,8 +27,10 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case undefinedProperty(Token)
     case wrongArity(Int, Int)
     case superclassMustBeAClass(Token)
-    case indexMustBeAnInteger
+    case indexMustBeAnInteger(Token?)
     case thisNotResolved
+
+    indirect case errorInCall(RuntimeError, Token)
 
     var description: String {
         switch self {
@@ -70,10 +72,14 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: incorrect number of arguments; expected \(expected), got \(actual)"
         case .superclassMustBeAClass(let locToken):
             return "[Line \(locToken.line)] Error: can only subclass from another class"
-        case .indexMustBeAnInteger:
-            return "Error: index must be a number"
+        case .indexMustBeAnInteger(let locToken?):
+            return "[Line \(locToken.line)] Error: index must be an integer"
+        case .indexMustBeAnInteger(nil):
+            return "Error: index must be an integer"
         case .thisNotResolved:
             return "Fatal error: `this` not able to be resolved"
+        case .errorInCall(let underlyingError, let nameToken):
+            return underlyingError.description + "\n    [Line \(nameToken.line)] in call to \(nameToken.lexeme)()"
         }
     }
 }
