@@ -72,7 +72,7 @@ class Interpreter {
             try handleVariableDeclaration(name: name, expr: expr)
         case .block(_, let statements):
             try handleBlock(statements: statements)
-        case .while(let expr, let stmt):
+        case .while(_, let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
         case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
             try handleForStatement(initializerStmt: initializerStmt,

@@ -514,6 +514,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.while]) else {
             return nil
         }
+        let whileToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForWhileStatement(currentToken)
@@ -525,7 +526,7 @@ struct Parser {
         }
 
         let stmt = try parseStatement()
-        return .while(expr, stmt)
+        return .while(whileToken, expr, stmt)
     }
 
     mutating private func parseBlock() throws -> Statement<UnresolvedDepth>? {

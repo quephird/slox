@@ -595,6 +595,7 @@ final class ResolverTests: XCTestCase {
         //}
         let statements: [Statement<UnresolvedDepth>] = [
             .while(
+                Token(type: .while, lexeme: "while", line: 1),
                 .literal(
                     Token(type: .true, lexeme: "true", line: 1),
                     .boolean(true)),

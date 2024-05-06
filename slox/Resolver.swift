@@ -83,8 +83,10 @@ struct Resolver {
             return try handlePrintStatement(printToken: printToken, expr: expr)
         case .return(let returnToken, let expr):
             return try handleReturnStatement(returnToken: returnToken, expr: expr)
-        case .while(let conditionExpr, let bodyStmt):
-            return try handleWhile(conditionExpr: conditionExpr, bodyStmt: bodyStmt)
+        case .while(let whileToken, let conditionExpr, let bodyStmt):
+            return try handleWhile(whileToken: whileToken,
+                                   conditionExpr: conditionExpr,
+                                   bodyStmt: bodyStmt)
         case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
             return try handleFor(initializerStmt: initializerStmt,
                                  testExpr: testExpr,
@@ -372,7 +374,8 @@ struct Resolver {
         return .continue(continueToken)
     }
 
-    mutating private func handleWhile(conditionExpr: Expression<UnresolvedDepth>,
+    mutating private func handleWhile(whileToken: Token,
+                                      conditionExpr: Expression<UnresolvedDepth>,
                                       bodyStmt: Statement<UnresolvedDepth>) throws -> Statement<Int> {
         let previousLoopType = currentJumpableType
         currentJumpableType = .loop
@@ -383,7 +386,7 @@ struct Resolver {
         let resolvedConditionExpr = try resolve(expression: conditionExpr)
         let resolvedBodyStmt = try resolve(statement: bodyStmt)
 
-        return .while(resolvedConditionExpr, resolvedBodyStmt)
+        return .while(whileToken, resolvedConditionExpr, resolvedBodyStmt)
     }
 
     mutating private func handleFor(initializerStmt: Statement<UnresolvedDepth>?,

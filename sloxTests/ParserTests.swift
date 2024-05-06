@@ -921,6 +921,7 @@ final class ParserTests: XCTestCase {
         let actual = try parser.parse()
         let expected: [Statement<UnresolvedDepth>] = [
             .while(
+                Token(type: .while, lexeme: "while", line: 1),
                 .binary(
                     .variable(
                         Token(type: .identifier, lexeme: "x", line: 1),
