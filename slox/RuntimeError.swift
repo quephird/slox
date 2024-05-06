@@ -16,7 +16,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case undefinedVariable(Token)
     case notACallableObject(Token)
     case notAnInstance
-    case notAList
+    case notAList(Token)
     case notADictionary
     case notAListOrDictionary(Token)
     case notANumber
@@ -50,8 +50,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(locToken.line)] Error: expected a callable object"
         case .notAnInstance:
             return "Error: expected an instance"
-        case .notAList:
-            return "Error: expected a list"
+        case .notAList(let locToken):
+            return "[Line \(locToken.line)] Error: expected a list"
         case .notADictionary:
             return "Error: expected a dictionary"
         case .notAListOrDictionary(let locToken):

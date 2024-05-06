@@ -99,7 +99,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .nil
         case .containsNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                fatalError("callee is not a list")
             }
 
             let element = args[1]
@@ -107,7 +107,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .boolean(loxList.elements.contains(element))
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                fatalError("callee is not a list")
             }
 
             let element = args[1]
@@ -116,7 +116,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .nil
         case .deleteAtNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                fatalError("callee is not a list")
             }
 
             guard case .int(let index) = args[1] else {

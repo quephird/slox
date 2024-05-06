@@ -695,7 +695,7 @@ class Interpreter {
         let values = try exprs.flatMap { expr in
             if case .splat = expr {
                 guard case .instance(let list as LoxList) = try evaluate(expr: expr) else {
-                    throw RuntimeError.notAList
+                    throw RuntimeError.notAList(expr.locToken)
                 }
                 return list.elements
             } else {
