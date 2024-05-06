@@ -623,7 +623,7 @@ class Interpreter {
 
             return dictionary[key]
         default:
-            throw RuntimeError.notAListOrDictionary
+            throw RuntimeError.notAListOrDictionary(collectionExpr.locToken)
         }
     }
 
@@ -645,7 +645,7 @@ class Interpreter {
 
             dictionary[key] = value
         default:
-            throw RuntimeError.notAListOrDictionary
+            throw RuntimeError.notAListOrDictionary(collectionExpr.locToken)
         }
 
         return value

@@ -18,7 +18,7 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
     case notAnInstance
     case notAList
     case notADictionary
-    case notAListOrDictionary
+    case notAListOrDictionary(Token)
     case notANumber
     case notAString
     case notAnInt
@@ -54,8 +54,8 @@ enum RuntimeError: CustomStringConvertible, Equatable, LocalizedError {
             return "Error: expected a list"
         case .notADictionary:
             return "Error: expected a dictionary"
-        case .notAListOrDictionary:
-            return "Error: expected a list or dictionary"
+        case .notAListOrDictionary(let locToken):
+            return "[Line \(locToken.line)] Error: expected a list or dictionary"
         case .notANumber:
             return "Error: expected a number"
         case .notAString:
