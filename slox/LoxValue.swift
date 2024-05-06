@@ -122,7 +122,7 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
         case .double(let number):
             return Int(number)
         default:
-            throw RuntimeError.notANumber
+            fatalError("expected a number")
         }
     }
 
@@ -133,7 +133,7 @@ enum LoxValue: CustomStringConvertible, CustomDebugStringConvertible, Equatable,
         case .double(let number):
             return number
         default:
-            throw RuntimeError.notANumber
+            fatalError("expected a number")
         }
     }
 
