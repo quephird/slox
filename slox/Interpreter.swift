@@ -508,7 +508,7 @@ class Interpreter {
         case .instance(let klass as LoxClass):
             klass
         default:
-            throw RuntimeError.notACallableObject(rightParen)
+            throw RuntimeError.notACallableObject(calleeExpr.locToken)
         }
 
         let argValues = try evaluateAndFlatten(exprs: args)
@@ -539,7 +539,7 @@ class Interpreter {
                                      instanceExpr: Expression<Int>,
                                      propertyNameToken: Token) throws -> LoxValue {
         guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
-            throw RuntimeError.onlyInstancesHaveProperties(locToken)
+            throw RuntimeError.onlyInstancesHaveProperties(instanceExpr.locToken)
         }
 
         let property = try instance.get(propertyName: propertyNameToken)
@@ -621,7 +621,7 @@ class Interpreter {
                 throw RuntimeError.indexMustBeAnInteger(indexExpr.locToken)
             }
 
-            return list[Int(index)]
+            return list[index]
         case .instance(let dictionary as LoxDictionary):
             let key = try evaluate(expr: indexExpr)
 
