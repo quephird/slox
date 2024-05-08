@@ -9,7 +9,6 @@ import Foundation
 
 enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
     case variableAccessedBeforeInitialization(Token)
-    case notAFunction
     case variableAlreadyDefined(Token)
     case cannotReturnOutsideFunction(Token)
     case cannotReferenceThisOutsideClass(Token)
@@ -30,8 +29,6 @@ enum ResolverError: CustomStringConvertible, Equatable, LocalizedError {
         switch self {
         case .variableAccessedBeforeInitialization(let token):
             return "[Line \(token.line)] Error: cannot read local variable in its own initializer"
-        case .notAFunction:
-            return "Expected lambda as body of function declaration"
         case .variableAlreadyDefined(let token):
             return "[Line \(token.line)] Error: variable \(token.lexeme) already defined in this scope"
         case .cannotReturnOutsideFunction(let token):

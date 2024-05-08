@@ -173,7 +173,7 @@ struct Resolver {
 
         let resolvedMethods = try methods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
-                throw ResolverError.notAFunction
+                fatalError("expected lambda as body of function declaration")
             }
 
             let functionType: FunctionType = if nameToken.lexeme == "init" {
@@ -188,7 +188,7 @@ struct Resolver {
 
         let resolvedStaticMethods = try staticMethods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
-                throw ResolverError.notAFunction
+                fatalError("expected lambda as body of function declaration")
             }
 
             if nameToken.lexeme == "init" {
@@ -232,7 +232,7 @@ struct Resolver {
 
         let resolvedMethods = try methods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
-                throw ResolverError.notAFunction
+                fatalError("expected lambda as body of function declaration")
             }
 
             return try handleFunctionDeclaration(nameToken: nameToken,
@@ -242,7 +242,7 @@ struct Resolver {
 
         let resolvedStaticMethods = try staticMethods.map { method in
             guard case .function(let nameToken, let lambdaExpr) = method else {
-                throw ResolverError.notAFunction
+                fatalError("expected lambda as body of function declaration")
             }
 
             if nameToken.lexeme == "init" {
@@ -262,7 +262,7 @@ struct Resolver {
                                                     lambdaExpr: Expression<UnresolvedDepth>,
                                                     functionType: FunctionType) throws -> Statement<Int> {
         guard case .lambda(let locToken, let parameterList, let body) = lambdaExpr else {
-            throw ResolverError.notAFunction
+            fatalError("expected lambda as body of function declaration")
         }
 
         try declareVariable(variableToken: nameToken)
