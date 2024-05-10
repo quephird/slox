@@ -13,7 +13,7 @@ class LoxEnum: LoxClass {
         return ParameterList(normalParameters: parameters)
     }
 
-    override func set(propertyName: String, propertyValue: LoxValue) throws {
-        throw RuntimeError.onlyInstancesHaveProperties
+    override func set(propertyName: Token, propertyValue: LoxValue) throws {
+        throw RuntimeError.onlyInstancesHaveProperties(propertyName)
     }
 }

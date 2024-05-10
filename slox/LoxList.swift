@@ -21,8 +21,8 @@ class LoxList: LoxInstance {
         super.init(klass: klass)
     }
 
-    override func get(propertyName: String) throws -> LoxValue {
-        switch propertyName {
+    override func get(propertyName: Token) throws -> LoxValue {
+        switch propertyName.lexeme {
         case "count":
             return .int(elements.count)
         default:
@@ -30,8 +30,8 @@ class LoxList: LoxInstance {
         }
     }
 
-    override func set(propertyName: String, propertyValue: LoxValue) throws {
-        throw RuntimeError.onlyInstancesHaveProperties
+    override func set(propertyName: Token, propertyValue: LoxValue) throws {
+        throw RuntimeError.onlyInstancesHaveProperties(propertyName)
     }
 
     // TODO: Need to think about how to handle invalid indices!!!

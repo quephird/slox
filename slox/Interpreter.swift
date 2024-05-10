@@ -55,27 +55,26 @@ class Interpreter {
         return nil
     }
 
-    private func execute(statement: Statement<Int>) throws {
+    func execute(statement: Statement<Int>) throws {
         switch statement {
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
-        case .if(let testExpr, let consequentStmt, let alternativeStmt):
+        case .if(_, let testExpr, let consequentStmt, let alternativeStmt):
             try handleIfStatement(testExpr: testExpr,
                                   consequentStmt: consequentStmt,
                                   alternativeStmt: alternativeStmt)
-        case .switch(let testExpr, let switchCaseDecls):
+        case .switch(_, let testExpr, let switchCaseDecls):
             try handleSwitchStatement(testExpr: testExpr,
                                       switchCaseDecls: switchCaseDecls)
-        case .print(let expr):
+        case .print(_, let expr):
             try handlePrintStatement(expr: expr)
         case .variableDeclaration(let name, let expr):
             try handleVariableDeclaration(name: name, expr: expr)
-        case .block(let statements):
-            try handleBlock(statements: statements,
-                            environment: Environment(enclosingEnvironment: environment))
-        case .while(let expr, let stmt):
+        case .block(_, let statements):
+            try handleBlock(statements: statements)
+        case .while(_, let expr, let stmt):
             try handleWhileStatement(expr: expr, stmt: stmt)
-        case .for(let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
+        case .for(_, let initializerStmt, let testExpr, let incrementExpr, let bodyStmt):
             try handleForStatement(initializerStmt: initializerStmt,
                                    testExpr: testExpr,
                                    incrementExpr: incrementExpr,
@@ -149,8 +148,9 @@ class Interpreter {
         environment.define(name: nameToken.lexeme, value: .nil)
 
         let superclass = try superclassExpr.map { superclassExpr in
-            guard case .instance(let superclass as LoxClass) = try evaluate(expr: superclassExpr) else {
-                throw RuntimeError.superclassMustBeAClass
+            guard case .instance(let superclass as LoxClass) = try evaluate(expr: superclassExpr),
+                  !(superclass is LoxEnum) else {
+                throw RuntimeError.superclassMustBeAClass(superclassExpr.locToken)
             }
 
             environment = Environment(enclosingEnvironment: environment);
@@ -177,17 +177,14 @@ class Interpreter {
             environment = environment.enclosingEnvironment!
         }
 
-        try environment.assignAtDepth(name: nameToken.lexeme, value: .instance(newClass), depth: 0)
+        try environment.assignAtDepth(nameToken: nameToken, value: .instance(newClass), depth: 0)
     }
 
     private func handleEnumDeclaration(nameToken: Token,
                                        caseTokens: [Token],
                                        methods: [Statement<Int>],
                                        staticMethods: [Statement<Int>]) throws {
-        guard case .instance(let enumSuperclass as LoxClass) = try environment.getValue(name: "Enum") else {
-            fatalError()
-        }
-
+        let enumSuperclass = lookUpStandardLibraryClass(named: "Enum")
         let enumClass = LoxEnum(name: nameToken.lexeme,
                                 superclass: enumSuperclass,
                                 methods: [:])
@@ -209,8 +206,8 @@ class Interpreter {
     }
 
     private func handleFunctionDeclaration(name: Token, lambda: Expression<Int>) throws {
-        guard case .lambda(let parameterList, let body) = lambda else {
-            throw RuntimeError.notALambda
+        guard case .lambda(_, let parameterList, let body) = lambda else {
+            fatalError("Fatal error: expected lambda as body of function declaration")
         }
 
         let environmentWhenDeclared = self.environment
@@ -248,9 +245,9 @@ class Interpreter {
         environment.define(name: name.lexeme, value: value)
     }
 
-    func handleBlock(statements: [Statement<Int>], environment: Environment) throws {
+    func handleBlock(statements: [Statement<Int>]) throws {
         let environmentBeforeBlock = self.environment
-        self.environment = environment
+        self.environment = Environment(enclosingEnvironment: environmentBeforeBlock)
 
         // This ensures that the previous environment is restored
         // if the try below throws, which is what will happen if
@@ -311,9 +308,9 @@ class Interpreter {
 
     private func evaluate(expr: Expression<Int>) throws -> LoxValue {
         switch expr {
-        case .literal(let literal):
+        case .literal(_, let literal):
             return literal
-        case .grouping(let expr):
+        case .grouping(_, let expr):
             return try evaluate(expr: expr)
         case .unary(let oper, let expr):
             return try handleUnaryExpression(oper: oper, expr: expr)
@@ -327,31 +324,34 @@ class Interpreter {
             return try handleLogicalExpression(leftExpr: leftExpr, oper: oper, rightExpr: rightExpr)
         case .call(let calleeExpr, let rightParen, let args):
             return try handleCallExpression(calleeExpr: calleeExpr, rightParen: rightParen, args: args)
-        case .get(let instanceExpr, let propertyNameToken):
-            return try handleGetExpression(instanceExpr: instanceExpr, propertyNameToken: propertyNameToken)
-        case .set(let instanceExpr, let propertyNameToken, let valueExpr):
-            return try handleSetExpression(instanceExpr: instanceExpr,
+        case .get(let locToken, let instanceExpr, let propertyNameToken):
+            return try handleGetExpression(locToken: locToken,
+                                           instanceExpr: instanceExpr,
+                                           propertyNameToken: propertyNameToken)
+        case .set(let locToken, let instanceExpr, let propertyNameToken, let valueExpr):
+            return try handleSetExpression(locToken: locToken,
+                                           instanceExpr: instanceExpr,
                                            propertyNameToken: propertyNameToken,
                                            valueExpr: valueExpr)
         case .this(let thisToken, let depth):
             return try handleThis(thisToken: thisToken, depth: depth)
-        case .lambda(let parameterList, let statements):
-            return try handleLambdaExpression(parameterList: parameterList, statements: statements)
+        case .lambda(_, let parameterList, let body):
+            return try handleLambdaExpression(parameterList: parameterList, body: body)
         case .super(let superToken, let methodToken, let depth):
             return try handleSuperExpression(superToken: superToken, methodToken: methodToken, depth: depth)
         case .string(let stringToken):
             return try handleStringExpression(stringToken: stringToken)
-        case .list(let elements):
+        case .list(_, let elements):
             return try handleListExpression(elements: elements)
-        case .subscriptGet(let listExpr, let indexExpr):
+        case .subscriptGet(_, let listExpr, let indexExpr):
             return try handleSubscriptGetExpression(collectionExpr: listExpr, indexExpr: indexExpr)
-        case .subscriptSet(let listExpr, let indexExpr, let valueExpr):
+        case .subscriptSet(_, let listExpr, let indexExpr, let valueExpr):
             return try handleSubscriptSetExpression(collectionExpr: listExpr,
                                                     indexExpr: indexExpr,
                                                     valueExpr: valueExpr)
-        case .splat(let listExpr):
+        case .splat(_, let listExpr):
             return try handleSplatExpression(listExpr: listExpr)
-        case .dictionary(let kvPairs):
+        case .dictionary(_, let kvPairs):
             return try handleDictionary(kvExprPairs: kvPairs)
         }
     }
@@ -367,12 +367,12 @@ class Interpreter {
             case .int(let number):
                 return .int(-number)
             default:
-                throw RuntimeError.unaryOperandMustBeNumber
+                throw RuntimeError.unaryOperandMustBeNumber(oper)
             }
         case .bang:
             return .boolean(!value.isTruthy)
         default:
-            throw RuntimeError.unsupportedUnaryOperator
+            throw RuntimeError.unsupportedUnaryOperator(oper)
         }
     }
 
@@ -455,23 +455,23 @@ class Interpreter {
         case .equalEqual:
             return .boolean(leftValue.isEqual(to: rightValue))
         case .plus:
-            throw RuntimeError.binaryOperandsMustBeNumbersOrStringsOrLists
+            throw RuntimeError.binaryOperandsMustBeNumbersOrStringsOrLists(oper)
         case .minus, .star, .slash, .greater, .greaterEqual, .less, .lessEqual:
-            throw RuntimeError.binaryOperandsMustBeNumbers
+            throw RuntimeError.binaryOperandsMustBeNumbers(oper)
         default:
-            throw RuntimeError.unsupportedBinaryOperator
+            throw RuntimeError.unsupportedBinaryOperator(oper)
         }
     }
 
     private func handleVariableExpression(varToken: Token, depth: Int) throws -> LoxValue {
-        return try environment.getValueAtDepth(name: varToken.lexeme, depth: depth)
+        return try environment.getValueAtDepth(nameToken: varToken, depth: depth)
     }
 
     private func handleAssignmentExpression(name: Token,
                                             expr: Expression<Int>,
                                             depth: Int) throws -> LoxValue {
         let value = try evaluate(expr: expr)
-        try environment.assignAtDepth(name: name.lexeme, value: value, depth: depth)
+        try environment.assignAtDepth(nameToken: name, value: value, depth: depth)
         return value
     }
 
@@ -508,7 +508,7 @@ class Interpreter {
         case .instance(let klass as LoxClass):
             klass
         default:
-            throw RuntimeError.notACallableObject
+            throw RuntimeError.notACallableObject(calleeExpr.locToken)
         }
 
         let argValues = try evaluateAndFlatten(exprs: args)
@@ -516,18 +516,33 @@ class Interpreter {
         guard let parameterList = actualCallable.parameterList else {
             fatalError()
         }
-        try parameterList.checkArity(argCount: argValues.count)
-
-        return try actualCallable.call(interpreter: self, args: argValues)
-    }
-
-    private func handleGetExpression(instanceExpr: Expression<Int>,
-                                     propertyNameToken: Token) throws -> LoxValue {
-        guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
-            throw RuntimeError.onlyInstancesHaveProperties
+        if !parameterList.checkArity(argCount: argValues.count) {
+            throw RuntimeError.wrongArity(calleeExpr.locToken,
+                                          parameterList.normalParameters.count,
+                                          argValues.count)
         }
 
-        let property = try instance.get(propertyName: propertyNameToken.lexeme)
+        do {
+            return try actualCallable.call(interpreter: self, args: argValues)
+        } catch let error as RuntimeError {
+            let nameToken = if case .get(_, _, let name) = calleeExpr {
+                name
+            } else {
+                calleeExpr.locToken // Correct for variables; best guess otherwise
+            }
+
+            throw RuntimeError.errorInCall(error, nameToken)
+        }
+    }
+
+    private func handleGetExpression(locToken: Token,
+                                     instanceExpr: Expression<Int>,
+                                     propertyNameToken: Token) throws -> LoxValue {
+        guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
+            throw RuntimeError.onlyInstancesHaveProperties(instanceExpr.locToken)
+        }
+
+        let property = try instance.get(propertyName: propertyNameToken)
 
         if case .userDefinedFunction(let userDefinedFunction) = property,
            userDefinedFunction.isComputedProperty {
@@ -537,49 +552,51 @@ class Interpreter {
         return property
     }
 
-    private func handleSetExpression(instanceExpr: Expression<Int>,
+    private func handleSetExpression(locToken: Token,
+                                     instanceExpr: Expression<Int>,
                                      propertyNameToken: Token,
                                      valueExpr: Expression<Int>) throws -> LoxValue {
         guard case .instance(let instance) = try evaluate(expr: instanceExpr) else {
-            throw RuntimeError.onlyInstancesHaveProperties
+            throw RuntimeError.onlyInstancesHaveProperties(locToken)
         }
 
         let propertyValue = try evaluate(expr: valueExpr)
 
-        try instance.set(propertyName: propertyNameToken.lexeme, propertyValue: propertyValue)
+        try instance.set(propertyName: propertyNameToken, propertyValue: propertyValue)
         return propertyValue
     }
 
     private func handleThis(thisToken: Token, depth: Int) throws -> LoxValue {
-        return try environment.getValueAtDepth(name: thisToken.lexeme, depth: depth)
+        return try environment.getValueAtDepth(nameToken: thisToken, depth: depth)
     }
 
-    private func handleLambdaExpression(parameterList: ParameterList?, statements: [Statement<Int>]) throws -> LoxValue {
+    private func handleLambdaExpression(parameterList: ParameterList?, body: Statement<Int>) throws -> LoxValue {
         let environmentWhenDeclared = self.environment
 
         let function = UserDefinedFunction(name: "lambda",
                                            parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
-                                           body: statements,
+                                           body: body,
                                            isInitializer: false)
 
         return .userDefinedFunction(function)
     }
 
     private func handleSuperExpression(superToken: Token, methodToken: Token, depth: Int) throws -> LoxValue {
-        guard case .instance(let superclass as LoxClass) = try environment.getValueAtDepth(name: "super", depth: depth) else {
-            throw RuntimeError.superclassMustBeAClass
+        guard case .instance(let superclass as LoxClass) = try environment.getValueAtDepth(nameToken: superToken, depth: depth) else {
+            fatalError("unable to find superclass at depth, \(depth)")
         }
 
-        guard case .instance(let thisInstance) = try environment.getValueAtDepth(name: "this", depth: depth - 1) else {
-            throw RuntimeError.notAnInstance
+        let dummyThisToken = Token(type: .identifier, lexeme: "this", line: 0)
+        guard case .instance(let thisInstance)? = try? environment.getValueAtDepth(nameToken: dummyThisToken, depth: depth - 1) else {
+            fatalError("unable to resolve `this` at depth, \(depth - 1)")
         }
 
         if let method = superclass.findMethod(name: methodToken.lexeme) {
             return .userDefinedFunction(method.bind(instance: thisInstance))
         }
 
-        throw RuntimeError.undefinedProperty(methodToken.lexeme)
+        throw RuntimeError.undefinedProperty(methodToken)
     }
 
     private func handleStringExpression(stringToken: Token) throws -> LoxValue {
@@ -601,16 +618,16 @@ class Interpreter {
         switch collection {
         case .instance(let list as LoxList):
             guard case .int(let index) = try evaluate(expr: indexExpr) else {
-                throw RuntimeError.indexMustBeAnInteger
+                throw RuntimeError.indexMustBeAnInteger(indexExpr.locToken)
             }
 
-            return list[Int(index)]
+            return list[index]
         case .instance(let dictionary as LoxDictionary):
             let key = try evaluate(expr: indexExpr)
 
             return dictionary[key]
         default:
-            throw RuntimeError.notAListOrDictionary
+            throw RuntimeError.notAListOrDictionary(collectionExpr.locToken)
         }
     }
 
@@ -623,7 +640,7 @@ class Interpreter {
         switch collection {
         case .instance(let list as LoxList):
             guard case .int(let index) = try evaluate(expr: indexExpr) else {
-                throw RuntimeError.indexMustBeAnInteger
+                throw RuntimeError.indexMustBeAnInteger(indexExpr.locToken)
             }
 
             list[Int(index)] = value
@@ -632,7 +649,7 @@ class Interpreter {
 
             dictionary[key] = value
         default:
-            throw RuntimeError.notAListOrDictionary
+            throw RuntimeError.notAListOrDictionary(collectionExpr.locToken)
         }
 
         return value
@@ -651,23 +668,21 @@ class Interpreter {
             kvPairs[key] = value
         }
 
-        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(name: "Dictionary") else {
-            fatalError()
-        }
-
+        let dictionaryClass = lookUpStandardLibraryClass(named: "Dictionary")
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
+
         return .instance(dictionary)
     }
 
     // Utility functions
     private func makeMethodLookup(methodDecls: [Statement<Int>]) throws -> [String: UserDefinedFunction] {
-        return try methodDecls.reduce(into: [:]) { lookup, methodDecl in
+        return methodDecls.reduce(into: [:]) { lookup, methodDecl in
             guard case .function(let nameToken, let lambdaExpr) = methodDecl else {
-                throw RuntimeError.notAFunctionDeclaration
+                fatalError("Fatal error: expected function declaration in class")
             }
 
-            guard case .lambda(let parameterList, let methodBody) = lambdaExpr else {
-                throw RuntimeError.notALambda
+            guard case .lambda(_, let parameterList, let methodBody) = lambdaExpr else {
+                fatalError("Fatal error: expected lambda as body of function declaration")
             }
 
             let isInitializer = nameToken.lexeme == "init"
@@ -684,7 +699,7 @@ class Interpreter {
         let values = try exprs.flatMap { expr in
             if case .splat = expr {
                 guard case .instance(let list as LoxList) = try evaluate(expr: expr) else {
-                    throw RuntimeError.notAList
+                    throw RuntimeError.notAList(expr.locToken)
                 }
                 return list.elements
             } else {
@@ -696,30 +711,33 @@ class Interpreter {
         return values
     }
 
-    func makeString(string: String) throws -> LoxValue {
-        guard case .instance(let stringClass as LoxClass) = try environment.getValue(name: "String") else {
-            fatalError()
+    private func lookUpStandardLibraryClass(named name: String) -> LoxClass {
+        let dummyToken = Token(type: .identifier, lexeme: name, line: 0)
+        guard case .instance(let klass as LoxClass)? = try? environment.getValue(nameToken: dummyToken) else {
+            fatalError("no class '\(name)' found in standard library")
         }
 
+        return klass
+    }
+
+    func makeString(string: String) throws -> LoxValue {
+        let stringClass = lookUpStandardLibraryClass(named: "String")
         let list = LoxString(string: string, klass: stringClass)
+
         return .instance(list)
     }
 
     func makeList(elements: [LoxValue]) throws -> LoxValue {
-        guard case .instance(let listClass as LoxClass) = try environment.getValue(name: "List") else {
-            fatalError()
-        }
-
+        let listClass = lookUpStandardLibraryClass(named: "List")
         let list = LoxList(elements: elements, klass: listClass)
+
         return .instance(list)
     }
 
     func makeDictionary(kvPairs: [LoxValue: LoxValue]) throws -> LoxValue {
-        guard case .instance(let dictionaryClass as LoxClass) = try environment.getValue(name: "Dictionary") else {
-            fatalError()
-        }
-
+        let dictionaryClass = lookUpStandardLibraryClass(named: "Dictionary")
         let dictionary = LoxDictionary(kvPairs: kvPairs, klass: dictionaryClass)
+
         return .instance(dictionary)
     }
 }

@@ -20,8 +20,8 @@ class LoxString: LoxInstance {
         super.init(klass: klass)
     }
 
-    override func get(propertyName: String) throws -> LoxValue {
-        switch propertyName {
+    override func get(propertyName: Token) throws -> LoxValue {
+        switch propertyName.lexeme {
         case "count":
             return .int(string.count)
         default:
@@ -29,7 +29,7 @@ class LoxString: LoxInstance {
         }
     }
 
-    override func set(propertyName: String, propertyValue: LoxValue) throws {
-        throw RuntimeError.onlyInstancesHaveProperties
+    override func set(propertyName: Token, propertyValue: LoxValue) throws {
+        throw RuntimeError.onlyInstancesHaveProperties(propertyName)
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 struct UserDefinedFunction: LoxCallable, Equatable {
     var name: String
     var enclosingEnvironment: Environment
-    var body: [Statement<Int>]
+    var body: Statement<Int>
     var isInitializer: Bool
     var objectId: UUID
     var parameterList: ParameterList? = nil
@@ -22,7 +22,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
     init(name: String,
          parameterList: ParameterList?,
          enclosingEnvironment: Environment,
-         body: [Statement<Int>],
+         body: Statement<Int>,
          isInitializer: Bool) {
         self.name = name
         self.parameterList = parameterList
@@ -48,12 +48,18 @@ struct UserDefinedFunction: LoxCallable, Equatable {
             }
         }
 
+        let previousEnvironment = interpreter.environment
+        interpreter.environment = newEnvironment
+        defer {
+            interpreter.environment = previousEnvironment
+        }
         do {
-            try interpreter.handleBlock(statements: body, environment: newEnvironment)
+            try interpreter.execute(statement: body)
         } catch JumpType.return(let value) {
             // This is for when we call `init()` explicitly from an instance
             if isInitializer {
-                return try enclosingEnvironment.getValueAtDepth(name: "this", depth: 0)
+                let dummyThisToken = Token(type: .this, lexeme: "this", line: 0)
+                return try enclosingEnvironment.getValueAtDepth(nameToken: dummyThisToken, depth: 0)
             }
 
             return value
@@ -61,7 +67,8 @@ struct UserDefinedFunction: LoxCallable, Equatable {
 
         // This is for when we call `init()` implicitly through a class constructor
         if isInitializer {
-            return try enclosingEnvironment.getValueAtDepth(name: "this", depth: 0)
+            let dummyThisToken = Token(type: .this, lexeme: "this", line: 0)
+            return try enclosingEnvironment.getValueAtDepth(nameToken: dummyThisToken, depth: 0)
         }
 
         return .nil

@@ -99,7 +99,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .nil
         case .containsNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                fatalError("callee is not a list")
             }
 
             let element = args[1]
@@ -107,7 +107,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .boolean(loxList.elements.contains(element))
         case .appendNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                fatalError("callee is not a list")
             }
 
             let element = args[1]
@@ -116,17 +116,29 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .nil
         case .deleteAtNative:
             guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAList
+                fatalError("callee is not a list")
             }
 
             guard case .int(let index) = args[1] else {
-                throw RuntimeError.indexMustBeAnInteger
+                throw RuntimeError.indexMustBeAnInteger(nil)
             }
 
             return loxList.elements.remove(at: Int(index))
+        case .firstIndexNative:
+            guard case .instance(let loxList as LoxList) = args[0] else {
+                fatalError("callee is not a list")
+            }
+
+            let element = args[1]
+
+            if let index = loxList.elements.firstIndex(of: element) {
+                return .int(index)
+            }
+
+            return .nil
         case .removeValueNative:
             guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
-                throw RuntimeError.notADictionary
+                fatalError("callee is not a dictionary")
             }
 
             let key = args[1]
@@ -134,7 +146,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return loxDictionary.kvPairs.removeValue(forKey: key) ?? .nil
         case .keysNative:
             guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
-                throw RuntimeError.notADictionary
+                fatalError("callee is not a dictionary")
             }
 
             let keys = Array(loxDictionary.kvPairs.keys)
@@ -142,7 +154,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return try! interpreter.makeList(elements: keys)
         case .valuesNative:
             guard case .instance(let loxDictionary as LoxDictionary) = args[0] else {
-                throw RuntimeError.notADictionary
+                fatalError("callee is not a dictionary")
             }
 
             let values = Array(loxDictionary.kvPairs.values)
@@ -170,7 +182,7 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             return .double(Double.random(in: start...end))
         case .charsNative:
             guard case .instance(let loxString as LoxString) = args[0] else {
-                throw RuntimeError.notAString
+                fatalError("callee is not a string")
             }
 
             let characters = try loxString.string.unicodeScalars.map { unicodeScalar in
@@ -178,21 +190,9 @@ enum NativeFunction: LoxCallable, Equatable, CaseIterable {
             }
 
             return try interpreter.makeList(elements: characters)
-        case .firstIndexNative:
-            guard case .instance(let loxList as LoxList) = args[0] else {
-                throw RuntimeError.notAString
-            }
-
-            let element = args[1]
-
-            if let index = loxList.elements.firstIndex(of: element) {
-                return .int(index)
-            }
-
-            return .nil
         case .allCasesNative:
             guard case .instance(let loxEnum as LoxEnum) = args[0] else {
-                fatalError()
+                fatalError("callee is not an enum")
             }
 
             var allCases: [LoxValue] = []

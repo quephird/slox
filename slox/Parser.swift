@@ -223,7 +223,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
 
-        return .function(functionName, .lambda(parameterList, functionBody))
+        return .function(functionName, .lambda(functionName, parameterList, functionBody))
     }
 
     mutating private func parseVariableDeclaration() throws -> Statement<UnresolvedDepth>? {
@@ -272,8 +272,8 @@ struct Parser {
             return whileStmt
         }
 
-        if let blockStmts = try parseBlock() {
-            return .block(blockStmts)
+        if let blockStmt = try parseBlock() {
+            return blockStmt
         }
 
         return try parseExpressionStatement()
@@ -283,6 +283,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.for]) else {
             return nil
         }
+        let forToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForForStatement(currentToken)
@@ -297,7 +298,7 @@ struct Parser {
             initializerStmt = try parseExpressionStatement()
         }
 
-        var testExpr: Expression<UnresolvedDepth> = .literal(.boolean(true))
+        var testExpr: Expression<UnresolvedDepth> = .literal(Token(type: .true, lexeme: "true", line: 0), .boolean(true))
         if !currentTokenMatches(type: .semicolon) {
             testExpr = try parseExpression()
         }
@@ -315,13 +316,14 @@ struct Parser {
 
         let bodyStmt = try parseStatement()
 
-        return .for(initializerStmt, testExpr, incrementExpr, bodyStmt)
+        return .for(forToken, initializerStmt, testExpr, incrementExpr, bodyStmt)
     }
 
     mutating private func parseIfStatement() throws -> Statement<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.if]) else {
             return nil
         }
+        let ifToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForIfStatement(currentToken)
@@ -339,13 +341,14 @@ struct Parser {
             alternativeStmt = try parseStatement()
         }
 
-        return .if(testExpr, consequentStmt, alternativeStmt)
+        return .if(ifToken, testExpr, consequentStmt, alternativeStmt)
     }
 
     mutating private func parseSwitchStatement() throws -> Statement<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.switch]) else {
             return nil
         }
+        let switchToken = previousToken
 
         guard currentTokenMatchesAny(types: [.leftParen]) else {
             throw ParseError.missingOpenParenForSwitchStatement(currentToken)
@@ -381,13 +384,14 @@ struct Parser {
             throw ParseError.missingClosingBrace(currentToken)
         }
 
-        return .switch(switchExpr, switchCaseDecls)
+        return .switch(switchToken, switchExpr, switchCaseDecls)
     }
 
     mutating private func parseSwitchCaseDeclaration() throws -> SwitchCaseDeclaration<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.case]) else {
             return nil
         }
+        let caseToken = previousToken
 
         let firstValueExpr = try parseExpression()
         let valueExprs = try parseRemainingExpressions(firstExpr: firstValueExpr)
@@ -395,6 +399,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.colon]) else {
             throw ParseError.missingColon(currentToken)
         }
+        let colonToken = previousToken
 
         var statements: [Statement<UnresolvedDepth>] = []
         while !currentTokenMatches(type: .case) && !currentTokenMatches(type: .default) && !currentTokenMatches(type: .rightBrace) {
@@ -402,17 +407,21 @@ struct Parser {
             statements.append(statement)
         }
 
-        return SwitchCaseDeclaration(valueExpressions: valueExprs, statement: .block(statements))
+        return SwitchCaseDeclaration(caseToken: caseToken,
+                                     valueExpressions: valueExprs,
+                                     statement: .block(colonToken, statements))
     }
 
     mutating private func parseSwitchDefaultDeclaration() throws -> SwitchCaseDeclaration<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.default]) else {
             return nil
         }
+        let defaultToken = previousToken
 
         guard currentTokenMatchesAny(types: [.colon]) else {
             throw ParseError.missingColon(currentToken)
         }
+        let colonToken = previousToken
 
         var statements: [Statement<UnresolvedDepth>] = []
         while !currentTokenMatches(type: .rightBrace) && currentToken.type != .eof {
@@ -420,7 +429,8 @@ struct Parser {
             statements.append(statement)
         }
 
-        let switchCaseDecl = SwitchCaseDeclaration(statement: .block(statements))
+        let switchCaseDecl = SwitchCaseDeclaration(caseToken: defaultToken,
+                                                   statement: .block(colonToken, statements))
         return switchCaseDecl
     }
 
@@ -428,6 +438,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.print]) else {
             return nil
         }
+        let printToken = previousToken
 
         let expr = try parseExpression()
 
@@ -435,7 +446,7 @@ struct Parser {
             throw ParseError.missingSemicolon(currentToken)
         }
 
-        return .print(expr)
+        return .print(printToken, expr)
     }
 
     mutating private func parseJumpStatement() throws -> Statement<UnresolvedDepth>? {
@@ -458,7 +469,6 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.return]) else {
             return nil
         }
-
         let returnToken = previousToken
 
         var expr: Expression<UnresolvedDepth>? = nil
@@ -505,6 +515,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.while]) else {
             return nil
         }
+        let whileToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForWhileStatement(currentToken)
@@ -516,13 +527,14 @@ struct Parser {
         }
 
         let stmt = try parseStatement()
-        return .while(expr, stmt)
+        return .while(whileToken, expr, stmt)
     }
 
-    mutating private func parseBlock() throws -> [Statement<UnresolvedDepth>]? {
+    mutating private func parseBlock() throws -> Statement<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.leftBrace]) else {
             return nil
         }
+        let leftBraceToken = previousToken
 
         var statements: [Statement<UnresolvedDepth>] = []
 
@@ -535,7 +547,7 @@ struct Parser {
             throw ParseError.missingClosingBrace(previousToken)
         }
 
-        return statements
+        return .block(leftBraceToken, statements)
     }
 
     mutating private func parseExpressionStatement() throws -> Statement<UnresolvedDepth> {
@@ -612,10 +624,10 @@ struct Parser {
 
         if case .variable(let name, let depth) = expr {
             return .assignment(name, newValueExpr, depth)
-        } else if case .get(let instanceExpr, let propertyNameToken) = expr {
-            return .set(instanceExpr, propertyNameToken, newValueExpr)
-        } else if case .subscriptGet(let listExpr, let indexExpr) = expr {
-            return .subscriptSet(listExpr, indexExpr, newValueExpr)
+        } else if case .get(let locToken, let instanceExpr, let propertyNameToken) = expr {
+            return .set(locToken, instanceExpr, propertyNameToken, newValueExpr)
+        } else if case .subscriptGet(let leftBracketToken, let listExpr, let indexExpr) = expr {
+            return .subscriptSet(leftBracketToken, listExpr, indexExpr, newValueExpr)
         }
 
         throw ParseError.invalidAssignmentTarget(assignmentOperToken)
@@ -701,8 +713,9 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.star]) {
+            let starToken = previousToken
             let expr = try parseUnary()
-            return .splat(expr)
+            return .splat(starToken, expr)
         }
 
         return try parsePostfix()
@@ -751,18 +764,20 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.dot]) else {
             return nil
         }
+        let locToken = previousToken
 
         guard currentTokenMatchesAny(types: [.identifier]) else {
             throw ParseError.missingIdentifierAfterDot(currentToken)
         }
 
-        return .get(expr, previousToken)
+        return .get(locToken, expr, previousToken)
     }
 
     mutating private func parseSubscript(expr: Expression<UnresolvedDepth>) throws -> Expression<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
+        let leftBracketToken = previousToken
 
         let indexExpr = try parseLogicOr()
 
@@ -770,7 +785,7 @@ struct Parser {
             throw ParseError.missingCloseBracketForSubscriptAccess(currentToken)
         }
 
-        return .subscriptGet(expr, indexExpr)
+        return .subscriptGet(leftBracketToken, expr, indexExpr)
     }
 
     mutating private func parsePrimary() throws -> Expression<UnresolvedDepth> {
@@ -779,24 +794,24 @@ struct Parser {
         }
 
         if currentTokenMatchesAny(types: [.false]) {
-            return .literal(.boolean(false))
+            return .literal(previousToken, .boolean(false))
         }
 
         if currentTokenMatchesAny(types: [.true]) {
-            return .literal(.boolean(true))
+            return .literal(previousToken, .boolean(true))
         }
 
         if currentTokenMatchesAny(types: [.nil]) {
-            return .literal(.nil)
+            return .literal(previousToken, .nil)
         }
 
         if currentTokenMatchesAny(types: [.double]) {
             let number = Double(previousToken.lexeme)!
-            return .literal(.double(number))
+            return .literal(previousToken, .double(number))
         }
         if currentTokenMatchesAny(types: [.int]) {
             let number = Int(previousToken.lexeme)!
-            return .literal(.int(number))
+            return .literal(previousToken, .int(number))
         }
 
         if currentTokenMatchesAny(types: [.string]) {
@@ -830,6 +845,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.leftParen]) else {
             return nil
         }
+        let leftParenToken = previousToken
 
         let expr = try parseExpression()
 
@@ -837,27 +853,28 @@ struct Parser {
             throw ParseError.missingClosingParenthesis(currentToken)
         }
 
-        return .grouping(expr)
+        return .grouping(leftParenToken, expr)
     }
 
     mutating private func parseCollectionExpression() throws -> Expression<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.leftBracket]) else {
             return nil
         }
+        let leftBracketToken = previousToken
 
         if currentTokenMatchesAny(types: [.rightBracket]) {
-            return .list([])
+            return .list(leftBracketToken, [])
         }
 
         if currentTokenMatchesAny(types: [.colon]) && currentTokenMatchesAny(types: [.rightBracket]) {
-            return .dictionary([])
+            return .dictionary(leftBracketToken, [])
         }
 
         let firstExpr = try parseExpression()
 
         if currentTokenMatchesAny(types: [.colon]) {
             let kvPairs = try parseKeyValuePairs(firstKeyExpr: firstExpr)
-            return .dictionary(kvPairs)
+            return .dictionary(leftBracketToken, kvPairs)
         }
 
         let elements = try parseRemainingExpressions(firstExpr: firstExpr)
@@ -866,15 +883,15 @@ struct Parser {
             throw ParseError.missingClosingBracket(previousToken)
         }
 
-        return .list(elements)
+        return .list(leftBracketToken, elements)
     }
 
     mutating private func parseSuperExpression() throws -> Expression<UnresolvedDepth>? {
         guard currentTokenMatchesAny(types: [.super]) else {
             return nil
         }
-
         let superToken = previousToken
+
         if !currentTokenMatchesAny(types: [.dot]) {
             throw ParseError.missingDotAfterSuper(currentToken)
         }
@@ -890,6 +907,7 @@ struct Parser {
         guard currentTokenMatchesAny(types: [.fun]) else {
             return nil
         }
+        let funToken = previousToken
 
         if !currentTokenMatchesAny(types: [.leftParen]) {
             throw ParseError.missingOpenParenForFunctionDeclaration(currentToken)
@@ -903,7 +921,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
 
-        return .lambda(parameters, functionBody)
+        return .lambda(funToken, parameters, functionBody)
     }
 
     // Utility grammar rules:

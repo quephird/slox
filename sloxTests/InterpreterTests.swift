@@ -44,7 +44,8 @@ final class InterpreterTests: XCTestCase {
         let input = "-\"forty-two\""
         let interpreter = Interpreter()
 
-        let expectedError = RuntimeError.unaryOperandMustBeNumber
+        let locToken = Token(type: .minus, lexeme: "-", line: 1)
+        let expectedError = RuntimeError.unaryOperandMustBeNumber(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -102,7 +103,8 @@ final class InterpreterTests: XCTestCase {
         let input = "\"twenty-one\" * 2"
         let interpreter = Interpreter()
 
-        let expectedError = RuntimeError.binaryOperandsMustBeNumbers
+        let locToken = Token(type: .star, lexeme: "*", line: 1)
+        let expectedError = RuntimeError.binaryOperandsMustBeNumbers(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -232,6 +234,20 @@ add(1, 2)
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretCallingANoncallableobject() throws {
+        let input = """
+var theAnswer = 42;
+theAnswer()
+"""
+
+        let interpreter = Interpreter()
+        let locToken = Token(type: .identifier, lexeme: "theAnswer", line: 2)
+        let expectedError = RuntimeError.notACallableObject(locToken)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
     func testInterpretRecursiveFunction() throws {
         let input = """
 fun fact(n) {
@@ -280,7 +296,8 @@ a
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.undefinedVariable("a")
+        let locToken = Token(type: .identifier, lexeme: "a", line: 3)
+        let expectedError = RuntimeError.undefinedVariable(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -325,7 +342,22 @@ sum(*foo, 4, 5)
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.wrongArity(3, 5)
+        let locToken = Token(type: .identifier, lexeme: "sum", line: 5)
+        let expectedError = RuntimeError.wrongArity(locToken, 3, 5)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
+    func testInterpretAccessingAPropertyOfANoninstance() throws {
+        let input = """
+var universe = 42;
+universe.theAnswer
+"""
+
+        let interpreter = Interpreter()
+        let locToken = Token(type: .identifier, lexeme: "universe", line: 2)
+        let expectedError = RuntimeError.onlyInstancesHaveProperties(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -431,7 +463,8 @@ person.name
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.undefinedProperty("name")
+        let nameToken = Token(type: .identifier, lexeme: "name", line: 3)
+        let expectedError = RuntimeError.undefinedProperty(nameToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -569,7 +602,36 @@ foo[2.0]
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.indexMustBeAnInteger
+        let locToken = Token(type: .double, lexeme: "2.0", line: 2)
+        let expectedError = RuntimeError.indexMustBeAnInteger(locToken)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
+    func testInterpretAccessingElementOfListWithStringIndex() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo["two"]
+"""
+
+        let interpreter = Interpreter()
+        let locToken = Token(type: .string, lexeme: "\"two\"", line: 2)
+        let expectedError = RuntimeError.indexMustBeAnInteger(locToken)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
+    func testInterpretSubscriptingANonlist() throws {
+        let input = """
+var foo = 42;
+foo[0]
+"""
+
+        let interpreter = Interpreter()
+        let locToken = Token(type: .identifier, lexeme: "foo", line: 2)
+        let expectedError = RuntimeError.notAListOrDictionary(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }
@@ -586,6 +648,20 @@ foo[2]
         let actual = try interpreter.interpretRepl(source: input)
         let expected: LoxValue = .int(6)
         XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretMutatingElementOfListWithStringIndex() throws {
+        let input = """
+var foo = [1, 2, 3, 4, 5];
+foo["two"] = 42;
+"""
+
+        let interpreter = Interpreter()
+        let locToken = Token(type: .string, lexeme: "\"two\"", line: 2)
+        let expectedError = RuntimeError.indexMustBeAnInteger(locToken)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
     }
 
     func testInterpretMutationOfListViaCompoundAssignmentOperator() throws {
@@ -1229,7 +1305,8 @@ answer
 """
 
         let interpreter = Interpreter()
-        let expectedError = RuntimeError.undefinedVariable("answer")
+        let locToken = Token(type: .identifier, lexeme: "answer", line: 6)
+        let expectedError = RuntimeError.undefinedVariable(locToken)
         XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
             XCTAssertEqual(actualError as! RuntimeError, expectedError)
         }

@@ -6,6 +6,7 @@
 //
 
 struct SwitchCaseDeclaration<Depth: Equatable>: Equatable {
+    var caseToken: Token
     var valueExpressions: [Expression<Depth>]?
     var statement: Statement<Depth>
 }

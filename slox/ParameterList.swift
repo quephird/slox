@@ -9,18 +9,12 @@ struct ParameterList: Equatable {
     var normalParameters: [Token]
     var variadicParameter: Token?
 
-    func checkArity(argCount: Int) throws {
+    func checkArity(argCount: Int) -> Bool {
         let normalParameterCount = normalParameters.count
-        if let variadicParameter {
-            guard argCount >= normalParameterCount else {
-                throw RuntimeError.wrongArity(normalParameterCount, argCount)
-            }
-
-            return
+        if variadicParameter != nil {
+            return argCount >= normalParameterCount
         }
 
-        guard argCount == normalParameterCount else {
-            throw RuntimeError.wrongArity(normalParameterCount, argCount)
-        }
+        return argCount == normalParameterCount
     }
 }
