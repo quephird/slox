@@ -153,14 +153,14 @@ struct Parser {
                 let newEnumCases = try parseCaseElementList()
                 enumCases.append(contentsOf: newEnumCases)
             } else {
-                var modfierTokens: [Token] = []
+                var modifierTokens: [Token] = []
                 if currentTokenMatchesAny(types: [.class]) {
                     // It's a little weird to look for the "class" keyword here
                     // for an enum, but we want to be consistent with the Lox specification,
                     // and enums are _somewhat_ like classes anyway
-                    modfierTokens.append(previousToken)
+                    modifierTokens.append(previousToken)
                 }
-                let method = try parseFunction(modifierTokens: [])
+                let method = try parseFunction(modifierTokens: modifierTokens)
                 methods.append(method)
             }
         }

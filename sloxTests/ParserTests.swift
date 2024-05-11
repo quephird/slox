@@ -1004,6 +1004,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "theAnswer", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "theAnswer", line: 1),
                     ParameterList(normalParameters: []),
@@ -1049,6 +1050,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "add", line: 1),
                     ParameterList(normalParameters: [
@@ -1102,6 +1104,7 @@ final class ParserTests: XCTestCase {
         let expected: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "foo", line: 1),
                     ParameterList(
@@ -1355,6 +1358,7 @@ final class ParserTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
@@ -1370,8 +1374,7 @@ final class ParserTests: XCTestCase {
                                                 UnresolvedDepth()),
                                             Token(type: .identifier, lexeme: "name", line: 3)))
                                 ])))
-                ],
-                [])
+                ])
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1465,10 +1468,12 @@ final class ParserTests: XCTestCase {
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
-                [],
                 [
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
+                        [
+                            Token(type: .class, lexeme: "class", line: 2),
+                        ],
                         .lambda(
                             Token(type: .identifier, lexeme: "add", line: 2),
                             ParameterList(normalParameters: [
@@ -1539,6 +1544,7 @@ final class ParserTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "someMethod", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "someMethod", line: 2),
                             ParameterList(normalParameters: [
@@ -1561,8 +1567,7 @@ final class ParserTests: XCTestCase {
                                                     UnresolvedDepth())
                                             ]))
                                 ])))
-                ],
-                []),
+                ]),
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1608,6 +1613,7 @@ final class ParserTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "area", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "area", line: 2),
                             nil,
@@ -1636,8 +1642,7 @@ final class ParserTests: XCTestCase {
                                                     UnresolvedDepth()),
                                                 Token(type: .identifier, lexeme: "radius", line: 3)))),
                                 ])))
-                ],
-                [])
+                ])
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -1858,6 +1863,7 @@ final class ParserTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "isBar", line: 3),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "isBar", line: 3),
                             ParameterList(
@@ -1895,8 +1901,7 @@ final class ParserTests: XCTestCase {
                                             Token(type: .false, lexeme: "false", line: 7),
                                             .boolean(false)))
                                 ])))
-                ],
-                []),
+                ]),
         ]
         XCTAssertEqual(actual, expected)
     }
