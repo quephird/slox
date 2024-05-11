@@ -156,17 +156,18 @@ class Interpreter {
             return superclass
         }
 
-        let (instanceMethods, staticMethods) = methods.split(with: { method in
+        var methodsCopy = methods
+        let partIndex = methodsCopy.partition(by: { method in
             guard case .function(_, let modifierTokens, _) = method else {
                 fatalError("expected function declaration in class")
             }
 
-            return !modifierTokens.contains(where: { token in
+            return modifierTokens.contains(where: { token in
                 token.lexeme == "class"
             })
         })
-        let instanceMethodLookup = try makeMethodLookup(methodDecls: instanceMethods)
-        let staticMethodLookup = try makeMethodLookup(methodDecls: staticMethods)
+        let instanceMethodLookup = try makeMethodLookup(methodDecls: Array(methodsCopy[0..<partIndex]))
+        let staticMethodLookup = try makeMethodLookup(methodDecls: Array(methodsCopy[partIndex...]))
 
         let newClass = LoxClass(name: nameToken.lexeme,
                                 superclass: superclass,
@@ -200,17 +201,18 @@ class Interpreter {
             enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
         }
 
-        let (instanceMethods, staticMethods) = methods.split(with: { method in
+        var methodsCopy = methods
+        let partIndex = methodsCopy.partition(by: { method in
             guard case .function(_, let modifierTokens, _) = method else {
                 fatalError("expected function declaration in class")
             }
 
-            return !modifierTokens.contains(where: { token in
+            return modifierTokens.contains(where: { token in
                 token.lexeme == "class"
             })
         })
-        let instanceMethodLookup = try makeMethodLookup(methodDecls: instanceMethods)
-        let staticMethodLookup = try makeMethodLookup(methodDecls: staticMethods)
+        let instanceMethodLookup = try makeMethodLookup(methodDecls: Array(methodsCopy[0..<partIndex]))
+        let staticMethodLookup = try makeMethodLookup(methodDecls: Array(methodsCopy[partIndex...]))
 
         enumClass.methods = instanceMethodLookup
         if !staticMethodLookup.isEmpty {
