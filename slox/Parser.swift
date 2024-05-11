@@ -118,7 +118,12 @@ struct Parser {
             // calling `parseFunction()`. That's a deliberate design decision
             // by the original author.
             var modifierTokens: [Token] = []
-            if currentTokenMatchesAny(types: [.class]) {
+            while currentTokenMatchesAny(types: [.class, .private]) {
+                if modifierTokens.contains(where: { token in
+                    token.type == previousToken.type
+                }) {
+                    throw ParseError.duplicateModifier(previousToken)
+                }
                 modifierTokens.append(previousToken)
             }
             let methodStatement = try parseFunction(modifierTokens: modifierTokens)
@@ -154,10 +159,15 @@ struct Parser {
                 enumCases.append(contentsOf: newEnumCases)
             } else {
                 var modifierTokens: [Token] = []
-                if currentTokenMatchesAny(types: [.class]) {
-                    // It's a little weird to look for the "class" keyword here
-                    // for an enum, but we want to be consistent with the Lox specification,
-                    // and enums are _somewhat_ like classes anyway
+                // It's a little weird to look for the "class" keyword here
+                // for an enum, but we want to be consistent with the Lox specification,
+                // and enums are _somewhat_ like classes anyway
+                while currentTokenMatchesAny(types: [.class, .private]) {
+                    if modifierTokens.contains(where: { token in
+                        token.type == previousToken.type
+                    }) {
+                        throw ParseError.duplicateModifier(previousToken)
+                    }
                     modifierTokens.append(previousToken)
                 }
                 let method = try parseFunction(modifierTokens: modifierTokens)
