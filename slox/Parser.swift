@@ -113,25 +113,23 @@ struct Parser {
         }
 
         var methodStatements: [Statement<UnresolvedDepth>] = []
-        var staticMethodStatements: [Statement<UnresolvedDepth>] = []
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             // Note that we don't look for/consume a `fun` token before
             // calling `parseFunction()`. That's a deliberate design decision
             // by the original author.
+            var modifierTokens: [Token] = []
             if currentTokenMatchesAny(types: [.class]) {
-                let staticMethodStatement = try parseFunction()
-                staticMethodStatements.append(staticMethodStatement)
-            } else {
-                let methodStatement = try parseFunction()
-                methodStatements.append(methodStatement)
+                modifierTokens.append(previousToken)
             }
+            let methodStatement = try parseFunction(modifierTokens: modifierTokens)
+            methodStatements.append(methodStatement)
         }
 
         guard currentTokenMatchesAny(types: [.rightBrace]) else {
             throw ParseError.missingClosingBrace(previousToken)
         }
 
-        return .class(className, superclassExpr, methodStatements, staticMethodStatements)
+        return .class(className, superclassExpr, methodStatements)
     }
 
     mutating private func parseEnumDeclaration() throws -> Statement<UnresolvedDepth>? {
@@ -149,20 +147,20 @@ struct Parser {
 
         var enumCases: [Token] = []
         var methods: [Statement<UnresolvedDepth>] = []
-        var staticMethods: [Statement<UnresolvedDepth>] = []
 
         while currentToken.type != .rightBrace && currentToken.type != .eof {
             if currentTokenMatchesAny(types: [.case]) {
                 let newEnumCases = try parseCaseElementList()
                 enumCases.append(contentsOf: newEnumCases)
-            } else if currentTokenMatchesAny(types: [.class]) {
-                // It's a little weird to look for the "class" keyword here
-                // for an enum, but we want to be consistent with the Lox specification,
-                // and enums are _somewhat_ like classes anyway
-                let staticMethod = try parseFunction()
-                staticMethods.append(staticMethod)
             } else {
-                let method = try parseFunction()
+                var modifierTokens: [Token] = []
+                if currentTokenMatchesAny(types: [.class]) {
+                    // It's a little weird to look for the "class" keyword here
+                    // for an enum, but we want to be consistent with the Lox specification,
+                    // and enums are _somewhat_ like classes anyway
+                    modifierTokens.append(previousToken)
+                }
+                let method = try parseFunction(modifierTokens: modifierTokens)
                 methods.append(method)
             }
         }
@@ -171,7 +169,7 @@ struct Parser {
             throw ParseError.missingCloseParenAfterArguments(currentToken)
         }
 
-        return .enum(enumName, enumCases, methods, staticMethods)
+        return .enum(enumName, enumCases, methods)
     }
 
     mutating private func parseFunctionDeclaration() throws -> Statement<UnresolvedDepth>? {
@@ -184,7 +182,7 @@ struct Parser {
         }
         advanceCursor()
 
-        return try parseFunction()
+        return try parseFunction(modifierTokens: [])
     }
 
     mutating private func parseCaseElementList() throws -> [Token] {
@@ -206,7 +204,7 @@ struct Parser {
         return enumCases
     }
 
-    mutating private func parseFunction() throws -> Statement<UnresolvedDepth> {
+    mutating private func parseFunction(modifierTokens: [Token]) throws -> Statement<UnresolvedDepth> {
         guard let functionName = consumeToken(type: .identifier) else {
             throw ParseError.missingFunctionName(currentToken)
         }
@@ -223,7 +221,7 @@ struct Parser {
             throw ParseError.missingOpenBraceBeforeFunctionBody(currentToken)
         }
 
-        return .function(functionName, .lambda(functionName, parameterList, functionBody))
+        return .function(functionName, modifierTokens, .lambda(functionName, parameterList, functionBody))
     }
 
     mutating private func parseVariableDeclaration() throws -> Statement<UnresolvedDepth>? {

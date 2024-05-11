@@ -54,18 +54,17 @@ struct Resolver {
             return try handleBlock(beginBlockToken: beginBlockToken, statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):
             return try handleVariableDeclaration(nameToken: nameToken, initializeExpr: initializeExpr)
-        case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
+        case .class(let nameToken, let superclassExpr, let methods):
             return try handleClassDeclaration(nameToken: nameToken,
                                               superclassExpr: superclassExpr,
-                                              methods: methods,
-                                              staticMethods: staticMethods)
-        case .enum(let nameToken, let caseTokens, let methods, let staticMethods):
+                                              methods: methods)
+        case .enum(let nameToken, let caseTokens, let methods):
             return try handleEnumDeclaration(nameToken: nameToken,
                                              caseTokens: caseTokens,
-                                             methods: methods,
-                                             staticMethods: staticMethods)
-        case .function(let nameToken, let lambdaExpr):
+                                             methods: methods)
+        case .function(let nameToken, let modifierTokens, let lambdaExpr):
             return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 modifierTokens: modifierTokens,
                                                  lambdaExpr: lambdaExpr,
                                                  functionType: .function)
         case .expression(let expr):
@@ -127,8 +126,7 @@ struct Resolver {
 
     mutating private func handleClassDeclaration(nameToken: Token,
                                                  superclassExpr: Expression<UnresolvedDepth>?,
-                                                 methods: [Statement<UnresolvedDepth>],
-                                                 staticMethods: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
+                                                 methods: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
         let previousClassType = currentClassType
         let previousJumpableType = currentJumpableType
         currentClassType = .class
@@ -172,8 +170,14 @@ struct Resolver {
         scopeStack.lastMutable["this"] = true
 
         let resolvedMethods = try methods.map { method in
-            guard case .function(let nameToken, let lambdaExpr) = method else {
+            guard case .function(let nameToken, let modifierTokens, let lambdaExpr) = method else {
                 fatalError("expected lambda as body of function declaration")
+            }
+
+            if nameToken.lexeme == "init" && modifierTokens.contains(where: { token in
+                token.lexeme == "class"
+            }) {
+                throw ResolverError.staticInitsNotAllowed(nameToken)
             }
 
             let functionType: FunctionType = if nameToken.lexeme == "init" {
@@ -182,31 +186,17 @@ struct Resolver {
                 .method
             }
             return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 modifierTokens: modifierTokens,
                                                  lambdaExpr: lambdaExpr,
                                                  functionType: functionType)
         }
 
-        let resolvedStaticMethods = try staticMethods.map { method in
-            guard case .function(let nameToken, let lambdaExpr) = method else {
-                fatalError("expected lambda as body of function declaration")
-            }
-
-            if nameToken.lexeme == "init" {
-                throw ResolverError.staticInitsNotAllowed(nameToken)
-            }
-
-            return try handleFunctionDeclaration(nameToken: nameToken,
-                                                 lambdaExpr: lambdaExpr,
-                                                 functionType: .method)
-        }
-
-        return .class(nameToken, resolvedSuperclassExpr, resolvedMethods, resolvedStaticMethods)
+        return .class(nameToken, resolvedSuperclassExpr, resolvedMethods)
     }
 
     mutating private func handleEnumDeclaration(nameToken: Token,
                                                 caseTokens: [Token],
-                                                methods: [Statement<UnresolvedDepth>],
-                                                staticMethods: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
+                                                methods: [Statement<UnresolvedDepth>]) throws -> Statement<Int> {
         let previousClassType = currentClassType
         currentClassType = .enum
         defer {
@@ -231,34 +221,28 @@ struct Resolver {
         }
 
         let resolvedMethods = try methods.map { method in
-            guard case .function(let nameToken, let lambdaExpr) = method else {
+            guard case .function(let nameToken, let modifierTokens, let lambdaExpr) = method else {
                 fatalError("expected lambda as body of function declaration")
             }
 
-            return try handleFunctionDeclaration(nameToken: nameToken,
-                                                 lambdaExpr: lambdaExpr,
-                                                 functionType: .method)
-        }
-
-        let resolvedStaticMethods = try staticMethods.map { method in
-            guard case .function(let nameToken, let lambdaExpr) = method else {
-                fatalError("expected lambda as body of function declaration")
-            }
-
-            if nameToken.lexeme == "init" {
+            if nameToken.lexeme == "init" && modifierTokens.contains(where: { token in
+                token.lexeme == "class"
+            }) {
                 throw ResolverError.staticInitsNotAllowed(nameToken)
             }
 
             return try handleFunctionDeclaration(nameToken: nameToken,
+                                                 modifierTokens: modifierTokens,
                                                  lambdaExpr: lambdaExpr,
                                                  functionType: .method)
         }
 
-        return .enum(nameToken, caseTokens, resolvedMethods, resolvedStaticMethods)
+        return .enum(nameToken, caseTokens, resolvedMethods)
     }
 
 
     mutating private func handleFunctionDeclaration(nameToken: Token,
+                                                    modifierTokens: [Token],
                                                     lambdaExpr: Expression<UnresolvedDepth>,
                                                     functionType: FunctionType) throws -> Statement<Int> {
         guard case .lambda(let locToken, let parameterList, let body) = lambdaExpr else {
@@ -273,7 +257,7 @@ struct Resolver {
                                               body: body,
                                               functionType: functionType)
 
-        return .function(nameToken, resolvedLambda)
+        return .function(nameToken, modifierTokens, resolvedLambda)
     }
 
     mutating private func handleExpressionStatement(expr: Expression<UnresolvedDepth>) throws -> Statement<Int> {

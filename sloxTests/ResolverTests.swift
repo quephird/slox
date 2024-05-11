@@ -57,6 +57,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "add", line: 1),
                     ParameterList(normalParameters: [
@@ -84,6 +85,7 @@ final class ResolverTests: XCTestCase {
         let expected: [Statement<Int>] = [
             .function(
                 Token(type: .identifier, lexeme: "add", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "add", line: 1),
                     ParameterList(normalParameters: [
@@ -115,6 +117,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "answer", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "answer", line: 1),
                     nil,
@@ -278,6 +281,7 @@ final class ResolverTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
@@ -293,8 +297,7 @@ final class ResolverTests: XCTestCase {
                                                 UnresolvedDepth()),
                                             Token(type: .identifier, lexeme: "name", line: 3)))
                                 ])))
-                ],
-                [])
+                ])
         ]
 
         var resolver = Resolver()
@@ -306,6 +309,7 @@ final class ResolverTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "sayName", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "sayName", line: 2),
                             ParameterList(normalParameters: []),
@@ -321,8 +325,7 @@ final class ResolverTests: XCTestCase {
                                                 2),
                                             Token(type: .identifier, lexeme: "name", line: 3)))
                                 ])))
-                ],
-                [])
+                ])
         ]
         XCTAssertEqual(actual, expected)
     }
@@ -334,6 +337,7 @@ final class ResolverTests: XCTestCase {
         let statements: [Statement<UnresolvedDepth>] = [
             .function(
                 Token(type: .identifier, lexeme: "foo", line: 1),
+                [],
                 .lambda(
                     Token(type: .identifier, lexeme: "foo", line: 1),
                     ParameterList(normalParameters: []),
@@ -369,6 +373,7 @@ final class ResolverTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "init", line: 2),
                             ParameterList(normalParameters: []),
@@ -381,8 +386,7 @@ final class ResolverTests: XCTestCase {
                                             Token(type: .int, lexeme: "42", line: 3),
                                             .int(42)))
                                 ])))
-                ],
-                [])
+                ])
         ]
 
         var resolver = Resolver()
@@ -403,10 +407,12 @@ final class ResolverTests: XCTestCase {
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
-                [],
                 [
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
+                        [
+                            Token(type: .class, lexeme: "class", line: 2),
+                        ],
                         .lambda(
                             Token(type: .identifier, lexeme: "add", line: 2),
                             ParameterList(normalParameters: [
@@ -436,10 +442,12 @@ final class ResolverTests: XCTestCase {
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
-                [],
                 [
                     .function(
                         Token(type: .identifier, lexeme: "add", line: 2),
+                        [
+                            Token(type: .class, lexeme: "class", line: 2),
+                        ],
                         .lambda(
                             Token(type: .identifier, lexeme: "add", line: 2),
                             ParameterList(normalParameters: [
@@ -475,10 +483,12 @@ final class ResolverTests: XCTestCase {
             .class(
                 Token(type: .identifier, lexeme: "Math", line: 1),
                 nil,
-                [],
                 [
                     .function(
                         Token(type: .identifier, lexeme: "init", line: 2),
+                        [
+                            Token(type: .class, lexeme: "class", line: 2),
+                        ],
                         .lambda(
                             Token(type: .identifier, lexeme: "init", line: 2),
                             ParameterList(normalParameters: []),
@@ -536,6 +546,7 @@ final class ResolverTests: XCTestCase {
                 [
                     .function(
                         Token(type: .identifier, lexeme: "someMethod", line: 2),
+                        [],
                         .lambda(
                             Token(type: .identifier, lexeme: "someMethod", line: 2),
                             ParameterList(normalParameters: []),
@@ -552,8 +563,7 @@ final class ResolverTests: XCTestCase {
                                             [])
                                     )
                                 ])))
-                ],
-                [])
+                ])
         ]
 
         var resolver = Resolver()
@@ -604,6 +614,7 @@ final class ResolverTests: XCTestCase {
                     [
                         .function(
                             Token(type: .identifier, lexeme: "foo", line: 2),
+                            [],
                             .lambda(
                                 Token(type: .identifier, lexeme: "foo", line: 2),
                                 ParameterList(normalParameters: []),
@@ -677,7 +688,6 @@ final class ResolverTests: XCTestCase {
                     Token(type: .identifier, lexeme: "green", line: 3),
                     Token(type: .identifier, lexeme: "indigo", line: 3),
                 ],
-                [],
                 [])
         ]
 
