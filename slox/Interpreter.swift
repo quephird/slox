@@ -79,18 +79,16 @@ class Interpreter {
                                    testExpr: testExpr,
                                    incrementExpr: incrementExpr,
                                    bodyStmt: bodyStmt)
-        case .class(let nameToken, let superclassExpr, let methods, let staticMethods):
+        case .class(let nameToken, let superclassExpr, let methods):
             try handleClassDeclaration(nameToken: nameToken,
                                        superclassExpr: superclassExpr,
-                                       methods: methods,
-                                       staticMethods: staticMethods)
-        case .enum(let nameToken, let caseTokens, let methods, let staticMethods):
+                                       methods: methods)
+        case .enum(let nameToken, let caseTokens, let methods):
             try handleEnumDeclaration(nameToken: nameToken,
                                       caseTokens: caseTokens,
-                                      methods: methods,
-                                      staticMethods: staticMethods)
-        case .function(let name, let lambda):
-            try handleFunctionDeclaration(name: name, lambda: lambda)
+                                      methods: methods)
+        case .function(let name, let modifierTokens, let lambda):
+            try handleFunctionDeclaration(name: name, modifierTokens: modifierTokens, lambda: lambda)
         case .return(let returnToken, let expr):
             try handleReturnStatement(returnToken: returnToken, expr: expr)
         case .break(let breakToken):
@@ -140,8 +138,7 @@ class Interpreter {
 
     private func handleClassDeclaration(nameToken: Token,
                                         superclassExpr: Expression<Int>?,
-                                        methods: [Statement<Int>],
-                                        staticMethods: [Statement<Int>]) throws {
+                                        methods: [Statement<Int>]) throws {
         // NOTA BENE: We temporarily set the initial value associated with
         // the class name to `.nil` so that, according to the book,
         // "allows references to the class inside its own methods".
@@ -159,7 +156,16 @@ class Interpreter {
             return superclass
         }
 
-        let instanceMethodLookup = try makeMethodLookup(methodDecls: methods)
+        let (instanceMethods, staticMethods) = methods.split(with: { method in
+            guard case .function(_, let modifierTokens, _) = method else {
+                fatalError("expected function declaration in class")
+            }
+
+            return !modifierTokens.contains(where: { token in
+                token.lexeme == "class"
+            })
+        })
+        let instanceMethodLookup = try makeMethodLookup(methodDecls: instanceMethods)
         let staticMethodLookup = try makeMethodLookup(methodDecls: staticMethods)
 
         let newClass = LoxClass(name: nameToken.lexeme,
@@ -182,8 +188,7 @@ class Interpreter {
 
     private func handleEnumDeclaration(nameToken: Token,
                                        caseTokens: [Token],
-                                       methods: [Statement<Int>],
-                                       staticMethods: [Statement<Int>]) throws {
+                                       methods: [Statement<Int>]) throws {
         let enumSuperclass = lookUpStandardLibraryClass(named: "Enum")
         let enumClass = LoxEnum(name: nameToken.lexeme,
                                 superclass: enumSuperclass,
@@ -195,9 +200,19 @@ class Interpreter {
             enumClass.properties[caseToken.lexeme] = .instance(caseInstance)
         }
 
-        let methodLookup = try makeMethodLookup(methodDecls: methods)
+        let (instanceMethods, staticMethods) = methods.split(with: { method in
+            guard case .function(_, let modifierTokens, _) = method else {
+                fatalError("expected function declaration in class")
+            }
+
+            return !modifierTokens.contains(where: { token in
+                token.lexeme == "class"
+            })
+        })
+        let instanceMethodLookup = try makeMethodLookup(methodDecls: instanceMethods)
         let staticMethodLookup = try makeMethodLookup(methodDecls: staticMethods)
-        enumClass.methods = methodLookup
+
+        enumClass.methods = instanceMethodLookup
         if !staticMethodLookup.isEmpty {
             enumClass.klass.methods = staticMethodLookup
         }
@@ -205,7 +220,7 @@ class Interpreter {
         environment.define(name: nameToken.lexeme, value: .instance(enumClass))
     }
 
-    private func handleFunctionDeclaration(name: Token, lambda: Expression<Int>) throws {
+    private func handleFunctionDeclaration(name: Token, modifierTokens: [Token], lambda: Expression<Int>) throws {
         guard case .lambda(_, let parameterList, let body) = lambda else {
             fatalError("Fatal error: expected lambda as body of function declaration")
         }
@@ -677,7 +692,7 @@ class Interpreter {
     // Utility functions
     private func makeMethodLookup(methodDecls: [Statement<Int>]) throws -> [String: UserDefinedFunction] {
         return methodDecls.reduce(into: [:]) { lookup, methodDecl in
-            guard case .function(let nameToken, let lambdaExpr) = methodDecl else {
+            guard case .function(let nameToken, let modifierTokens, let lambdaExpr) = methodDecl else {
                 fatalError("Fatal error: expected function declaration in class")
             }
 

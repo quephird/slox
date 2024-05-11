@@ -13,6 +13,7 @@
 		8702307A2B9575460056FE57 /* Resolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 873283952B95127100E49035 /* Resolver.swift */; };
 		8702307E2B95AA2A0056FE57 /* ResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307D2B95AA2A0056FE57 /* ResolverTests.swift */; };
 		870230802B96E9580056FE57 /* LoxClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702307F2B96E9580056FE57 /* LoxClass.swift */; };
+		871CE78A2BEF4B8500392EB1 /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871CE7892BEF4B8500392EB1 /* Array+Extension.swift */; };
 		8730C77C2BD842A400EA8D30 /* LoxEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C77B2BD842A400EA8D30 /* LoxEnum.swift */; };
 		8730C77D2BD88F4200EA8D30 /* LoxEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C77B2BD842A400EA8D30 /* LoxEnum.swift */; };
 		8730C7832BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */; };
@@ -89,6 +90,7 @@
 		870230762B9574A90056FE57 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		8702307D2B95AA2A0056FE57 /* ResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolverTests.swift; sourceTree = "<group>"; };
 		8702307F2B96E9580056FE57 /* LoxClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxClass.swift; sourceTree = "<group>"; };
+		871CE7892BEF4B8500392EB1 /* Array+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extension.swift"; sourceTree = "<group>"; };
 		8730C77B2BD842A400EA8D30 /* LoxEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxEnum.swift; sourceTree = "<group>"; };
 		8730C7822BDC4A9D00EA8D30 /* SwitchCaseDeclaration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchCaseDeclaration.swift; sourceTree = "<group>"; };
 		8730DDE82BB250CE00372548 /* LoxDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoxDictionary.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 		87655FFA2B88210A002BDE42 /* slox */ = {
 			isa = PBXGroup;
 			children = (
+				871CE7892BEF4B8500392EB1 /* Array+Extension.swift */,
 				873CCB322B8ED8B900FC249A /* Environment.swift */,
 				876A31642B8C04990085A350 /* Expression.swift */,
 				873CCB202B8D5FAE00FC249A /* Interpreter.swift */,
@@ -307,6 +310,7 @@
 				8741FB682BD0811300BBD8F1 /* LoxString.swift in Sources */,
 				873CCB302B8EAEC100FC249A /* Statement.swift in Sources */,
 				873CCB232B8D617C00FC249A /* RuntimeError.swift in Sources */,
+				871CE78A2BEF4B8500392EB1 /* Array+Extension.swift in Sources */,
 				87BAFC492B9179CB0013E5FE /* LoxCallable.swift in Sources */,
 				873CCB212B8D5FAE00FC249A /* Interpreter.swift in Sources */,
 				877168C22B91A9BD00723543 /* JumpType.swift in Sources */,

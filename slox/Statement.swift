@@ -14,10 +14,10 @@ indirect enum Statement<Depth: Equatable>: Equatable {
     case block(Token, [Statement])
     case `while`(Token, Expression<Depth>, Statement)
     case `for`(Token, Statement?, Expression<Depth>, Expression<Depth>?, Statement)
-    case function(Token, Expression<Depth>)
+    case function(Token, [Token], Expression<Depth>)
     case `return`(Token, Expression<Depth>?)
-    case `class`(Token, Expression<Depth>?, [Statement], [Statement])
-    case `enum`(Token, [Token], [Statement], [Statement])
+    case `class`(Token, Expression<Depth>?, [Statement])
+    case `enum`(Token, [Token], [Statement])
     case `break`(Token)
     case `continue`(Token)
 
@@ -39,13 +39,13 @@ indirect enum Statement<Depth: Equatable>: Equatable {
             return whileToken
         case .for(let forToken, _, _, _, _):
             return forToken
-        case .function(let nameToken, _):
+        case .function(let nameToken, _, _):
             return nameToken
         case .return(let returnToken, _):
             return returnToken
-        case .class(let nameToken, _, _, _):
+        case .class(let nameToken, _, _):
             return nameToken
-        case .enum(let nameToken, _, _, _):
+        case .enum(let nameToken, _, _):
             return nameToken
         case .break(let breakToken):
             return breakToken
