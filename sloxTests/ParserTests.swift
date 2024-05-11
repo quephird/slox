@@ -1499,6 +1499,88 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseClassWithInstanceAndStaticMethods() throws {
+        // class Foo {
+        //     class foo() {
+        //         print "foo!";
+        //     }
+        //
+        //     bar() {
+        //         print "bar!";
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "Foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .class, lexeme: "class", line: 2),
+            Token(type: .identifier, lexeme: "foo", line: 2),
+            Token(type: .leftParen, lexeme: "(", line: 2),
+            Token(type: .rightParen, lexeme: ")", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"foo!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .identifier, lexeme: "bar", line: 6),
+            Token(type: .leftParen, lexeme: "(", line: 6),
+            Token(type: .rightParen, lexeme: ")", line: 6),
+            Token(type: .leftBrace, lexeme: "{", line: 6),
+
+            Token(type: .print, lexeme: "print", line: 7),
+            Token(type: .string, lexeme: "\"bar!\"", line: 7),
+            Token(type: .semicolon, lexeme: ";", line: 7),
+
+            Token(type: .rightBrace, lexeme: "}", line: 8),
+
+            Token(type: .rightBrace, lexeme: "}", line: 9),
+            Token(type: .eof, lexeme: "", line: 9),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement<UnresolvedDepth>] = [
+            .class(
+                Token(type: .identifier, lexeme: "Foo", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "foo", line: 2),
+                        [
+                            Token(type: .class, lexeme: "class", line: 2),
+                        ],
+                        .lambda(
+                            Token(type: .identifier, lexeme: "foo", line: 2),
+                            ParameterList(normalParameters: []),
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 3),
+                                        .string(Token(type: .string, lexeme: "\"foo!\"", line: 3))),
+                                ]))),
+                    .function(
+                        Token(type: .identifier, lexeme: "bar", line: 6),
+                        [],
+                        .lambda(
+                            Token(type: .identifier, lexeme: "bar", line: 6),
+                            ParameterList(normalParameters: []),
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 6),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 7),
+                                        .string(Token(type: .string, lexeme: "\"bar!\"", line: 7))),
+                                ]))),
+                ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
     func testParseClassThatInheritsFromAnotherAndCallsSuper() throws {
         // class B < A {
         //     someMethod(arg) {
