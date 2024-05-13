@@ -1729,6 +1729,186 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(actual, expected)
     }
 
+    func testParseClassWithPrivateMethod() throws {
+        // class Foo {
+        //     private foo() {
+        //         print "foo!";
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "Foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .private, lexeme: "private", line: 2),
+            Token(type: .identifier, lexeme: "foo", line: 2),
+            Token(type: .leftParen, lexeme: "(", line: 2),
+            Token(type: .rightParen, lexeme: ")", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"foo!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .rightBrace, lexeme: "}", line: 5),
+            Token(type: .eof, lexeme: "", line: 5),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement<UnresolvedDepth>] = [
+            .class(
+                Token(type: .identifier, lexeme: "Foo", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "foo", line: 2),
+                        [
+                            Token(type: .private, lexeme: "private", line: 2),
+                        ],
+                        .lambda(
+                            Token(type: .identifier, lexeme: "foo", line: 2),
+                            ParameterList(normalParameters: []),
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 3),
+                                        .string(Token(type: .string, lexeme: "\"foo!\"", line: 3))),
+                                ]))),
+                ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseClassWithTwoPrivateStaticMethods() throws {
+        // class Foo {
+        //     class private foo() {
+        //         print "foo!";
+        //     }
+        //
+        //     private class bar() {
+        //         print "bar!";
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "Foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .class, lexeme: "class", line: 2),
+            Token(type: .private, lexeme: "private", line: 2),
+            Token(type: .identifier, lexeme: "foo", line: 2),
+            Token(type: .leftParen, lexeme: "(", line: 2),
+            Token(type: .rightParen, lexeme: ")", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"foo!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .private, lexeme: "private", line: 6),
+            Token(type: .class, lexeme: "class", line: 6),
+            Token(type: .identifier, lexeme: "bar", line: 6),
+            Token(type: .leftParen, lexeme: "(", line: 6),
+            Token(type: .rightParen, lexeme: ")", line: 6),
+            Token(type: .leftBrace, lexeme: "{", line: 6),
+
+            Token(type: .print, lexeme: "print", line: 7),
+            Token(type: .string, lexeme: "\"bar!\"", line: 7),
+            Token(type: .semicolon, lexeme: ";", line: 7),
+
+            Token(type: .rightBrace, lexeme: "}", line: 8),
+
+            Token(type: .rightBrace, lexeme: "}", line: 9),
+            Token(type: .eof, lexeme: "", line: 9),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let actual = try parser.parse()
+        let expected: [Statement<UnresolvedDepth>] = [
+            .class(
+                Token(type: .identifier, lexeme: "Foo", line: 1),
+                nil,
+                [
+                    .function(
+                        Token(type: .identifier, lexeme: "foo", line: 2),
+                        [
+                            Token(type: .class, lexeme: "class", line: 2),
+                            Token(type: .private, lexeme: "private", line: 2),
+                        ],
+                        .lambda(
+                            Token(type: .identifier, lexeme: "foo", line: 2),
+                            ParameterList(normalParameters: []),
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 2),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 3),
+                                        .string(Token(type: .string, lexeme: "\"foo!\"", line: 3))),
+                                ]))),
+                    .function(
+                        Token(type: .identifier, lexeme: "bar", line: 6),
+                        [
+                            Token(type: .private, lexeme: "private", line: 6),
+                            Token(type: .class, lexeme: "class", line: 6),
+                        ],
+                        .lambda(
+                            Token(type: .identifier, lexeme: "bar", line: 6),
+                            ParameterList(normalParameters: []),
+                            .block(
+                                Token(type: .leftBrace, lexeme: "{", line: 6),
+                                [
+                                    .print(
+                                        Token(type: .print, lexeme: "print", line: 7),
+                                        .string(Token(type: .string, lexeme: "\"bar!\"", line: 7))),
+                                ]))),
+                ])
+        ]
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testParseClassWithMethodWithDuplicateModifiers() throws {
+        // class Foo {
+        //     private class private foo() {
+        //         print "foo!";
+        //     }
+        // }
+        let tokens: [Token] = [
+            Token(type: .class, lexeme: "class", line: 1),
+            Token(type: .identifier, lexeme: "Foo", line: 1),
+            Token(type: .leftBrace, lexeme: "{", line: 1),
+
+            Token(type: .private, lexeme: "private", line: 2),
+            Token(type: .class, lexeme: "class", line: 2),
+            Token(type: .private, lexeme: "private", line: 2),
+            Token(type: .identifier, lexeme: "foo", line: 2),
+            Token(type: .leftParen, lexeme: "(", line: 2),
+            Token(type: .rightParen, lexeme: ")", line: 2),
+            Token(type: .leftBrace, lexeme: "{", line: 2),
+
+            Token(type: .print, lexeme: "print", line: 3),
+            Token(type: .string, lexeme: "\"foo!\"", line: 3),
+            Token(type: .semicolon, lexeme: ";", line: 3),
+
+            Token(type: .rightBrace, lexeme: "}", line: 4),
+
+            Token(type: .rightBrace, lexeme: "}", line: 5),
+            Token(type: .eof, lexeme: "", line: 5),
+        ]
+
+        var parser = Parser(tokens: tokens)
+        let lastToken = Token(type: .private, lexeme: "private", line: 2)
+        let expectedError = ParseError.duplicateModifier(lastToken)
+        XCTAssertThrowsError(try parser.parse()) { actualError in
+            XCTAssertEqual(actualError as! ParseError, expectedError)
+        }
+    }
+
     func testParseListOfValues() throws {
         // [1, "one", true]
         let tokens: [Token] = [
