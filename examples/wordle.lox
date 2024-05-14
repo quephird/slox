@@ -374,7 +374,7 @@ class Keyboard {
         }
     }
 
-    displayRow(row, indent) {
+    private displayRow(row, indent) {
         var output = indent;
         var letters = row.chars;
         for (var i = 0; i < row.count; i += 1) {
@@ -432,7 +432,7 @@ class Game {
         this.reset();
     }
 
-    display() {
+    private display() {
         print Terminal.clearScreenStr();
         for (var i = 0; i < this.guesses.count; i += 1) {
             this.guesses[i].display();
@@ -451,7 +451,7 @@ class Game {
         }
     }
 
-    reset() {
+    private reset() {
         for (var i = 0; i < 6; i += 1) {
             this.guesses[i].reset();
         }
@@ -462,7 +462,7 @@ class Game {
         this.word = this.wordList.choose();
     }
 
-    submitGuess(guess) {
+    private submitGuess(guess) {
         if (guess.chars.count != 5) {
             this.status = GameStatus.invalidGuess;
             return;
