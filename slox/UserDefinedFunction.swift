@@ -12,6 +12,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
     var enclosingEnvironment: Environment
     var body: Statement<Int>
     var isInitializer: Bool
+    var isPrivate: Bool
     var objectId: UUID
     var parameterList: ParameterList? = nil
 
@@ -23,12 +24,14 @@ struct UserDefinedFunction: LoxCallable, Equatable {
          parameterList: ParameterList?,
          enclosingEnvironment: Environment,
          body: Statement<Int>,
-         isInitializer: Bool) {
+         isInitializer: Bool,
+         isPrivate: Bool) {
         self.name = name
         self.parameterList = parameterList
         self.enclosingEnvironment = enclosingEnvironment
         self.body = body
         self.isInitializer = isInitializer
+        self.isPrivate = isPrivate
         self.objectId = UUID()
     }
 
@@ -84,6 +87,7 @@ struct UserDefinedFunction: LoxCallable, Equatable {
                                    parameterList: parameterList,
                                    enclosingEnvironment: newEnvironment,
                                    body: body,
-                                   isInitializer: isInitializer)
+                                   isInitializer: isInitializer,
+                                   isPrivate: isPrivate)
     }
 }

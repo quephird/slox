@@ -276,6 +276,26 @@ class Math {
 Math.add(1, 2)
 ```
 
+Methods can also be declared as `private` so that they cannot be called from outside a class, and for when you want users of your class to only call certain other methods. If `private` is not specified, then the method is public.
+
+```
+class ComplexCalculator {
+    doWork() {
+        this.doSomeWork();
+        this.doMoreWork();
+        print "Done!"
+    }
+
+    private doSomeWork() {
+        print "Crunching numbers...";
+    }
+
+    private doMoreWork() {
+        print "Performing final calculations...";
+    }
+}
+```
+
 You can also define computed properties in classes, which look just like functions but do not have an argument list nor parentheses:
 
 ```

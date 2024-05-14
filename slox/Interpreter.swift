@@ -232,7 +232,8 @@ class Interpreter {
                                            parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
                                            body: body,
-                                           isInitializer: false)
+                                           isInitializer: false,
+                                           isPrivate: false)
         environment.define(name: name.lexeme, value: .userDefinedFunction(function))
     }
 
@@ -559,7 +560,7 @@ class Interpreter {
             throw RuntimeError.onlyInstancesHaveProperties(instanceExpr.locToken)
         }
 
-        let property = try instance.get(propertyName: propertyNameToken)
+        let property = try instance.get(propertyName: propertyNameToken, includePrivate: instanceExpr.isThis)
 
         if case .userDefinedFunction(let userDefinedFunction) = property,
            userDefinedFunction.isComputedProperty {
@@ -594,7 +595,8 @@ class Interpreter {
                                            parameterList: parameterList,
                                            enclosingEnvironment: environmentWhenDeclared,
                                            body: body,
-                                           isInitializer: false)
+                                           isInitializer: false,
+                                           isPrivate: false)
 
         return .userDefinedFunction(function)
     }
@@ -609,7 +611,7 @@ class Interpreter {
             fatalError("unable to resolve `this` at depth, \(depth - 1)")
         }
 
-        if let method = superclass.findMethod(name: methodToken.lexeme) {
+        if let method = superclass.findMethod(name: methodToken.lexeme, includePrivate: true) {
             return .userDefinedFunction(method.bind(instance: thisInstance))
         }
 
@@ -703,11 +705,15 @@ class Interpreter {
             }
 
             let isInitializer = nameToken.lexeme == "init"
+            let isPrivate = modifierTokens.contains(where: { token in
+                token.type == .private
+            })
             let method = UserDefinedFunction(name: nameToken.lexeme,
                                              parameterList: parameterList,
                                              enclosingEnvironment: environment,
                                              body: methodBody,
-                                             isInitializer: isInitializer)
+                                             isInitializer: isInitializer,
+                                             isPrivate: isPrivate)
             lookup[nameToken.lexeme] = method
         }
     }

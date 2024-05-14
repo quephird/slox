@@ -32,12 +32,12 @@ class LoxInstance {
         self._klass = klass
     }
 
-    func get(propertyName: Token) throws -> LoxValue {
+    func get(propertyName: Token, includePrivate: Bool) throws -> LoxValue {
         if let propertyValue = self.properties[propertyName.lexeme] {
             return propertyValue
         }
 
-        if let method = klass.findMethod(name: propertyName.lexeme) {
+        if let method = klass.findMethod(name: propertyName.lexeme, includePrivate: includePrivate) {
             let boundMethod = method.bind(instance: self)
             return .userDefinedFunction(boundMethod)
         }

@@ -46,12 +46,14 @@ class LoxClass: LoxInstance, LoxCallable {
         super.init(klass: klass)
     }
 
-    func findMethod(name: String) -> UserDefinedFunction? {
+    func findMethod(name: String, includePrivate: Bool) -> UserDefinedFunction? {
         if let method = methods[name] {
-            return method
+            if includePrivate || !method.isPrivate {
+                return method
+            }
         }
 
-        return superclass?.findMethod(name: name)
+        return superclass?.findMethod(name: name, includePrivate: includePrivate)
     }
 
     func call(interpreter: Interpreter, args: [LoxValue]) throws -> LoxValue {

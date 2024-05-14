@@ -583,6 +583,72 @@ c.area
         XCTAssertEqual(actual, expected)
     }
 
+    func testInterpretClassWithPrivateMethodCalledExternally() throws {
+        let input = """
+class Universe {
+    private getAnswer() {
+        return 42;
+    }
+}
+
+var universe = Universe();
+universe.getAnswer();
+"""
+
+        let interpreter = Interpreter()
+        let locToken = Token(type: .identifier, lexeme: "getAnswer", line: 8)
+        let expectedError = RuntimeError.undefinedProperty(locToken)
+        XCTAssertThrowsError(try interpreter.interpretRepl(source: input)!) { actualError in
+            XCTAssertEqual(actualError as! RuntimeError, expectedError)
+        }
+    }
+
+    func testInterpretClassWithPrivateMethodCalledInternally() throws {
+        let input = """
+class Universe {
+    private getSecret() {
+        return 42;
+    }
+
+    getAnswer() {
+        return this.getSecret();
+    }
+}
+
+var universe = Universe();
+universe.getAnswer();
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = .int(42)
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testInterpretClassWithPrivateMethodOfSuperClassCalledInternally() throws {
+        let input = """
+class Foo {
+    private foo() {
+        return "foo";
+    }
+}
+
+class Bar < Foo {
+    bar() {
+        return super.foo();
+    }
+}
+
+var bar = Bar();
+bar.bar()
+"""
+
+        let interpreter = Interpreter()
+        let actual = try interpreter.interpretRepl(source: input)
+        let expected: LoxValue = try interpreter.makeString(string: "foo")
+        XCTAssertEqual(actual, expected)
+    }
+
     func testInterpretAccessingElementOfList() throws {
         let input = """
 var foo = [1, 2, 3, 4, 5];

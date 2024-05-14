@@ -66,6 +66,7 @@ enum TokenType: Equatable {
     case `case`
     case `switch`
     case `default`
+    case `private`
 
     case eof
 }

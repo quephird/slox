@@ -69,6 +69,15 @@ indirect enum Expression<Depth: Equatable>: Equatable {
         }
     }
 
+    var isThis: Bool {
+        switch self {
+        case .this:
+            return true
+        default:
+            return false
+        }
+    }
+
     static func == (lhs: Expression, rhs: Expression) -> Bool {
         switch (lhs, rhs) {
         case (.binary(let lhsExpr1, let lhsOper, let lhsExpr2), .binary(let rhsExpr1, let rhsOper, let rhsExpr2)):

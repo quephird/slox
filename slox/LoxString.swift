@@ -20,12 +20,12 @@ class LoxString: LoxInstance {
         super.init(klass: klass)
     }
 
-    override func get(propertyName: Token) throws -> LoxValue {
+    override func get(propertyName: Token, includePrivate: Bool) throws -> LoxValue {
         switch propertyName.lexeme {
         case "count":
             return .int(string.count)
         default:
-            return try super.get(propertyName: propertyName)
+            return try super.get(propertyName: propertyName, includePrivate: includePrivate)
         }
     }
 
