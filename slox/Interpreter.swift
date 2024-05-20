@@ -38,6 +38,11 @@ class Interpreter {
     }
 
     func interpretFile(fileName: String) throws {
+        let previousScriptRoot = scriptRoot
+        defer {
+            scriptRoot = previousScriptRoot
+        }
+
         let fileUrl = URL(fileURLWithPath: fileName)
 
         // TODO: check return value of set insert call
@@ -46,7 +51,6 @@ class Interpreter {
         }
         cache[fileUrl.path] = true
 
-        // TODO: Do this only once!
         scriptRoot = fileUrl
         let source = try String(contentsOf: fileUrl)
         try! interpret(source: source)
