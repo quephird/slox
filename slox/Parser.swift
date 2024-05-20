@@ -32,11 +32,13 @@ struct Parser {
     // Statements are parsed in the following order:
     //
     //    program        → declaration* EOF ;
-    //    declaration    → classDecl
+    //    declaration    → requireDecl
+    //                   | classDecl
     //                   | enumDecl
     //                   | funDecl
     //                   | varDecl
     //                   | statement ;
+    //    requireDecl    → "require" STRING ";" ;
     //    classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
     //                     "{" function* "}" ;
     //    enumDecl       → "enum" IDENTIFIER "{"
@@ -103,6 +105,10 @@ struct Parser {
         // TODO: Do a parseExpression() here
         guard let fileName = consumeToken(type: .string) else {
             throw ParseError.expectedStringAfterRequire(currentToken)
+        }
+
+        guard currentTokenMatchesAny(types: [.semicolon]) else {
+            throw ParseError.missingSemicolon(currentToken)
         }
 
         return .require(requireToken, fileName)

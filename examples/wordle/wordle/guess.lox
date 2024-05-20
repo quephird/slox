@@ -1,4 +1,4 @@
-require "letter_status"
+require "letter_status";
 
 class Guess {
     init(letters) {

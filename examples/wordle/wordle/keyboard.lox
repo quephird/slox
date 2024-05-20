@@ -1,5 +1,5 @@
-require "letter"
-require "letter_status"
+require "letter";
+require "letter_status";
 
 class Keyboard {
     init() {

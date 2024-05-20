@@ -1,4 +1,4 @@
-require "wordle/game"
+require "wordle/game";
 
 var game = Game();
 game.run();

@@ -1,6 +1,6 @@
-require "color"
-require "letter_status"
-require "terminal"
+require "color";
+require "letter_status";
+require "terminal";
 
 class Letter {
     init(letter, status) {

@@ -1,9 +1,9 @@
-require "word_list"
-require "keyboard"
-require "letter_status"
-require "guess"
-require "game_status"
-require "terminal"
+require "word_list";
+require "keyboard";
+require "letter_status";
+require "guess";
+require "game_status";
+require "terminal";
 
 class Game {
     init() {
