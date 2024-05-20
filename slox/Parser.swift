@@ -71,6 +71,10 @@ struct Parser {
     //    whileStmt      → "while" "(" expression ")" statement ;
     //    block          → "{" declaration* "}" ;
     mutating private func parseDeclaration() throws -> Statement<UnresolvedDepth> {
+        if let requireDecl = try parseRequire() {
+            return requireDecl
+        }
+
         if let classDecl = try parseClassDeclaration() {
             return classDecl
         }
@@ -88,6 +92,20 @@ struct Parser {
         }
 
         return try parseStatement()
+    }
+
+    mutating private func parseRequire() throws -> Statement<UnresolvedDepth>? {
+        guard currentTokenMatchesAny(types: [.require]) else {
+            return nil
+        }
+        let requireToken = previousToken
+
+        // TODO: Do a parseExpression() here
+        guard let fileName = consumeToken(type: .string) else {
+            throw ParseError.expectedStringAfterRequire(currentToken)
+        }
+
+        return .require(requireToken, fileName)
     }
 
     mutating private func parseClassDeclaration() throws -> Statement<UnresolvedDepth>? {

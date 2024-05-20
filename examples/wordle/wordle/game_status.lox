@@ -1,0 +1,4 @@
+enum GameStatus {
+    case win, loss, invalidGuess, wordNotInList, stillGoing;
+}
+

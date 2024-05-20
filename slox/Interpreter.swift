@@ -9,6 +9,10 @@ import Foundation
 
 class Interpreter {
     var environment: Environment = Environment()
+    // TODO: Becca says to make this a set
+    var cache: [String: Bool] = [:]
+    // TODO: Make this non-nilable by defautling to the current directory
+    var scriptRoot: URL?
 
     init() {
         setUpGlobals()
@@ -33,12 +37,19 @@ class Interpreter {
         try! interpret(source: standardLibrary)
     }
 
-    func interpret(source: String) throws {
-        let statements = try prepareCode(source: source)
+    func interpretFile(fileName: String) throws {
+        let fileUrl = URL(fileURLWithPath: fileName)
 
-        for statement in statements {
-            try execute(statement: statement)
+        // TODO: check return value of set insert call
+        if let alreadyLoaded = cache[fileUrl.path] {
+            return
         }
+        cache[fileUrl.path] = true
+
+        // TODO: Do this only once!
+        scriptRoot = fileUrl
+        let source = try String(contentsOf: fileUrl)
+        try! interpret(source: source)
     }
 
     func interpretRepl(source: String) throws -> LoxValue? {
@@ -55,8 +66,18 @@ class Interpreter {
         return nil
     }
 
+    private func interpret(source: String) throws {
+        let statements = try prepareCode(source: source)
+
+        for statement in statements {
+            try execute(statement: statement)
+        }
+    }
+
     func execute(statement: Statement<Int>) throws {
         switch statement {
+        case .require(_, let fileNameToken):
+            try handleRequire(fileNameToken: fileNameToken)
         case .expression(let expr):
             let _ = try evaluate(expr: expr)
         case .if(_, let testExpr, let consequentStmt, let alternativeStmt):
@@ -96,6 +117,12 @@ class Interpreter {
         case .continue(let continueToken):
             try handleContinueStatement(continueToken: continueToken)
         }
+    }
+
+    private func handleRequire(fileNameToken: Token) throws {
+        let fileName = fileNameToken.lexeme.trimmingCharacters(in: CharacterSet(charactersIn: "\"")) + ".lox"
+        let fileUrl = URL(fileURLWithPath: fileName, relativeTo: scriptRoot)
+        try interpretFile(fileName: fileUrl.path)
     }
 
     private func handleIfStatement(testExpr: Expression<Int>,

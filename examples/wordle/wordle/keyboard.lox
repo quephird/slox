@@ -1,0 +1,57 @@
+require "letter"
+require "letter_status"
+
+class Keyboard {
+    init() {
+        var keys = "abcdefghijklmnopqrstuvwxyz"
+            .chars
+            .reduce([:], fun (acc, letter) {
+                acc[letter] = Letter(letter, LetterStatus.notGuessed);
+                return acc;
+            });
+        this.keys = keys;
+    }
+
+    reset() {
+        var letters = "abcdefghijklmnopqrstuvwxyz".chars;
+        for (var i = 0; i < letters.count; i += 1) {
+            this.keys[letters[i]].status = LetterStatus.notGuessed;
+        }
+    }
+
+    update(guess) {
+        for (var i = 0; i < 5; i += 1) {
+            var letter = guess.letters[i];
+            if (letter.status == LetterStatus.correctPosition) {
+                this.keys[letter.letter].status = LetterStatus.correctPosition;
+            } else if (letter.status == LetterStatus.wrongPosition) {
+                if (this.keys[letter.letter].status == LetterStatus.noMatch or
+                    this.keys[letter.letter].status == LetterStatus.notGuessed) {
+                    this.keys[letter.letter].status = LetterStatus.wrongPosition;
+                }
+            } else if (letter.status == LetterStatus.noMatch) {
+                if (this.keys[letter.letter].status == LetterStatus.notGuessed) {
+                    this.keys[letter.letter].status = LetterStatus.noMatch;
+                }
+            }
+        }
+    }
+
+    private displayRow(row, indent) {
+        var output = indent;
+        var letters = row.chars;
+        for (var i = 0; i < row.count; i += 1) {
+            output += this.keys[letters[i]].format();
+            output += " ";
+        }
+
+        print(output);
+        print("");
+    }
+
+    display() {
+        this.displayRow("qwertyuiop", "");
+        this.displayRow("asdfghjkl", " ");
+        this.displayRow("zxcvbnm", "  ");
+    }
+}

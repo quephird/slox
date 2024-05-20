@@ -1,0 +1,25 @@
+require "letter_status"
+
+class Guess {
+    init(letters) {
+        this.letters = letters;
+    }
+
+    display() {
+        var formattedGuess = "          ";
+        for (var i = 0; i < 5; i += 1) {
+            formattedGuess += this.letters[i].format();
+            formattedGuess += " ";
+        }
+        print formattedGuess;
+        print "";
+    }
+
+    reset() {
+        for (var i = 0; i < 5; i += 1) {
+            this.letters[i].letter = " ";
+            this.letters[i].status = LetterStatus.notGuessed;
+        }
+    }
+}
+

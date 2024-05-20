@@ -1,0 +1,127 @@
+require "word_list"
+require "keyboard"
+require "letter_status"
+require "guess"
+require "game_status"
+require "terminal"
+
+class Game {
+    init() {
+        this.wordList = WordList();
+        this.keyboard = Keyboard();
+        var guesses = [];
+        for (var i = 0; i < 6; i += 1) {
+            var letters = [];
+            for (var j = 0; j < 5; j += 1) {
+                letters.append(Letter(" ", LetterStatus.notGuessed));
+            }
+            guesses.append(Guess(letters));
+        }
+        this.guesses = guesses;
+        this.reset();
+    }
+
+    private display() {
+        print Terminal.clearScreenStr();
+        for (var i = 0; i < this.guesses.count; i += 1) {
+            this.guesses[i].display();
+        }
+
+        this.keyboard.display();
+
+        if (this.status == GameStatus.invalidGuess) {
+            print "Your word must only be five letters long!";
+        } else if (this.status == GameStatus.wordNotInList) {
+            print "Word is not in this game's dictionary!";
+        } else if (this.status == GameStatus.loss) {
+            print "The word was: " + this.word;
+        } else if (this.status == GameStatus.win) {
+            print "You won!";
+        }
+    }
+
+    private reset() {
+        for (var i = 0; i < 6; i += 1) {
+            this.guesses[i].reset();
+        }
+
+        this.keyboard.reset();
+        this.guessCount = 0;
+        this.status = GameStatus.stillGoing;
+        this.word = this.wordList.choose();
+    }
+
+    private submitGuess(guess) {
+        if (guess.chars.count != 5) {
+            this.status = GameStatus.invalidGuess;
+            return;
+        } else if (!this.wordList.contains(guess)) {
+            this.status = GameStatus.wordNotInList;
+            return;
+        }
+
+        var wordChars = this.word.chars;
+        var guessChars = guess.chars;
+
+        var letters = [];
+        for (var i = 0; i < 5; i += 1) {
+            letters.append(Letter(guessChars[i], LetterStatus.noMatch));
+        }
+
+        var matchableLetters = [];
+        for (var i = 0; i < 5; i += 1) {
+            var status = nil;
+            if (guessChars[i] == wordChars[i]) {
+                letters[i].status = LetterStatus.correctPosition;
+            } else {
+                matchableLetters.append(wordChars[i]);
+            }
+        }
+
+        for (var i = 0; i < 5; i += 1) {
+            if (letters[i].status == LetterStatus.correctPosition) {
+                continue;
+            }
+
+            var matchIndex = matchableLetters.firstIndex(guessChars[i]);
+            if (matchIndex != nil) {
+                letters[i].status = LetterStatus.wrongPosition;
+                matchableLetters.deleteAt(matchIndex);
+            }
+        }
+
+        var newGuess = Guess(letters);
+        this.guesses[this.guessCount] = newGuess;
+        this.guessCount += 1;
+        this.keyboard.update(newGuess);
+
+        if (guess == this.word) {
+            this.status = GameStatus.win;
+        } else if (this.guessCount == 6) {
+            this.status = GameStatus.loss;
+        } else {
+            this.status = GameStatus.stillGoing;
+        }
+    }
+
+    run() {
+        while (true) {
+            this.display();
+
+            if (this.status == GameStatus.win or this.status == GameStatus.loss) {
+                var input = getInput("Would you like to play again? (y/n)");
+                if (input == "y") {
+                    this.reset();
+                    continue;
+                } else {
+                    break;
+                }
+            }
+
+            var input = getInput("Enter a guess:");
+            this.submitGuess(input);
+        }
+    }
+}
+
+

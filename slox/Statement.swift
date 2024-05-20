@@ -20,6 +20,7 @@ indirect enum Statement<Depth: Equatable>: Equatable {
     case `enum`(Token, [Token], [Statement])
     case `break`(Token)
     case `continue`(Token)
+    case require(Token, Token)
 
     var locToken: Token {
         switch self {
@@ -51,6 +52,8 @@ indirect enum Statement<Depth: Equatable>: Equatable {
             return breakToken
         case .continue(let continueToken):
             return continueToken
+        case .require(let requireToken, _):
+            return requireToken
         }
     }
 }
