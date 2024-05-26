@@ -50,6 +50,8 @@ struct Resolver {
     // Resolver for statements
     private mutating func resolve(statement: Statement<UnresolvedDepth>) throws -> Statement<Int> {
         switch statement {
+        case .require(let requireToken, let fileNameToken):
+            return .require(requireToken, fileNameToken)
         case .block(let beginBlockToken, let statements):
             return try handleBlock(beginBlockToken: beginBlockToken, statements: statements)
         case .variableDeclaration(let nameToken, let initializeExpr):

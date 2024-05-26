@@ -37,6 +37,7 @@ struct Scanner {
         "switch": .switch,
         "default": .default,
         "private": .private,
+        "require": .require,
     ]
 
     init(source: String) {

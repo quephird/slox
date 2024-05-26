@@ -1,0 +1,4 @@
+enum LetterStatus {
+    case notGuessed, correctPosition, wrongPosition, noMatch;
+}
+

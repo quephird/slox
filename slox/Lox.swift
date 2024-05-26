@@ -30,8 +30,7 @@ struct Lox {
 
     private static func runFile(fileName: String) {
         do {
-            let input = try String(contentsOfFile: fileName)
-            try run(input: input)
+            try interpreter.interpretFile(fileName: fileName)
         } catch {
             print(error)
             exit(65)
@@ -51,9 +50,5 @@ struct Lox {
 
             print("> ", terminator: "")
         }
-    }
-
-    private static func run(input: String) throws {
-        try interpreter.interpret(source: input)
     }
 }

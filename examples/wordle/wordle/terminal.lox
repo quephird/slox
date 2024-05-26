@@ -1,0 +1,22 @@
+class Terminal {
+    class escape(sequence) {
+        return "[" + sequence;
+    }
+
+    class clearScreenStr() {
+        return Terminal.escape("2J");
+    }
+
+    class resetColorStr() {
+        return Terminal.escape("0m");
+    }
+
+    class foregroundStr(color) {
+        return Terminal.escape(color.foregroundValue + "m");
+    }
+
+    class backgroundStr(color) {
+        return Terminal.escape(color.backgroundValue + "m");
+    }
+}
+
