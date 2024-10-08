@@ -10,6 +10,7 @@ import Foundation
 enum ScanError: CustomStringConvertible, Equatable, LocalizedError {
     case unterminatedString(Int)
     case unexpectedCharacter(Int)
+    case unterminatedComment(Int)
 
     var description: String {
         switch self {
@@ -17,6 +18,8 @@ enum ScanError: CustomStringConvertible, Equatable, LocalizedError {
             return "[Line \(line)] Error: unterminated string"
         case .unexpectedCharacter(let line):
             return "[Line \(line)] Error: unexpected character"
+        case .unterminatedComment(let line):
+            return "[Line \(line)] Error: unterminated comment"
         }
     }
 }

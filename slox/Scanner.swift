@@ -75,6 +75,24 @@ struct Scanner {
         })
     }
 
+    mutating private func tryNotScan(string: String) throws -> Bool {
+        // TODO: Also need to count lines when \n encountered in comment
+        let oldIndex = currentIndex
+
+        for char in string {
+            guard currentIndex < self.source.endIndex else {
+                throw ScanError.unterminatedComment(self.line)
+            }
+
+            if !tryScan(char) {
+                self.currentIndex = self.source.index(after: oldIndex)
+                return true
+            }
+        }
+
+        return false
+    }
+
     mutating private func tryScan(_ chars: Character...) -> Bool {
         tryScan(where: chars.contains(_:))
     }
@@ -88,10 +106,14 @@ struct Scanner {
         return nil
     }
 
-    private func repeatedly(_ tryScanFn: () -> Bool) {
+    private func repeatedly(_ tryScanFn: () throws -> Bool) throws {
         var scanned: Bool
         repeat {
-            scanned = tryScanFn()
+            do {
+                scanned = try tryScanFn()
+            } catch {
+                throw error
+            }
         } while scanned
     }
 
@@ -125,7 +147,7 @@ struct Scanner {
         }
 
         if tryScan("/") {
-            return handleSlash()
+            return try handleSlash()
         }
 
         if tryScan(" ", "\r", "\t") {
@@ -141,11 +163,11 @@ struct Scanner {
         }
 
         if tryScan(where: \.isLoxDigit) {
-            return handleNumber()
+            return try handleNumber()
         }
 
         if tryScan(where: { $0.isLetter || $0 == "_" }) {
-            return handleIdentifier()
+            return try handleIdentifier()
         }
 
         throw ScanError.unexpectedCharacter(line)
@@ -155,9 +177,15 @@ struct Scanner {
         addToken(type: type)
     }
 
-    mutating private func handleSlash() {
+    mutating private func handleSlash() throws {
         if tryScan("/") {
-            repeatedly { tryNotScan("\n") }
+            try repeatedly {
+                tryNotScan("\n")
+            }
+        } else if tryScan("*") {
+            try repeatedly {
+                try tryNotScan(string: "*/")
+            }
         } else {
             handleOneOrTwoCharacterLexeme(oneCharType: .slash, twoCharType: .slashEqual)
         }
@@ -172,7 +200,7 @@ struct Scanner {
     }
 
     mutating private func handleString() throws {
-        repeatedly { tryNotScan("\"") }
+        try repeatedly { tryNotScan("\"") }
 
         guard tryScan("\"") else {
             throw ScanError.unterminatedString(line)
@@ -181,21 +209,21 @@ struct Scanner {
         addToken(type: .string)
     }
 
-    mutating private func handleNumber() {
-        repeatedly { tryScan(where: \.isLoxDigit) }
+    mutating private func handleNumber() throws {
+        try repeatedly { tryScan(where: \.isLoxDigit) }
 
         var tokenType: TokenType = .int
         if tryScan(".") {
             tokenType = .double
 
-            repeatedly { tryScan(where: \.isLoxDigit) }
+            try repeatedly { tryScan(where: \.isLoxDigit) }
         }
 
         addToken(type: tokenType)
     }
 
-    mutating private func handleIdentifier() {
-        repeatedly { tryScan(where: { $0.isLetter || $0.isNumber || $0 == "_" }) }
+    mutating private func handleIdentifier() throws {
+        try repeatedly { tryScan(where: { $0.isLetter || $0.isNumber || $0 == "_" }) }
 
         if let type = keywords[scannedToken] {
             addToken(type: type)
