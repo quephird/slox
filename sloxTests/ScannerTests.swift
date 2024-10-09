@@ -212,4 +212,88 @@ class Foo < Bar {
 
         XCTAssertEqual(actual, expected)
     }
+
+    func testScanningOfJustSlashAsteriskComment() throws {
+        let source = "/* This should not be lexed */"
+        var scanner = Scanner(source: source)
+        let actual = try! scanner.scanTokens()
+        let expected: [Token] = [
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testScanningOfInlineComment() throws {
+        let source = "1 + /* This should not be lexed */ 2"
+        var scanner = Scanner(source: source)
+        let actual = try! scanner.scanTokens()
+        let expected: [Token] = [
+            Token(type: .int, lexeme: "1", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testScanningOfTrailingComment() throws {
+        let source = "1 + 2 /* This should not be lexed */"
+        var scanner = Scanner(source: source)
+        let actual = try! scanner.scanTokens()
+        let expected: [Token] = [
+            Token(type: .int, lexeme: "1", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testScanningOfInlineCommentWithExtraAsterisk() throws {
+        let source = "1 + /* This should not be lexed either **/ 2"
+        var scanner = Scanner(source: source)
+        let actual = try! scanner.scanTokens()
+        let expected: [Token] = [
+            Token(type: .int, lexeme: "1", line: 1),
+            Token(type: .plus, lexeme: "+", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
+            Token(type: .eof, lexeme: "", line: 1),
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testScanningOfIncompleteComment() throws {
+        let source = "/* This should throw an error"
+        var scanner = Scanner(source: source)
+
+        let expectedError = ScanError.unterminatedComment(1)
+        XCTAssertThrowsError(try scanner.scanTokens()) { actualError in
+            XCTAssertEqual(actualError as! ScanError, expectedError)
+        }
+    }
+
+    func testScanningSourceWithMultilineComment() throws {
+        let source = """
+21 * 2
+/*
+ * I love Becca
+ */
+"forty-two"
+"""
+        var scanner = Scanner(source: source)
+        let actual = try! scanner.scanTokens()
+        let expected: [Token] = [
+            Token(type: .int, lexeme: "21", line: 1),
+            Token(type: .star, lexeme: "*", line: 1),
+            Token(type: .int, lexeme: "2", line: 1),
+            Token(type: .string, lexeme: "\"forty-two\"", line: 5),
+            Token(type: .eof, lexeme: "", line: 5),
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
 }

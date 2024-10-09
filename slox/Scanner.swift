@@ -76,12 +76,16 @@ struct Scanner {
     }
 
     mutating private func tryNotScan(string: String) throws -> Bool {
-        // TODO: Also need to count lines when \n encountered in comment
+        precondition(!string.dropFirst().contains("\n"), "newlines in `string` would mess with line counting")
         let oldIndex = currentIndex
 
         for char in string {
             guard currentIndex < self.source.endIndex else {
                 throw ScanError.unterminatedComment(self.line)
+            }
+
+            if self.source[self.currentIndex] == "\n" {
+                self.line += 1
             }
 
             if !tryScan(char) {

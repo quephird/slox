@@ -92,6 +92,23 @@ var x = 21;
 x *= 2;
 ```
 
+### Comments
+
+Comments can either be at the end of a line using a double slash:
+
+```
+var x = 42; // This is the answer.
+```
+
+... or they can be across multiple lines using slash-star at the beginning and star-slash at the end:
+
+```
+/*
+ * This is the answer
+ */
+var x = 42;
+```
+
 ### Flow control
 
 There are four types of flow control statements in slox, two of which are non-looping constructs: `if` blocks:
