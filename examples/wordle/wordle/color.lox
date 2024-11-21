@@ -1,0 +1,38 @@
+enum Color {
+    case black, green, yellow, grey, white;
+
+    foregroundValue {
+        switch (this) {
+        case Color.black:
+            return "30";
+        case Color.green:
+            return "32";
+        case Color.yellow:
+            return "33";
+        case Color.white:
+            return "37";
+        case Color.grey:
+            return "90";
+        default:
+            return nil;
+        }
+    }
+
+    backgroundValue {
+        switch (this) {
+        case Color.black:
+            return "40";
+        case Color.green:
+            return "42";
+        case Color.yellow:
+            return "43";
+        case Color.white:
+            return "47";
+        case Color.grey:
+            return "100";
+        default:
+            return nil;
+        }
+    }
+}
+

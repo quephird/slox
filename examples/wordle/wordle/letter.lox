@@ -1,0 +1,30 @@
+require "color";
+require "letter_status";
+require "terminal";
+
+class Letter {
+    init(letter, status) {
+        this.letter = letter;
+        this.status = status;
+    }
+
+    format() {
+        var backgroundColor = nil;
+
+        if (this.status == LetterStatus.correctPosition) {
+            backgroundColor = Color.green;
+        } else if (this.status == LetterStatus.wrongPosition) {
+            backgroundColor = Color.yellow;
+        } else if (this.status == LetterStatus.noMatch) {
+            backgroundColor = Color.grey;
+        } else {
+            backgroundColor = Color.white;
+        }
+
+        return Terminal.backgroundStr(backgroundColor) +
+               Terminal.foregroundStr(Color.black) +
+               " " + this.letter + " " +
+               Terminal.resetColorStr();
+    }
+}
+
